@@ -1,0 +1,208 @@
+# L1DDER Base Standards: Conventions
+#
+# Category: standards (Context Engine, CE6 — STATIC zone)
+# Layer: 2 (Framework-managed defaults)
+# Lifecycle: updated on an L1DDER upgrade (l1dder upgrade)
+# Who reads it: the Context Injection Engine (builds the Standards block for the LLM),
+#               l1dder check (compares against user overrides), l1dder doctor (validation)
+# Who overrides it: the user in standards/conventions.md (the ## Overrides section)
+# Zod schema: @l1dder/schemas — ConventionsBaseSchema
+#
+# Principle: "Machine protects, text advises"
+# This file sets the RECOMMENDED defaults. The user may override any rule.
+# Real enforcement stays with ESLint, dependency-cruiser, Zod schemas,
+# the Phase Machine, and the Gate Engine.
+#
+# Override mechanism:
+#   The user adds an ## Overrides section to standards/conventions.md:
+#   | Key | Value | Reason |
+#   |-----|-------|--------|
+#   | naming.variables | camelCase | TypeScript project |
+#
+#   l1dder check shows the applied overrides and conflicts with machine-enforced rules.
+
+meta:
+  format_version: 1
+  description: "L1DDER framework-managed base conventions (advisory defaults)"
+  last_updated: "2026-05-09"
+
+# ─── LANGUAGE & RUNTIME ──────────────────────────────────────────────────────
+
+language:
+  # The project's programming language
+  primary: typescript
+  # TypeScript version (strict mode is mandatory)
+  typescript_strict: true
+  # noUncheckedIndexedAccess — protection against undefined on indexing
+  unchecked_indexed_access: true
+  # Runtime
+  runtime: node
+  runtime_version: ">=22.0.0"
+  # Module system
+  module_system: esm
+  # Forbid CJS constructs in sources (require, __dirname, module.exports)
+  forbid_cjs: true
+
+# ─── NAMING ──────────────────────────────────────────────────────────────────
+
+naming:
+  # Files and directories
+  files: kebab-case
+  directories: kebab-case
+  # Identifiers in code
+  variables: camelCase
+  functions: camelCase
+  classes: PascalCase
+  interfaces: PascalCase
+  types: PascalCase
+  enums: PascalCase
+  enum_members: PascalCase
+  constants: UPPER_SNAKE_CASE
+  # Test files
+  test_files: "<name>.test.ts"
+  integration_test_files: "<name>.integration.test.ts"
+  e2e_test_files: "<name>.e2e.test.ts"
+  # Zod schemas
+  schema_files: "<name>.schema.ts"
+  # Port adapters
+  adapter_files: "<port>.<implementation>.ts"
+  # Barrel (re-export only, no logic)
+  barrel_file: "index.ts"
+
+# ─── FILE STRUCTURE ──────────────────────────────────────────────────────────
+
+file_structure:
+  # The recommended maximum number of lines in a file (advisory, not a hard limit)
+  max_file_lines: 300
+  # Barrel files contain only re-exports
+  barrel_pattern: reexport_only
+  # Exports: named only (no export default)
+  exports: named_only
+  # Package entry — via the exports map in package.json
+  package_entry: exports_map
+  # The internal structure of a package (for packages with side effects)
+  package_layout:
+    - "src/index.ts"           # a narrow barrel
+    - "src/domain/"            # value objects, pure functions
+    - "src/ports/"             # side-effect interfaces
+    - "src/adapters/"          # port implementations
+    - "src/features/"          # feature folders
+    - "tests/"                 # integration tests
+
+# ─── ARCHITECTURE ────────────────────────────────────────────────────────────
+
+architecture:
+  # The internal package pattern
+  pattern: hexagonal_lite
+  # Side effects only through ports (FileSystem, Clock, HTTP, etc.)
+  side_effects: ports_only
+  # The dependency direction
+  dependency_direction: unidirectional
+  # The contract between packages — types from Zod schemas (@l1dder/schemas)
+  contract_source: zod_schemas
+  # Schemas first: all YAML data is validated by Zod, types via z.infer<>
+  schemas_first: true
+
+# ─── ERROR HANDLING ──────────────────────────────────────────────────────────
+
+error_handling:
+  # The error handling pattern
+  pattern: typed_errors
+  # Custom error classes with descriptive messages
+  custom_error_classes: true
+  # Errors must not be "swallowed"
+  swallow_errors: never
+  # Result<T,E> pattern for expected errors (no throw)
+  result_pattern: true
+  # throw — only for unexpected/programmer errors
+  throw_for: unexpected_only
+
+# ─── TESTING ─────────────────────────────────────────────────────────────────
+
+testing:
+  # Test framework
+  framework: vitest
+  # Coverage provider
+  coverage_provider: v8
+  # Unit tests are mandatory for:
+  unit_required_for:
+    - business_logic
+    - domain_functions
+    - parsers
+    - validators
+  # Integration tests are mandatory for:
+  integration_required_for:
+    - cli_commands
+    - state_transitions
+    - file_system_operations
+  # External services in tests
+  external_services: mock_required
+  # Tests pass before merge
+  tests_pass_before_merge: true
+  # Co-location: unit tests next to the source
+  unit_test_location: colocated
+  # Integration tests: in the package's tests/
+  integration_test_location: "tests/"
+
+# ─── DOCUMENTATION ───────────────────────────────────────────────────────────
+
+documentation:
+  # JSDoc/docstring is mandatory for:
+  jsdoc_required_for:
+    - classes
+    - interfaces
+    - exported_functions
+    - public_methods
+  # JSDoc content:
+  jsdoc_must_include:
+    - purpose
+    - params
+    - returns
+    - side_effects_if_any
+    - non_obvious_decisions
+    - invariants_and_assumptions
+    - limitations
+  # Code comments: only for non-obvious logic
+  code_comments: non_obvious_only
+  # Forbid narrative comments ("increment the counter", "return the result")
+  forbid_narrative_comments: true
+
+# ─── DEPENDENCIES ────────────────────────────────────────────────────────────
+
+dependencies:
+  # Package manager
+  package_manager: pnpm
+  # Prefer the latest stable versions
+  prefer_latest_stable: true
+  # Minimize runtime dependencies
+  minimize_runtime_deps: true
+  # YAGNI: a dependency is added only when really needed
+  yagni: true
+  # Before adding: check for alternatives in the project
+  check_alternatives_first: true
+  # Vulnerable / deprecated packages
+  vulnerable_packages: forbidden
+  deprecated_packages: forbidden
+  # engine-strict in .npmrc
+  engine_strict: true
+
+# ─── FORMATTING ──────────────────────────────────────────────────────────────
+
+formatting:
+  # Indentation
+  indent: 2_spaces
+  # Maximum line length (Prettier)
+  max_line_length: 100
+  # Line endings
+  line_endings: lf
+  # Final newline
+  final_newline: true
+  # Trailing commas (ES5+)
+  trailing_commas: all
+  # Quotes
+  quotes: double
+  # Semicolons
+  semicolons: true
+  # Tools
+  linter: eslint
+  formatter: prettier

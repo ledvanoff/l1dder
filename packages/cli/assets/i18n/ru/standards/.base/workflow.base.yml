@@ -1,0 +1,202 @@
+# L1DDER Base Standards: Workflow
+#
+# Категория: standards (Context Engine, CE6 — STATIC zone)
+# Слой: 2 (Framework-managed defaults)
+# Жизненный цикл: обновляется при апгрейде L1DDER (l1dder upgrade)
+# Кто читает: Context Injection Engine (формирует блок Standards для LLM),
+#             l1dder check (сравнивает с user overrides), l1dder doctor (валидация)
+# Кто override'ит: пользователь в standards/workflow.md (секция ## Overrides)
+# Zod-схема: @l1dder/schemas — WorkflowBaseSchema
+#
+# Принцип: "Machine protects, text advises"
+# Этот файл задаёт РЕКОМЕНДУЕМЫЕ defaults для AI-workflow.
+# Machine-enforced правила (фазы, gates) живут в .l1dder/config.yml
+# и НЕ МОГУТ быть override'нуты текстом.
+#
+# Override-механизм:
+#   Пользователь добавляет секцию ## Overrides в standards/workflow.md:
+#   | Key | Value | Reason |
+#   |-----|-------|--------|
+#   | knowledge_hygiene.max_knowledge_lines | 800 | Large domain model |
+#
+#   l1dder check покажет applied overrides и конфликты с machine-enforced gates.
+
+meta:
+  format_version: 1
+  description: "L1DDER framework-managed base workflow rules (advisory defaults)"
+  last_updated: "2026-05-09"
+
+# ─── LANGUAGE POLICY ─────────────────────────────────────────────────────────
+
+language_policy:
+  # Язык для каждого контекста
+  code: en
+  code_comments: en
+  documentation: ru
+  knowledge_files: ru
+  standards_files: ru
+  templates: ru
+  commits: en
+  branch_names: en
+  pr_titles: en
+  ai_chat: ru
+  readme: ru
+  cursor_rules: ru
+  file_and_directory_names: en
+  # Обоснование: родной язык команды для документации,
+  # индустриальный стандарт для кода и git
+
+# ─── KNOWLEDGE UPDATE RULES ─────────────────────────────────────────────────
+
+knowledge_update:
+  # Обязательность: AI-агент ОБЯЗАН проверять необходимость KU после каждой сессии
+  mandatory_check: true
+
+  # Триггеры обновления to-be файлов
+  to_be_triggers:
+    - design_session_completed
+    - new_architectural_decision
+    - component_designed
+    - trade_off_resolved
+
+  # Триггеры обновления as-is файлов (As-Is Promotion)
+  as_is_triggers:
+    - delivery_completed
+    - code_deployed
+    - feature_merged_to_main
+
+  # Approval для knowledge changes
+  approval: required
+  # AI предлагает, пользователь подтверждает
+  ai_role: propose
+  user_role: approve
+
+  # Файлы и их правила
+  files:
+    idea:
+      frequency: rarely
+      triggers: [vision_pivot, new_competitive_insight]
+      initiator: user_only
+    roadmap:
+      frequency: after_each_session
+      triggers: [task_completed, task_added, priorities_changed]
+      ai_can_update_checkboxes: true
+    architecture:
+      frequency: after_design_sessions
+      triggers: [new_decision, design_clarified, trade_off_resolved, component_designed]
+      size_discipline:
+        summary_target_lines: 300
+        alert_threshold_lines: 1500
+    erd:
+      triggers: [schema_decision, new_entity, relationship_changed]
+      format: mermaid_er_diagram
+    usecases:
+      triggers: [new_scenario, scope_changed, cli_command_designed]
+    integrations:
+      triggers: [new_adapter, integration_category_added, package_manager_changed]
+
+# ─── KNOWLEDGE HYGIENE ───────────────────────────────────────────────────────
+
+knowledge_hygiene:
+  # Hierarchical Knowledge Structure
+  summary_required: true
+  # Summary — первый ## H2 в каждом knowledge-файле
+  summary_position: first_h2
+  # Summary самодостаточен: 80% понимания файла
+  summary_self_sufficient: true
+  # Рекомендуемый размер Summary
+  summary_max_lines: 30
+  # Рекомендуемый размер knowledge-файла (Details без ограничений,
+  # но при росте — рассмотреть вынос в отдельные документы)
+  max_knowledge_lines: 500
+  # Summary обновляется вместе с Details
+  summary_synced_with_details: true
+  # Устаревшая информация удаляется (история — в archive/)
+  remove_stale: true
+  # Без дублирования между knowledge-файлами
+  no_duplication: true
+
+# ─── PROTECTED DIRECTORIES ───────────────────────────────────────────────────
+
+protected_directories:
+  # Директории, требующие user approval перед изменением
+  require_approval:
+    - knowledge/
+    - standards/
+    - templates/
+    - archive/
+  # Директории только для чтения (никогда не изменять)
+  read_only:
+    - references/
+  # Рабочие директории (AI свободно создаёт и редактирует)
+  workspace:
+    - design/
+    - src/
+    - packages/
+
+# ─── SESSION DISCIPLINE ──────────────────────────────────────────────────────
+
+session_discipline:
+  # Два типа сессий: Discovery (идея → спека) и Delivery (спека → код)
+  two_session_types: true
+  # Агент спрашивает тип в начале сессии
+  ask_session_type_on_start: true
+  # Одна сессия = одна фокусная тема
+  one_topic_per_session: true
+  # Создание ветки перед внесением изменений
+  branch_before_changes: true
+  # Discovery генерирует спеку в specs/<feature>/
+  discovery_generates_spec: true
+  # Delivery читает спеку и отмечает tasks checkboxes
+  delivery_tracks_via_tasks_md: true
+  # Handoff при прерванной сессии
+  handoff_on_interrupt: true
+  # Doctor-checklist перед коммитом
+  doctor_before_commit: true
+  # Обновление worklog для значимых сессий
+  update_worklog: true
+  # Discovery-сессии: переключаться в plan-mode перед EXPLORE (варианты, подтверждение scope)
+  discovery_use_plan_mode: true
+  # При 2+ вариантах явно помечать рекомендуемый
+  mark_recommended_option: true
+
+# ─── AI BEHAVIOR ─────────────────────────────────────────────────────────────
+
+ai_behavior:
+  # AI читает knowledge перед началом работы
+  read_knowledge_first: true
+  # AI предлагает изменения в protected directories, не делает автономно
+  propose_before_change: true
+  # AI анализирует затронутые knowledge-файлы после работы
+  analyze_knowledge_impact: true
+  # AI следует Conventional Commits
+  conventional_commits: true
+  # AI использует squash merge для PR
+  squash_merge: true
+  # AI приоритизирует: docstrings → типы → реализация
+  priority_order:
+    - read_docstrings_and_types
+    - understand_context
+    - implement
+  # AI не пересказывает что код делает (комментарии только для неочевидного)
+  no_narrative_comments: true
+
+# ─── DOCTOR CHECKLIST ────────────────────────────────────────────────────────
+
+doctor_checklist:
+  # Блоки, обязательные перед коммитом
+  blocks_before_commit:
+    - knowledge_integrity
+    - as_is_to_be_consistency
+    - standards_consistency
+    - state_consistency
+  # Полный аудит (все блоки включая drift и hygiene)
+  full_audit_every_sessions: 3
+  # Блоки полного аудита
+  full_audit_blocks:
+    - knowledge_integrity
+    - as_is_to_be_consistency
+    - standards_consistency
+    - state_consistency
+    - knowledge_drift
+    - documentation_hygiene

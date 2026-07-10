@@ -1,0 +1,82 @@
+name: Publish
+
+# Runs in the PUBLIC mirror repo. On a release tag, build + test, then publish
+# `l1dder` to npm via trusted publishing (OIDC) with automatic provenance
+# (DEC-RL-2). No NPM_TOKEN is used — npm exchanges the GitHub OIDC id-token for
+# short-lived credentials, and provenance cryptographically links the package to
+# this public commit. Requires a Trusted Publisher configured on npmjs.com for
+# the `l1dder` package pointing at this repo + workflow filename `publish.yml`.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write # create the GitHub Release
+  id-token: write # OIDC token for npm trusted publishing
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest # trusted publishing requires a cloud-hosted runner
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      # NOTE: deliberately no `registry-url` here — setup-node would write a
+      # blank _authToken into .npmrc, which suppresses the OIDC flow. The default
+      # registry (registry.npmjs.org) is what trusted publishing expects.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Upgrade npm (trusted publishing needs npm >= 11.5.1)
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        run: pnpm test
+
+      - name: E2E
+        run: pnpm test:e2e
+
+      - name: Pack tarball (resolves workspace deps, runs prepack)
+        id: pack
+        working-directory: packages/cli
+        run: |
+          # pnpm resolves `workspace:*` and runs prepack (stages README/LICENSE);
+          # pnpm@10 has no OIDC publish, so we hand the finished tarball to npm.
+          file=$(pnpm pack --pack-destination "$RUNNER_TEMP" | tail -n 1)
+          echo "tarball=${file}" >> "$GITHUB_OUTPUT"
+          echo "Packed: ${file}"
+
+      - name: Publish to npm (OIDC + provenance)
+        run: npm publish "${{ steps.pack.outputs.tarball }}" --provenance --access public
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          notes_file="$RUNNER_TEMP/release-notes.md"
+          # Extract the section for this version from the CLI changelog.
+          awk -v ver="$version" '
+            $0 ~ "^## " ver "([^0-9]|$)" { grab=1; next }
+            grab && /^## / { exit }
+            grab { print }
+          ' packages/cli/CHANGELOG.md > "$notes_file" || true
+          if [ ! -s "$notes_file" ]; then
+            echo "Release ${TAG}" > "$notes_file"
+          fi
+          gh release create "${TAG}" --title "${TAG}" --notes-file "$notes_file"

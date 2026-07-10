@@ -1,0 +1,40 @@
+{
+  "name": "l1dder",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "packageManager": "pnpm@10.10.0",
+  "scripts": {
+    "build": "pnpm -r --filter './packages/**' build",
+    "test": "vitest run",
+    "test:e2e": "vitest run --project e2e",
+    "lint": "eslint . && dependency-cruiser packages",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "playground:init": "node playground/reset.mjs",
+    "playground:smoke": "node playground/smoke.mjs",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "dev:link": "node scripts/dev-link.mjs",
+    "release:rehearse": "node scripts/verdaccio-rehearse.mjs",
+    "sync:public": "node scripts/sync-public.mjs"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.31.0",
+    "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^3.2.0",
+    "dependency-cruiser": "^16.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^10.0.0",
+    "eslint-plugin-import-x": "^4.0.0",
+    "prettier": "^3.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.0.0",
+    "verdaccio": "^6.7.4",
+    "vitest": "^3.2.0"
+  }
+}

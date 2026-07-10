@@ -1,0 +1,62 @@
+{
+  "name": "l1dder",
+  "version": "0.1.0",
+  "description": "AI-driven development framework CLI: Knowledge Layer (As-Is / To-Be), real state management, and a Discovery / Delivery workflow.",
+  "keywords": [
+    "ai",
+    "aidd",
+    "cli",
+    "workflow",
+    "knowledge-management",
+    "state-management",
+    "developer-tools",
+    "cursor",
+    "claude"
+  ],
+  "license": "MIT",
+  "author": "Oleg Ledvanov",
+  "homepage": "https://github.com/ledvanoff/l1dder#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ledvanoff/l1dder.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ledvanoff/l1dder/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "bin": {
+    "l1dder": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "prepack": "node scripts/prepack.mjs",
+    "test": "vitest run",
+    "test:e2e": "vitest run --project e2e"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^8.4.3",
+    "commander": "^13.0.0",
+    "picocolors": "^1.1.0",
+    "yaml": "^2.7.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@l1dder/adapter-claude": "workspace:*",
+    "@l1dder/adapter-cursor": "workspace:*",
+    "@l1dder/context": "workspace:*",
+    "@l1dder/core": "workspace:*",
+    "@l1dder/knowledge": "workspace:*",
+    "@l1dder/schemas": "workspace:*",
+    "@l1dder/state": "workspace:*",
+    "@l1dder/yaml": "workspace:*"
+  }
+}

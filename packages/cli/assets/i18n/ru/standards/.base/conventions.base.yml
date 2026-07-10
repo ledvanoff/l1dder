@@ -1,0 +1,208 @@
+# L1DDER Base Standards: Conventions
+#
+# Категория: standards (Context Engine, CE6 — STATIC zone)
+# Слой: 2 (Framework-managed defaults)
+# Жизненный цикл: обновляется при апгрейде L1DDER (l1dder upgrade)
+# Кто читает: Context Injection Engine (формирует блок Standards для LLM),
+#             l1dder check (сравнивает с user overrides), l1dder doctor (валидация)
+# Кто override'ит: пользователь в standards/conventions.md (секция ## Overrides)
+# Zod-схема: @l1dder/schemas — ConventionsBaseSchema
+#
+# Принцип: "Machine protects, text advises"
+# Этот файл задаёт РЕКОМЕНДУЕМЫЕ defaults. Пользователь может override'ить
+# любое правило. Реальный enforcement — за ESLint, dependency-cruiser,
+# Zod-схемами, Phase Machine, Gate Engine.
+#
+# Override-механизм:
+#   Пользователь добавляет секцию ## Overrides в standards/conventions.md:
+#   | Key | Value | Reason |
+#   |-----|-------|--------|
+#   | naming.variables | camelCase | TypeScript project |
+#
+#   l1dder check покажет применённые overrides и конфликты с machine-enforced.
+
+meta:
+  format_version: 1
+  description: "L1DDER framework-managed base conventions (advisory defaults)"
+  last_updated: "2026-05-09"
+
+# ─── LANGUAGE & RUNTIME ──────────────────────────────────────────────────────
+
+language:
+  # Язык программирования проекта
+  primary: typescript
+  # Версия TypeScript (strict mode обязателен)
+  typescript_strict: true
+  # noUncheckedIndexedAccess — защита от undefined при индексации
+  unchecked_indexed_access: true
+  # Runtime
+  runtime: node
+  runtime_version: ">=22.0.0"
+  # Модульная система
+  module_system: esm
+  # Запрет CJS-конструкций в исходниках (require, __dirname, module.exports)
+  forbid_cjs: true
+
+# ─── NAMING ──────────────────────────────────────────────────────────────────
+
+naming:
+  # Файлы и директории
+  files: kebab-case
+  directories: kebab-case
+  # Идентификаторы в коде
+  variables: camelCase
+  functions: camelCase
+  classes: PascalCase
+  interfaces: PascalCase
+  types: PascalCase
+  enums: PascalCase
+  enum_members: PascalCase
+  constants: UPPER_SNAKE_CASE
+  # Тестовые файлы
+  test_files: "<name>.test.ts"
+  integration_test_files: "<name>.integration.test.ts"
+  e2e_test_files: "<name>.e2e.test.ts"
+  # Zod-схемы
+  schema_files: "<name>.schema.ts"
+  # Адаптеры портов
+  adapter_files: "<port>.<implementation>.ts"
+  # Barrel (только re-export, без логики)
+  barrel_file: "index.ts"
+
+# ─── FILE STRUCTURE ──────────────────────────────────────────────────────────
+
+file_structure:
+  # Рекомендуемый максимум строк в файле (advisory, не hard limit)
+  max_file_lines: 300
+  # Barrel-файлы содержат только re-export
+  barrel_pattern: reexport_only
+  # Exports: только named (никаких export default)
+  exports: named_only
+  # Package entry — через exports map в package.json
+  package_entry: exports_map
+  # Внутренняя структура пакета (для пакетов с side-effects)
+  package_layout:
+    - "src/index.ts"           # узкий barrel
+    - "src/domain/"            # value objects, чистые функции
+    - "src/ports/"             # интерфейсы side-effects
+    - "src/adapters/"          # реализации портов
+    - "src/features/"          # feature folders
+    - "tests/"                 # integration-тесты
+
+# ─── ARCHITECTURE ────────────────────────────────────────────────────────────
+
+architecture:
+  # Внутренний паттерн пакетов
+  pattern: hexagonal_lite
+  # Side-effects только через порты (FileSystem, Clock, HTTP, etc.)
+  side_effects: ports_only
+  # Направление зависимостей
+  dependency_direction: unidirectional
+  # Контракт между пакетами — типы из Zod-схем (@l1dder/schemas)
+  contract_source: zod_schemas
+  # Schemas first: все YAML-данные валидируются Zod, типы через z.infer<>
+  schemas_first: true
+
+# ─── ERROR HANDLING ──────────────────────────────────────────────────────────
+
+error_handling:
+  # Паттерн обработки ошибок
+  pattern: typed_errors
+  # Кастомные классы ошибок с описательными сообщениями
+  custom_error_classes: true
+  # Ошибки не должны "проглатываться"
+  swallow_errors: never
+  # Result<T,E> pattern для ожидаемых ошибок (без throw)
+  result_pattern: true
+  # throw — только для unexpected/programmer errors
+  throw_for: unexpected_only
+
+# ─── TESTING ─────────────────────────────────────────────────────────────────
+
+testing:
+  # Тест-фреймворк
+  framework: vitest
+  # Coverage provider
+  coverage_provider: v8
+  # Unit-тесты обязательны для:
+  unit_required_for:
+    - business_logic
+    - domain_functions
+    - parsers
+    - validators
+  # Integration-тесты обязательны для:
+  integration_required_for:
+    - cli_commands
+    - state_transitions
+    - file_system_operations
+  # Внешние сервисы в тестах
+  external_services: mock_required
+  # Тесты проходят перед merge
+  tests_pass_before_merge: true
+  # Co-location: unit-тесты рядом с исходником
+  unit_test_location: colocated
+  # Integration-тесты: в tests/ пакета
+  integration_test_location: "tests/"
+
+# ─── DOCUMENTATION ───────────────────────────────────────────────────────────
+
+documentation:
+  # JSDoc/docstring обязателен для:
+  jsdoc_required_for:
+    - classes
+    - interfaces
+    - exported_functions
+    - public_methods
+  # Содержимое JSDoc:
+  jsdoc_must_include:
+    - purpose
+    - params
+    - returns
+    - side_effects_if_any
+    - non_obvious_decisions
+    - invariants_and_assumptions
+    - limitations
+  # Комментарии в коде: только для неочевидной логики
+  code_comments: non_obvious_only
+  # Запрет нарративных комментариев ("увеличить счётчик", "вернуть результат")
+  forbid_narrative_comments: true
+
+# ─── DEPENDENCIES ────────────────────────────────────────────────────────────
+
+dependencies:
+  # Пакетный менеджер
+  package_manager: pnpm
+  # Предпочтение последним стабильным версиям
+  prefer_latest_stable: true
+  # Минимизация рантайм-зависимостей
+  minimize_runtime_deps: true
+  # YAGNI: зависимость добавляется только при реальной необходимости
+  yagni: true
+  # Перед добавлением: проверить альтернативы в проекте
+  check_alternatives_first: true
+  # Уязвимые / устаревшие пакеты
+  vulnerable_packages: forbidden
+  deprecated_packages: forbidden
+  # engine-strict в .npmrc
+  engine_strict: true
+
+# ─── FORMATTING ──────────────────────────────────────────────────────────────
+
+formatting:
+  # Отступы
+  indent: 2_spaces
+  # Максимальная длина строки (Prettier)
+  max_line_length: 100
+  # Конец строки
+  line_endings: lf
+  # Финальный перевод строки
+  final_newline: true
+  # Trailing commas (ES5+)
+  trailing_commas: all
+  # Кавычки
+  quotes: double
+  # Точка с запятой
+  semicolons: true
+  # Инструменты
+  linter: eslint
+  formatter: prettier

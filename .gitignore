@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Packed tarballs (npm/pnpm pack)
+*.tgz
+
+# Test coverage
+coverage/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE (project-specific settings are committed via .cursor/rules/)
+.idea/
+*.swp
+*.swo
+
+# L1DDER specific
+references/
+
+# L1DDER runtime (future)
+.l1dder/profile.yml
+.l1dder/handoff.md
+
+# E2E test scratch dir (packages/cli/tests/e2e/*.e2e.test.ts write real disk
+# fixtures here — sandboxed test runners restrict os.tmpdir(), so these tests
+# use a workspace-relative temp dir instead; always cleaned in afterEach, but
+# ignored as a safety net)
+.tmp/

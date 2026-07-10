@@ -1,0 +1,202 @@
+# L1DDER Base Standards: Workflow
+#
+# Category: standards (Context Engine, CE6 — STATIC zone)
+# Layer: 2 (Framework-managed defaults)
+# Lifecycle: updated on an L1DDER upgrade (l1dder upgrade)
+# Who reads it: the Context Injection Engine (builds the Standards block for the LLM),
+#               l1dder check (compares against user overrides), l1dder doctor (validation)
+# Who overrides it: the user in standards/workflow.md (the ## Overrides section)
+# Zod schema: @l1dder/schemas — WorkflowBaseSchema
+#
+# Principle: "Machine protects, text advises"
+# This file sets the RECOMMENDED defaults for the AI workflow.
+# Machine-enforced rules (phases, gates) live in .l1dder/config.yml
+# and CANNOT be overridden by text.
+#
+# Override mechanism:
+#   The user adds an ## Overrides section to standards/workflow.md:
+#   | Key | Value | Reason |
+#   |-----|-------|--------|
+#   | knowledge_hygiene.max_knowledge_lines | 800 | Large domain model |
+#
+#   l1dder check shows the applied overrides and conflicts with machine-enforced gates.
+
+meta:
+  format_version: 1
+  description: "L1DDER framework-managed base workflow rules (advisory defaults)"
+  last_updated: "2026-05-09"
+
+# ─── LANGUAGE POLICY ─────────────────────────────────────────────────────────
+
+language_policy:
+  # The language for each context
+  code: en
+  code_comments: en
+  documentation: en
+  knowledge_files: en
+  standards_files: en
+  templates: en
+  commits: en
+  branch_names: en
+  pr_titles: en
+  ai_chat: en
+  readme: en
+  cursor_rules: en
+  file_and_directory_names: en
+  # Rationale: a single language baseline for the deliverable;
+  # bilingual (en/ru) support is configurable per project (see the IL iteration)
+
+# ─── KNOWLEDGE UPDATE RULES ─────────────────────────────────────────────────
+
+knowledge_update:
+  # Mandatoriness: the AI agent MUST check whether a KU is needed after every session
+  mandatory_check: true
+
+  # Triggers for updating to-be files
+  to_be_triggers:
+    - design_session_completed
+    - new_architectural_decision
+    - component_designed
+    - trade_off_resolved
+
+  # Triggers for updating as-is files (As-Is Promotion)
+  as_is_triggers:
+    - delivery_completed
+    - code_deployed
+    - feature_merged_to_main
+
+  # Approval for knowledge changes
+  approval: required
+  # The AI proposes, the user approves
+  ai_role: propose
+  user_role: approve
+
+  # Files and their rules
+  files:
+    idea:
+      frequency: rarely
+      triggers: [vision_pivot, new_competitive_insight]
+      initiator: user_only
+    roadmap:
+      frequency: after_each_session
+      triggers: [task_completed, task_added, priorities_changed]
+      ai_can_update_checkboxes: true
+    architecture:
+      frequency: after_design_sessions
+      triggers: [new_decision, design_clarified, trade_off_resolved, component_designed]
+      size_discipline:
+        summary_target_lines: 300
+        alert_threshold_lines: 1500
+    erd:
+      triggers: [schema_decision, new_entity, relationship_changed]
+      format: mermaid_er_diagram
+    usecases:
+      triggers: [new_scenario, scope_changed, cli_command_designed]
+    integrations:
+      triggers: [new_adapter, integration_category_added, package_manager_changed]
+
+# ─── KNOWLEDGE HYGIENE ───────────────────────────────────────────────────────
+
+knowledge_hygiene:
+  # Hierarchical Knowledge Structure
+  summary_required: true
+  # The Summary is the first ## H2 in every knowledge file
+  summary_position: first_h2
+  # The Summary is self-sufficient: 80% understanding of the file
+  summary_self_sufficient: true
+  # The recommended Summary size
+  summary_max_lines: 30
+  # The recommended knowledge file size (Details unlimited,
+  # but on growth — consider moving to separate documents)
+  max_knowledge_lines: 500
+  # The Summary is updated together with the Details
+  summary_synced_with_details: true
+  # Obsolete information is deleted (history lives in archive/)
+  remove_stale: true
+  # No duplication between knowledge files
+  no_duplication: true
+
+# ─── PROTECTED DIRECTORIES ───────────────────────────────────────────────────
+
+protected_directories:
+  # Directories requiring user approval before modification
+  require_approval:
+    - knowledge/
+    - standards/
+    - templates/
+    - archive/
+  # Read-only directories (never modify)
+  read_only:
+    - references/
+  # Workspace directories (the AI freely creates and edits)
+  workspace:
+    - design/
+    - src/
+    - packages/
+
+# ─── SESSION DISCIPLINE ──────────────────────────────────────────────────────
+
+session_discipline:
+  # Two session types: Discovery (idea → spec) and Delivery (spec → code)
+  two_session_types: true
+  # The agent asks for the type at the start of a session
+  ask_session_type_on_start: true
+  # One session = one focused topic
+  one_topic_per_session: true
+  # Create a branch before making changes
+  branch_before_changes: true
+  # Discovery generates a spec in specs/<feature>/
+  discovery_generates_spec: true
+  # Delivery reads the spec and marks task checkboxes
+  delivery_tracks_via_tasks_md: true
+  # Handoff on an interrupted session
+  handoff_on_interrupt: true
+  # Doctor-checklist before commit
+  doctor_before_commit: true
+  # Update the worklog for significant sessions
+  update_worklog: true
+  # Discovery sessions: switch to plan-mode before EXPLORE (present options, confirm scope)
+  discovery_use_plan_mode: true
+  # When presenting 2+ options, explicitly mark the recommended one
+  mark_recommended_option: true
+
+# ─── AI BEHAVIOR ─────────────────────────────────────────────────────────────
+
+ai_behavior:
+  # The AI reads knowledge before starting work
+  read_knowledge_first: true
+  # The AI proposes changes in protected directories, does not do them autonomously
+  propose_before_change: true
+  # The AI analyzes the affected knowledge files after work
+  analyze_knowledge_impact: true
+  # The AI follows Conventional Commits
+  conventional_commits: true
+  # The AI uses squash merge for PRs
+  squash_merge: true
+  # The AI prioritizes: docstrings → types → implementation
+  priority_order:
+    - read_docstrings_and_types
+    - understand_context
+    - implement
+  # The AI does not restate what the code does (comments only for the non-obvious)
+  no_narrative_comments: true
+
+# ─── DOCTOR CHECKLIST ────────────────────────────────────────────────────────
+
+doctor_checklist:
+  # Blocks mandatory before commit
+  blocks_before_commit:
+    - knowledge_integrity
+    - as_is_to_be_consistency
+    - standards_consistency
+    - state_consistency
+  # Full audit (all blocks including drift and hygiene)
+  full_audit_every_sessions: 3
+  # Full audit blocks
+  full_audit_blocks:
+    - knowledge_integrity
+    - as_is_to_be_consistency
+    - standards_consistency
+    - state_consistency
+    - knowledge_drift
+    - documentation_hygiene

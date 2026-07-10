@@ -1,0 +1,120 @@
+import { describe, expect, it } from 'vitest';
+import { InMemoryFileSystem, NullLogger } from '@l1dder/core/testing';
+
+import { AtomicWriter } from './atomic-writer.js';
+
+function createWriter(fs?: InMemoryFileSystem) {
+  const fileSystem = fs ?? new InMemoryFileSystem();
+  const writer = new AtomicWriter({ fs: fileSystem, logger: new NullLogger() });
+  return { writer, fs: fileSystem };
+}
+
+describe('AtomicWriter', () => {
+  describe('write', () => {
+    it('writes file atomically via .next rename', async () => {
+      const { writer, fs } = createWriter();
+
+      const result = await writer.write('/project/.l1dder/state.yml', 'data: 1');
+
+      expect(result.ok).toBe(true);
+      const content = await fs.readFile('/project/.l1dder/state.yml');
+      expect(content).toBe('data: 1');
+      await expect(fs.exists('/project/.l1dder/state.yml.next')).resolves.toBe(
+        false,
+      );
+    });
+
+    it('returns CorruptedStateError when rename fails', async () => {
+      const fs = new InMemoryFileSystem();
+      const originalRename = fs.rename.bind(fs);
+      let callCount = 0;
+      fs.rename = (from: string, to: string) => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.reject(new Error('rename failed'));
+        }
+        return originalRename(from, to);
+      };
+
+      const writer = new AtomicWriter({ fs, logger: new NullLogger() });
+      const result = await writer.write('/state.yml', 'data: 1');
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe('CORRUPTED_STATE');
+        expect(result.error.message).toContain('rename');
+      }
+    });
+
+    it('cleans up .next file when rename fails', async () => {
+      const fs = new InMemoryFileSystem();
+      fs.rename = () => {
+        return Promise.reject(new Error('rename failed'));
+      };
+
+      const writer = new AtomicWriter({ fs, logger: new NullLogger() });
+      await writer.write('/state.yml', 'data: 1');
+
+      await expect(fs.exists('/state.yml.next')).resolves.toBe(false);
+    });
+
+    it('returns CorruptedStateError when writeFile fails', async () => {
+      const fs = new InMemoryFileSystem();
+      fs.writeFile = () => {
+        return Promise.reject(new Error('disk full'));
+      };
+
+      const writer = new AtomicWriter({ fs, logger: new NullLogger() });
+      const result = await writer.write('/state.yml', 'data: 1');
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe('CORRUPTED_STATE');
+        expect(result.error.message).toContain('disk full');
+      }
+    });
+  });
+
+  describe('cleanupOrphaned', () => {
+    it('detects and cleans orphaned .next files', async () => {
+      const { writer, fs } = createWriter();
+      await fs.writeFile('/dir/state.yml', 'ok');
+      await fs.writeFile('/dir/state.yml.next', 'orphaned');
+
+      const result = await writer.cleanupOrphaned('/dir');
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toEqual(['state.yml.next']);
+      }
+      await expect(fs.exists('/dir/state.yml.next')).resolves.toBe(false);
+    });
+
+    it('returns empty list when no orphaned files', async () => {
+      const { writer, fs } = createWriter();
+      await fs.writeFile('/dir/state.yml', 'ok');
+
+      const result = await writer.cleanupOrphaned('/dir');
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toEqual([]);
+      }
+    });
+
+    it('returns CorruptedStateError when readDir fails', async () => {
+      const fs = new InMemoryFileSystem();
+      fs.readDir = () => {
+        return Promise.reject(new Error('permission denied'));
+      };
+
+      const writer = new AtomicWriter({ fs, logger: new NullLogger() });
+      const result = await writer.cleanupOrphaned('/dir');
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe('CORRUPTED_STATE');
+      }
+    });
+  });
+});
