@@ -1,6 +1,6 @@
 {
   "name": "l1dder",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "AI-driven development framework CLI: Knowledge Layer (As-Is / To-Be), real state management, and a Discovery / Delivery workflow.",
   "keywords": [
     "ai",
