@@ -1,5 +1,17 @@
 # l1dder
 
+## 0.2.1
+
+### Patch Changes
+
+- de70d6e: Stop the spec-contract dogfooding test from breaking the public release.
+
+  The guard reads this repository's own iteration specs, but `specs/` is
+  private-repo-only and never reaches the public mirror, so the test threw ENOENT
+  there and failed the mirror's CI — which blocked publishing. It now skips when
+  no shipped spec is present, matching how the registry manifest contract test
+  already behaves.
+
 ## 0.2.0
 
 ### Minor Changes

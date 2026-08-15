@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -39,15 +39,18 @@ describe('parseSpecContract', () => {
     });
   });
 
-  it('accepts the iteration specs this repository actually ships', () => {
+  // `specs/` is private-repo-only: the public mirror ships packages without it,
+  // so this dogfooding guard has nothing to read there and must stay skipped
+  // rather than fail the mirror's release pipeline.
+  const shippedSpecs = [
+    'specs/iter-hard-hardening/spec.md',
+    'specs/iter-polish-launch-readiness/spec.md',
+  ].filter((relativePath) => existsSync(join(process.cwd(), relativePath)));
+
+  it.skipIf(shippedSpecs.length === 0)('accepts the iteration specs this repository actually ships', () => {
     // Dogfooding guard: L1DDER's own multi-feature iteration specs must satisfy
     // the contract it asks every project to follow.
-    const specs = [
-      'specs/iter-hard-hardening/spec.md',
-      'specs/iter-polish-launch-readiness/spec.md',
-    ];
-
-    for (const relativePath of specs) {
+    for (const relativePath of shippedSpecs) {
       const content = readFileSync(join(process.cwd(), relativePath), 'utf-8');
       const result = parseSpecContract(content);
 
