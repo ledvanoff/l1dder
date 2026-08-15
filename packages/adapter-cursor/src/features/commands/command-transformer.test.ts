@@ -47,6 +47,36 @@ describe('transformCommand', () => {
     expect(result.content).toContain('when_to_use:');
   });
 
+  it('escapes quotes in prose so the front-matter stays parseable', () => {
+    const command = makeCommand({
+      sections: {
+        summary: 'Primary entrypoint',
+        when_to_use: 'When you ask "what should I do next?" mid-session.',
+      },
+    });
+
+    const result = transformCommand(command, composedBody, cursorManifest);
+    const whenToUse = result.content
+      .split('\n')
+      .find((line) => line.startsWith('when_to_use:'));
+
+    expect(whenToUse).toContain('\\"what should I do next?\\"');
+  });
+
+  it('omits the phase hint for a wildcard command that runs anywhere', () => {
+    const command = makeCommand({
+      frontMatter: { ...makeCommand().frontMatter, phase: '*' },
+    });
+
+    const result = transformCommand(command, composedBody, cursorManifest);
+    const description = result.content
+      .split('\n')
+      .find((line) => line.startsWith('description:'));
+
+    expect(description).not.toContain('Phase: *');
+    expect(description).not.toContain('..');
+  });
+
   it('description includes phase and argument info', () => {
     const result = transformCommand(makeCommand(), composedBody, cursorManifest);
     expect(result.content).toContain('specify');

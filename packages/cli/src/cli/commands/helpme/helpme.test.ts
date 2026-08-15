@@ -1,8 +1,12 @@
 import { describe, it, expect } from 'vitest';
-
+import { DISCOVERY_MILESTONE_ORDER } from '@l1dder/core';
 import { InMemoryFileSystem, FixedClock, NullLogger } from '@l1dder/core/testing';
 
+import { HelpmeOutputSchema } from '@l1dder/schemas';
+
 import { executeHelpme } from './helpme.js';
+import { executeDiscovery } from '../discovery/discovery.js';
+import { executeProfile } from '../profile/profile.js';
 import { ExitCode } from '../../output/exit-codes.js';
 import { createColorPalette } from '../../output/colors.js';
 import { createFormatter } from '../../output/formatter.js';
@@ -26,7 +30,7 @@ function makeStateYml(overrides?: {
   const mode = overrides?.mode ?? 'main';
   const iteration = overrides?.iteration ?? 0;
 
-  return `schema_version: 1
+  return `schema_version: 2
 project:
   name: "helpme-test"
   stage: ${stage}
@@ -37,9 +41,14 @@ workflow:
   current_phase: ${phase}
   current_status: ${status}
   mode: ${mode}
+  profile: null
   iteration: ${String(iteration)}
   phase_history: []
   gate_history: []
+discovery:
+  milestones: []
+  current: null
+  waivers: []
 tasks:
   items: []
 quick_tasks: []
@@ -49,19 +58,6 @@ decisions: []
 }
 
 const CONFIG_YML = `role_mode: solo
-enforcement: open
-stage:
-  enforcement:
-    restrict_phases: advisory
-    require_criteria: advisory
-  delivery_criteria:
-    require_idea_not_skeleton: true
-    require_roadmap: true
-    require_architecture_not_skeleton: true
-    require_erd_not_skeleton: true
-    require_usecases_not_skeleton: true
-    min_design_files: 1
-    check_skeleton_markers: true
 `;
 
 async function createTestCtx(opts?: { stateOverrides?: Parameters<typeof makeStateYml>[0] }) {
@@ -82,7 +78,7 @@ async function createTestCtx(opts?: { stateOverrides?: Parameters<typeof makeSta
 }
 
 describe('executeHelpme', () => {
-  it('shows Discovery Checklist on discovery stage + specify phase guidance', async () => {
+  it('shows Discovery Checklist on discovery stage with ordered 7 milestones', async () => {
     const ctx = await createTestCtx({ stateOverrides: { stage: 'discovery', phase: 'specify' } });
     const result = await executeHelpme(ctx);
 
@@ -92,9 +88,11 @@ describe('executeHelpme', () => {
 
     expect(result.data.discovery).toBeDefined();
     expect(result.data.discovery?.ready).toBe(false);
+    expect(result.data.discovery?.milestones.map((m) => m.id)).toEqual([
+      ...DISCOVERY_MILESTONE_ORDER,
+    ]);
     expect(result.humanText).toContain('Discovery Checklist');
-    expect(result.humanText).toContain('What to do now');
-    expect(result.humanText).toContain('plan-mode');
+    expect(result.humanText).toContain('Primary Action');
     expect(result.data.transitions.next?.phase).toBe('plan');
   });
 
@@ -113,6 +111,79 @@ describe('executeHelpme', () => {
     expect(result.data.transitions.next?.phase).toBe('update_asis');
   });
 
+  it('exposes the canonical primary action on discovery stage', async () => {
+    const ctx = await createTestCtx({
+      stateOverrides: { stage: 'discovery', phase: 'specify' },
+    });
+    const result = await executeHelpme(ctx);
+
+    expect(result.data?.primary_action.kind.length).toBeGreaterThan(0);
+    expect(result.data?.primary_action.command.length).toBeGreaterThan(0);
+    expect(result.data?.blockers).toBeDefined();
+  });
+
+  it('given a fresh discovery project, now JSON has no hard blockers and a runnable select_profile', async () => {
+    const ctx = await createTestCtx({
+      stateOverrides: { stage: 'discovery', phase: 'idle' },
+    });
+    const result = await executeHelpme(ctx);
+    const parsed = HelpmeOutputSchema.safeParse(result.data);
+    expect(parsed.success).toBe(true);
+    if (!parsed.success) return;
+
+    expect(parsed.data.primary_action.kind).toBe('select_profile');
+    expect(parsed.data.primary_action.needs_input).toBe(false);
+    expect(parsed.data.primary_action.required_inputs).toEqual([]);
+    expect(
+      parsed.data.blockers.filter(
+        (b) => b.level === 'hard' || b.level === undefined,
+      ),
+    ).toEqual([]);
+    expect(
+      parsed.data.blockers.some(
+        (b) => b.code === 'DISCOVERY_NOT_READY' && b.level === 'advisory',
+      ),
+    ).toBe(true);
+  });
+
+  it('given brainstorming idea, plan_milestone declares required inputs and stays free of hard blockers', async () => {
+    const ctx = await createTestCtx({
+      stateOverrides: { stage: 'discovery', phase: 'idle' },
+    });
+    await executeProfile(ctx, 'select', 'product_discovery');
+    await executeDiscovery(ctx, 'start', 'idea', {});
+
+    const result = await executeHelpme(ctx);
+    const parsed = HelpmeOutputSchema.safeParse(result.data);
+    expect(parsed.success).toBe(true);
+    if (!parsed.success) return;
+
+    expect(parsed.data.primary_action.kind).toBe('plan_milestone');
+    expect(parsed.data.primary_action.command).toBe(
+      'l1dder discovery plan idea',
+    );
+    expect(parsed.data.primary_action.needs_input).toBe(true);
+    expect(parsed.data.primary_action.required_inputs).toBeDefined();
+    expect(
+      parsed.data.primary_action.required_inputs?.map((input) => input.flag),
+    ).toEqual(['--summary', '--session']);
+    expect(
+      parsed.data.blockers.filter(
+        (b) => b.level === 'hard' || b.level === undefined,
+      ),
+    ).toEqual([]);
+  });
+
+  it('exposes the canonical primary action on delivery stage too', async () => {
+    const ctx = await createTestCtx({
+      stateOverrides: { stage: 'delivery', phase: 'implement', iteration: 2 },
+    });
+    const result = await executeHelpme(ctx);
+
+    expect(result.data?.discovery).toBeUndefined();
+    expect(result.data?.primary_action.command.length).toBeGreaterThan(0);
+  });
+
   it('handles idle without crash', async () => {
     const ctx = await createTestCtx({ stateOverrides: { phase: 'idle', iteration: 0 } });
     const result = await executeHelpme(ctx);
@@ -122,6 +193,66 @@ describe('executeHelpme', () => {
     if (!result.data) return;
 
     expect(result.data.phase_guidance.length).toBeGreaterThan(0);
+  });
+
+  it('DF-023: given a fully filled plan.md, helpme reports the artifact as ready', async () => {
+    const fs = new InMemoryFileSystem();
+    const clock = new FixedClock(NOW);
+    const logger = new NullLogger();
+    const prompt = new NonInteractiveAdapter();
+    const colors = createColorPalette(false);
+    const output = createFormatter('human', colors);
+    const cwd = '/test-project';
+    const globals = parseGlobals({ cwd });
+
+    await fs.mkdir(`${cwd}/.l1dder`);
+    await fs.mkdir(`${cwd}/specs/current`);
+    await fs.writeFile(
+      `${cwd}/.l1dder/state.yml`,
+      makeStateYml({ stage: 'delivery', phase: 'plan' }).replace(
+        'profile: null',
+        'profile: delivery',
+      ),
+    );
+    await fs.writeFile(`${cwd}/.l1dder/config.yml`, CONFIG_YML);
+    await fs.writeFile(
+      `${cwd}/specs/current/plan.md`,
+      [
+        '# Plan',
+        '',
+        '## Summary',
+        '',
+        'Fully authored technical approach with no placeholders left.',
+        '',
+        '## Options Considered',
+        '',
+        'Chose the simple path; no open TODOs remain.',
+        '',
+      ].join('\n'),
+    );
+
+    const ctx = buildContext(globals, { fs, clock, logger, prompt, output, colors });
+    const result = await executeHelpme(ctx);
+
+    expect(result.exitCode).toBe(ExitCode.SUCCESS);
+    expect(result.data?.delivery_artifacts).toEqual([
+      {
+        id: 'plan',
+        path: 'specs/current/plan.md',
+        label: 'plan.md',
+        status: 'ready',
+      },
+    ]);
+    expect(result.data?.phase_guidance.join(' ')).toContain('ready');
+    expect(result.data?.phase_guidance.join(' ').toLowerCase()).not.toContain(
+      'fill',
+    );
+    // Artifact readiness is reported; Primary Action still comes from projection
+    // (may be profile/discovery before phase transition depending on state).
+    expect(result.data?.phase_guidance.join(' ')).toContain('ready');
+    expect(result.humanText).toContain('plan.md — ready');
+    expect(result.humanText).toContain('Primary Action');
+    expect(result.data?.primary_action.command.length).toBeGreaterThan(0);
   });
 });
 

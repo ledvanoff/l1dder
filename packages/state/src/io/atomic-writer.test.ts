@@ -73,6 +73,33 @@ describe('AtomicWriter', () => {
         expect(result.error.message).toContain('disk full');
       }
     });
+
+    it('serializes concurrent writes so .next rename cannot race itself', async () => {
+      const { writer, fs } = createWriter();
+      const originalWrite = fs.writeFile.bind(fs);
+      let inFlightWrites = 0;
+      let maxInFlight = 0;
+
+      fs.writeFile = async (path: string, content: string) => {
+        inFlightWrites += 1;
+        maxInFlight = Math.max(maxInFlight, inFlightWrites);
+        await new Promise((r) => setTimeout(r, 5));
+        await originalWrite(path, content);
+        inFlightWrites -= 1;
+      };
+
+      const results = await Promise.all([
+        writer.write('/state.yml', 'data: 1'),
+        writer.write('/state.yml', 'data: 2'),
+        writer.write('/state.yml', 'data: 3'),
+      ]);
+
+      expect(results.every((r) => r.ok)).toBe(true);
+      expect(maxInFlight).toBe(1);
+      await expect(fs.exists('/state.yml.next')).resolves.toBe(false);
+      const content = await fs.readFile('/state.yml');
+      expect(content).toBe('data: 3');
+    });
   });
 
   describe('cleanupOrphaned', () => {

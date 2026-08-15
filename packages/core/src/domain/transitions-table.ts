@@ -4,17 +4,31 @@ import type { TransitionRule } from './transition-types.js';
 /**
  * Static whitelist of all allowed phase transitions (PM3).
  *
- * 23 rules: 8 main forward + 5 main rollback + 3 hygiene + 4 quick + 3 fast.
+ * 28 rules: 11 main forward + 5 main rollback + 5 hygiene/review + 4 quick + 3 fast.
  * INIT→IDLE is NOT included — handled by `l1dder init` directly.
- * REVIEW phase exists in the enum but has no transitions yet (P2 team mode).
+ * Hygiene route is expressible as IDLE/COMPLETE → HYGIENE → REVIEW → COMPLETE → IDLE;
+ * HYGIENE → IDLE remains for the advisory short-circuit. REVIEW is never mandatory:
+ * discovery may leave UPDATE_TOBE via REVIEW or directly to COMPLETE, matching
+ * UPDATE_ASIS → COMPLETE on the delivery route.
  */
 export const TRANSITIONS: readonly TransitionRule[] = [
   // ─── Main Mode: Forward ───
 
   { from: Phase.IDLE, to: Phase.SPECIFY, kind: TransitionKind.FORWARD, trigger: 'slash:specify', gates: [], mode: WorkflowMode.MAIN },
+  // IDLE → TASKS is the entry point of the `delivery` profile route: an Agent
+  // Session that picks up an approved roadmap entry starts at TASKS, and its
+  // route contains no SPECIFY/PLAN/UPDATE_TOBE to arrive from. Without this
+  // rule the projection has no forward transition to offer such a session.
+  // No gate here: the To-Be approval happened in the Discovery session, and the
+  // rail guard plus stage guard already decide whether this entry may start.
+  { from: Phase.IDLE, to: Phase.TASKS, kind: TransitionKind.FORWARD, trigger: 'slash:tasks', gates: [], mode: WorkflowMode.MAIN },
   { from: Phase.SPECIFY, to: Phase.PLAN, kind: TransitionKind.FORWARD, trigger: 'slash:plan', gates: ['spec-gate'], mode: WorkflowMode.MAIN },
   { from: Phase.PLAN, to: Phase.UPDATE_TOBE, kind: TransitionKind.FORWARD, trigger: 'slash:update-tobe', gates: [], mode: WorkflowMode.MAIN },
   { from: Phase.UPDATE_TOBE, to: Phase.TASKS, kind: TransitionKind.FORWARD, trigger: 'slash:tasks', gates: ['discovery-gate'], mode: WorkflowMode.MAIN },
+  // Discovery profiles end at REVIEW/COMPLETE, not TASKS. Without these exits
+  // UPDATE_TOBE has no on-route forward move (same class of gap as DF-034).
+  { from: Phase.UPDATE_TOBE, to: Phase.REVIEW, kind: TransitionKind.FORWARD, trigger: 'cli:review', gates: ['discovery-gate'], mode: WorkflowMode.MAIN },
+  { from: Phase.UPDATE_TOBE, to: Phase.COMPLETE, kind: TransitionKind.FORWARD, trigger: 'slash:complete', gates: ['discovery-gate'], mode: WorkflowMode.MAIN },
   { from: Phase.TASKS, to: Phase.IMPLEMENT, kind: TransitionKind.FORWARD, trigger: 'slash:implement', gates: [], mode: WorkflowMode.MAIN },
   { from: Phase.IMPLEMENT, to: Phase.UPDATE_ASIS, kind: TransitionKind.FORWARD, trigger: 'slash:update-asis', gates: ['implementation-gate'], mode: WorkflowMode.MAIN },
   { from: Phase.UPDATE_ASIS, to: Phase.COMPLETE, kind: TransitionKind.FORWARD, trigger: 'slash:complete', gates: ['as-is-update-gate'], mode: WorkflowMode.MAIN },
@@ -33,6 +47,8 @@ export const TRANSITIONS: readonly TransitionRule[] = [
   { from: Phase.IDLE, to: Phase.HYGIENE, kind: TransitionKind.MODE_SWITCH, trigger: 'cli:hygiene', gates: [], mode: WorkflowMode.MAIN },
   { from: Phase.COMPLETE, to: Phase.HYGIENE, kind: TransitionKind.MODE_SWITCH, trigger: 'cli:hygiene', gates: [], mode: WorkflowMode.MAIN },
   { from: Phase.HYGIENE, to: Phase.IDLE, kind: TransitionKind.FORWARD, trigger: 'cli:hygiene-done', gates: [], mode: WorkflowMode.MAIN },
+  { from: Phase.HYGIENE, to: Phase.REVIEW, kind: TransitionKind.FORWARD, trigger: 'cli:hygiene-review', gates: [], mode: WorkflowMode.MAIN },
+  { from: Phase.REVIEW, to: Phase.COMPLETE, kind: TransitionKind.FORWARD, trigger: 'cli:review-done', gates: [], mode: WorkflowMode.MAIN },
 
   // ─── Quick Mode ───
 

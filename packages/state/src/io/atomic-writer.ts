@@ -16,11 +16,16 @@ export interface AtomicWriterDeps {
  * to the target path. This guarantees that readers never see a partial
  * write — the file is either the old version or the new one.
  *
+ * Concurrent writes to the same path are serialized so one write cannot
+ * rename away another write's `.next` file (DF-008).
+ *
  * If the rename fails, the `.next` file is cleaned up (best-effort).
  */
 export class AtomicWriter {
   private readonly fs: FileSystemPort;
   private readonly logger: LoggerPort;
+  /** Per-path write queue tails — serialize concurrent `.next` renames. */
+  private readonly writeTails = new Map<string, Promise<unknown>>();
 
   constructor(deps: AtomicWriterDeps) {
     this.fs = deps.fs;
@@ -30,9 +35,35 @@ export class AtomicWriter {
   /**
    * Write content atomically: write to `filePath.next`, then rename to `filePath`.
    *
+   * Concurrent callers targeting the same path are queued; each completes its
+   * full write→rename before the next starts.
+   *
    * @returns `ok(void)` on success, `err(CorruptedStateError)` on failure.
    */
   async write(
+    filePath: string,
+    content: string,
+  ): Promise<Result<void, CorruptedStateError>> {
+    const previous = this.writeTails.get(filePath) ?? Promise.resolve();
+    const current = previous.then(
+      () => this.writeUnlocked(filePath, content),
+      () => this.writeUnlocked(filePath, content),
+    );
+    // Keep the queue alive even when a write fails so later writers still wait.
+    this.writeTails.set(
+      filePath,
+      current.then(
+        () => undefined,
+        () => undefined,
+      ),
+    );
+    return current;
+  }
+
+  /**
+   * Unlocked write→rename implementation. Callers must hold the per-path queue.
+   */
+  private async writeUnlocked(
     filePath: string,
     content: string,
   ): Promise<Result<void, CorruptedStateError>> {

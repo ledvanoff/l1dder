@@ -1,10 +1,18 @@
+import type { SlashCommandPhase } from '@l1dder/schemas';
 import { describe, expect, it } from 'vitest';
 
 import { Phase } from './phase.js';
-import { PHASE_COMMAND_MAP, WILDCARD_COMMANDS, resolveSlashCommand } from './slash-command.js';
+import {
+  PHASE_COMMAND_MAP,
+  WILDCARD_COMMANDS,
+  phaseSlashRef,
+  resolveSlashCommand,
+  slashCommandRef,
+  slashTriggerToRef,
+} from './slash-command.js';
 import type { ParsedSlashCommand, SlashCommandRegistry } from './slash-command.js';
 
-function makeCommand(id: string, phase: string): ParsedSlashCommand {
+function makeCommand(id: string, phase: SlashCommandPhase): ParsedSlashCommand {
   return {
     frontMatter: {
       id,
@@ -69,6 +77,10 @@ describe('WILDCARD_COMMANDS', () => {
     expect(WILDCARD_COMMANDS).toContain('pause');
     expect(WILDCARD_COMMANDS).toContain('constitution');
   });
+
+  it('includes next, the phase-independent entrypoint', () => {
+    expect(WILDCARD_COMMANDS).toContain('next');
+  });
 });
 
 describe('resolveSlashCommand', () => {
@@ -128,6 +140,48 @@ describe('resolveSlashCommand', () => {
     for (const [i, phase] of chain.entries()) {
       const result = resolveSlashCommand(phase, registry);
       expect(result?.frontMatter.id).toBe(expectedIds[i]);
+    }
+  });
+});
+
+describe('slashCommandRef / slashTriggerToRef / phaseSlashRef', () => {
+  it('maps trigger slash:complete to /l1dder-complete', () => {
+    expect(slashTriggerToRef('slash:complete')).toBe('/l1dder-complete');
+  });
+
+  it('returns null for a string without the slash: prefix', () => {
+    expect(slashTriggerToRef('cli:rollback')).toBeNull();
+    expect(slashTriggerToRef('complete')).toBeNull();
+  });
+
+  it('returns null for slash: with an empty id', () => {
+    expect(slashTriggerToRef('slash:')).toBeNull();
+  });
+
+  it('returns the mapped slash ref for a phase with a default command', () => {
+    expect(phaseSlashRef(Phase.UPDATE_ASIS)).toBe('/l1dder-complete');
+    expect(phaseSlashRef(Phase.IDLE)).toBe('/l1dder-specify');
+  });
+
+  it('returns null for a phase without a default command', () => {
+    expect(phaseSlashRef(Phase.REVIEW)).toBeNull();
+    expect(phaseSlashRef(Phase.HYGIENE)).toBeNull();
+  });
+
+  it('never emits a dotted /l1dder. form in returned refs', () => {
+    const refs = [
+      slashCommandRef('next'),
+      slashCommandRef('update-tobe'),
+      slashTriggerToRef('slash:plan'),
+      slashTriggerToRef('slash:update-asis'),
+      phaseSlashRef(Phase.PLAN),
+      phaseSlashRef(Phase.COMPLETE),
+    ].filter((ref): ref is string => ref !== null);
+
+    expect(refs.length).toBeGreaterThan(0);
+    for (const ref of refs) {
+      expect(ref.startsWith('/l1dder-')).toBe(true);
+      expect(ref.includes('l1dder.')).toBe(false);
     }
   });
 });

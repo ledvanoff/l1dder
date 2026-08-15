@@ -2,7 +2,7 @@
 id: update-tobe
 name: "Update Knowledge (To-Be)"
 format_version: 1
-phase: to_be_knowledge_update
+phase: update_tobe
 trigger_kind: transition
 role: knowledge-updater
 skill: update-knowledge-tobe
@@ -20,13 +20,13 @@ builtin: true
 
 ## Summary
 
-Launches the TO_BE_KNOWLEDGE_UPDATE phase: applies design decisions
-from plan.md to `knowledge/to-be/*.md` files, records audit in
-`knowledge_updates[]`, and initiates transition `PLAN → TO_BE_KU`.
+Launches the `update_tobe` phase (TO_BE_KU / Knowledge Update): applies design
+decisions from plan.md to `knowledge/to-be/*.md` files, records audit in
+`knowledge_updates[]`, and initiates transition `plan → update_tobe`.
 
 ## When to Use
 
-- Current phase: `PLAN` (plan.md exists and contains Knowledge Files Affected)
+- Current phase: `plan` (plan.md exists and contains Knowledge Files Affected)
 - User reviewed plan.md and approved the technical approach
 - Knowledge files identified in plan.md need updating
 
@@ -36,7 +36,7 @@ You are a Knowledge Updater (see agents/knowledge-updater.md, injected
 into context). Your goal is to synchronize `knowledge/to-be/*.md` files
 with the design decisions captured in spec.md and plan.md.
 
-Key TO_BE_KU phase rules:
+Key TO_BE_KU (Knowledge Update) phase rules:
 - Read spec.md + plan.md for the source of changes
 - Prepare a was/became proposal for each affected file
 - **Owner-approve is mandatory** for each file
@@ -70,7 +70,7 @@ Key TO_BE_KU phase rules:
 
 ## Post-Conditions
 
-- `current_phase == "to_be_knowledge_update"`, `current_status == "completed"`
+- `current_phase == "update_tobe"`, `current_status == "completed"`
 - Owner-approve obtained for each modified file
 - `knowledge_updates[]` contains new entries with `type: to_be_update`
 - `to-be/*.md` files updated and consistent

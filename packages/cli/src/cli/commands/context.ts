@@ -2,6 +2,7 @@ import { join } from 'node:path';
 
 import type { Phase, WorkflowPosition } from '@l1dder/core';
 import type { BriefResult } from '@l1dder/context';
+import type { PrimaryActionBrief } from '@l1dder/schemas';
 
 import type { CliContext } from '../context.js';
 import {
@@ -14,6 +15,13 @@ import {
   copyToClipboard,
   ClipboardUnavailableError,
 } from '../adapters/clipboard.js';
+import {
+  formatQuietSummary,
+  toBlockerBriefs,
+  toBriefWorkflowSnapshot,
+  toPrimaryActionBrief,
+  type BlockerBrief,
+} from './shared/projection-brief.js';
 
 /** Options parsed from `l1dder context` flags. */
 interface ContextOptions {
@@ -29,6 +37,7 @@ interface ContextResult {
   exitCode: number;
   data?: unknown;
   humanText?: string;
+  quietSummary?: string;
   error?: { code: string; message: string; hint?: string };
 }
 
@@ -57,6 +66,10 @@ export async function executeContext(
   }
 
   try {
+    // Fail closed on invalid state before emitting any brief (DF-027).
+    // Full mode already loads state; brief mode must too.
+    await ctx.state();
+
     const engine = await ctx.contextEngine();
 
     if (opts.full) {
@@ -153,15 +166,23 @@ async function executeBriefMode(
   engine: Awaited<ReturnType<CliContext['contextEngine']>>,
   opts: ContextOptions,
 ): Promise<ContextResult> {
-  const brief = await engine.brief();
+  const sm = await ctx.state();
+  const projection = await sm.projection.project();
+  const briefSnapshot = toBriefWorkflowSnapshot(projection);
+  const primaryAction = toPrimaryActionBrief(projection);
+  const blockers = toBlockerBriefs(projection);
+
+  const brief = await engine.brief({ projection: briefSnapshot });
   const content = brief.content;
+  const quietSummary = formatQuietSummary(projection.phase.current, primaryAction);
 
   if (opts.copy) {
     await copyToClipboard(content);
     return {
       exitCode: ExitCode.SUCCESS,
-      data: buildBriefData(brief),
+      data: buildBriefData(brief, primaryAction, blockers),
       humanText: `${ctx.colors.glyph.pass} Brief copied to clipboard (~${brief.tokenEstimate.toLocaleString()} tokens est.)`,
+      quietSummary,
     };
   }
 
@@ -173,8 +194,9 @@ async function executeBriefMode(
     await ctx.fs.writeFile(filePath, content);
     return {
       exitCode: ExitCode.SUCCESS,
-      data: buildBriefData(brief),
+      data: buildBriefData(brief, primaryAction, blockers),
       humanText: `${ctx.colors.glyph.pass} Brief saved to ${filePath}`,
+      quietSummary,
     };
   }
 
@@ -189,21 +211,30 @@ async function executeBriefMode(
 
   return {
     exitCode: ExitCode.SUCCESS,
-    data: buildBriefData(brief),
+    data: buildBriefData(brief, primaryAction, blockers),
     humanText: lines.join('\n'),
+    quietSummary,
   };
 }
 
-function buildBriefData(brief: BriefResult): {
+function buildBriefData(
+  brief: BriefResult,
+  primaryAction?: PrimaryActionBrief,
+  blockers?: readonly BlockerBrief[],
+): {
   content: string;
   token_estimate: number;
   char_count: number;
   sections: string[];
+  primary_action?: PrimaryActionBrief;
+  blockers?: BlockerBrief[];
 } {
   return {
     content: brief.content,
     token_estimate: brief.tokenEstimate,
     char_count: brief.content.length,
     sections: brief.sections.map((s) => s.title),
+    ...(primaryAction ? { primary_action: primaryAction } : {}),
+    ...(blockers ? { blockers: [...blockers] } : {}),
   };
 }

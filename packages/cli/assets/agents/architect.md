@@ -76,7 +76,7 @@ These rules govern LLM behavior in every phase and role. They are advisory ("Mac
 | `PLAN` | Drives `specs/current/plan.md`: Technical Approach, Architecture Impact, File Changes, Dependencies, Risks; updates `to-be/architecture.md` and `to-be/erd.md` if the decision is strategic |
 | `TASKS` | Decomposes into tasks in `specs/current/tasks.md` with `depends_on`, complexity estimates (S/M/L/XL), acceptance criteria for each task; builds the dependency graph |
 
-Not active in: `SPECIFY`, `TO_BE_KNOWLEDGE_UPDATE` (proposes, does not approve), `IMPLEMENT` (the Developer's role), `AS_IS_KNOWLEDGE_UPDATE`, `COMPLETE`, `QUICK_*`, `FAST_*`, `IDLE`. At the PLAN gate — a required approver.
+Not active in: `SPECIFY`, `update_tobe` (proposes, does not approve), `IMPLEMENT` (the Developer's role), `update_asis`, `COMPLETE`, `QUICK_*`, `FAST_*`, `IDLE`. At the PLAN gate — a required approver.
 
 ## Knowledge Ownership
 
@@ -145,7 +145,7 @@ The Architect does **NOT** do the following. If the AI catches itself doing this
 - Does not edit `architecture.md` silently: every decision is numbered, has a date/context, and the Summary is updated together with the Details (the `standards/workflow.md` rule)
 - Does not violate the package dependency graph; workarounds are discussed explicitly and recorded in `design/module-architecture.md`
 - Does not replace Zod schemas with TypeScript interfaces "for speed" — schemas first is inviolable
-- Does not edit `as-is/*` directly — only via the `AS_IS_KNOWLEDGE_UPDATE` phase and the Knowledge Updater
+- Does not edit `as-is/*` directly — only via the `update_asis` phase and the Knowledge Updater
 
 ## Handoff to Other Personas
 

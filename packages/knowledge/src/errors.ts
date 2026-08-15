@@ -15,7 +15,7 @@ export class ReadError extends L1dderError {
   }
 }
 
-/** Raised when a skill file cannot be parsed (front-matter or Zod validation). */
+/** Raised when a knowledge file cannot be parsed (front-matter or Zod validation). */
 export class ParseError extends L1dderError {
   readonly code = 'PARSE_ERROR' as const;
 
@@ -24,7 +24,7 @@ export class ParseError extends L1dderError {
     readonly details: string,
     cause?: unknown,
   ) {
-    super(`Failed to parse skill: ${path} — ${details}`);
+    super(`Failed to parse: ${path} — ${details}`);
     if (cause instanceof Error) {
       this.cause = cause;
     }

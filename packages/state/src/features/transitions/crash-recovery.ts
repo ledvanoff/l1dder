@@ -23,6 +23,11 @@ export class CrashRecovery {
    * Resolve an in-flight transition by either resuming (forward to target)
    * or rolling back (stay at original phase).
    *
+   * Idempotent for already-applied recoveries: if the marker is present but
+   * workflow already reflects the target outcome (phase + a recovery history
+   * entry), the marker is cleared without appending another history row
+   * (DF-007).
+   *
    * @param action - `"resume"` completes the transition to the target phase;
    *                 `"rollback"` keeps the original phase.
    * @returns Updated state with marker cleared.
@@ -42,32 +47,17 @@ export class CrashRecovery {
       );
     }
 
-    const now = clock.now();
-    const { _in_flight_transition: _, ...stateWithoutMarker } = state;
+    const targetPhase = action === 'resume' ? marker.to : marker.from;
 
-    if (action === 'resume') {
-      const historyEntry = {
-        phase: marker.to,
-        status: PhaseStatus.IN_PROGRESS,
-        started_at: now,
-        actor: marker.actor,
-        trigger: { kind: 'recovery' as const, original_phase: marker.from },
-      };
-
-      return ok({
-        ...stateWithoutMarker,
-        workflow: {
-          ...state.workflow,
-          current_phase: marker.to,
-          current_status: PhaseStatus.IN_PROGRESS,
-          phase_history: [...state.workflow.phase_history, historyEntry],
-        },
-      });
+    if (this.isAlreadyResolved(state, targetPhase)) {
+      return ok(this.clearMarker(state));
     }
 
-    // action === 'rollback'
+    const now = clock.now();
+    const stateWithoutMarker = this.clearMarker(state);
+
     const historyEntry = {
-      phase: marker.from,
+      phase: targetPhase,
       status: PhaseStatus.IN_PROGRESS,
       started_at: now,
       actor: marker.actor,
@@ -78,11 +68,24 @@ export class CrashRecovery {
       ...stateWithoutMarker,
       workflow: {
         ...state.workflow,
-        current_phase: marker.from,
+        current_phase: targetPhase,
         current_status: PhaseStatus.IN_PROGRESS,
         phase_history: [...state.workflow.phase_history, historyEntry],
       },
     });
+  }
+
+  /**
+   * True when workflow already matches a prior recovery for `targetPhase`
+   * (phase set + at least one recovery history entry for that phase).
+   */
+  private isAlreadyResolved(state: State, targetPhase: Phase): boolean {
+    if (state.workflow.current_phase !== targetPhase) {
+      return false;
+    }
+    return state.workflow.phase_history.some(
+      (entry) => entry.trigger.kind === 'recovery' && entry.phase === targetPhase,
+    );
   }
 
   /**

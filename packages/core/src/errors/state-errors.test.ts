@@ -148,7 +148,9 @@ describe('CorruptedStateError', () => {
 });
 
 describe('SchemaValidationError', () => {
-  const error = new SchemaValidationError('.l1dder/state.yml', [{ path: ['project', 'name'] }]);
+  const error = new SchemaValidationError('.l1dder/state.yml', [
+    { path: ['project', 'name'], message: 'Required' },
+  ]);
 
   it('is instanceof L1dderError', () => {
     expect(error).toBeInstanceOf(L1dderError);
@@ -158,8 +160,9 @@ describe('SchemaValidationError', () => {
     expect(error.code).toBe('SCHEMA_VALIDATION');
   });
 
-  it('includes issue count', () => {
-    expect(error.message).toContain('1 issue');
+  it('includes safe path and message', () => {
+    expect(error.message).toContain('project.name');
+    expect(error.message).toContain('Required');
   });
 });
 

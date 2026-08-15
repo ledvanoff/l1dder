@@ -2,13 +2,13 @@
 
 <!--
   Шаблон: specs/current/plan.md
-  Фаза Phase Machine: PLAN (создаётся /l1dder.plan)
-  Используется: l1dder plan (scaffolding + AI-генерация на основе spec.md)
+  Фаза Phase Machine: PLAN (создаётся /l1dder-plan)
+  Используется: /l1dder-plan (slash-команда; scaffolding + AI-генерация на основе spec.md)
   Парсится: extractSummary() — секция ## Summary (dynamic zone, priority 1 — never trim)
   Обновляется: в рамках фазы PLAN текущей итерации
   Ownership: Architect / Tech Lead (роли фазы PLAN)
   Lifecycle: краткосрочный (per-feature, одна итерация)
-  Входы: specs/current/spec.md (включая Implementation Preferences)
+  Входы: specs/current/spec.md (включая Implementation Preferences + AI Contract)
 
   Placeholder-маркеры:
     {{FEATURE_NAME}} — название фичи/задачи (из spec.md)
@@ -16,9 +16,16 @@
     {{AUTHOR}}       — автор (роль или имя)
     <!-- TODO: ... -- > — секции, требующие заполнения
 
+  Migration note:
+    Планы без секций Coverage / Test Contracts остаются валидными.
+    При обновлении выровняйте Coverage и Test Contracts с id из AI Contract
+    в spec.md. Отдельного ai-spec.md / ai-plan.md нет.
+
   Валидация (l1dder doctor):
     - ## Summary существует и не пуст
     - ## File Changes содержит хотя бы одну запись
+    - ## Coverage перечисляет FEAT/UC, которые покрывает план (совпадают с AI Contract)
+    - ## Test Contracts перечисляет обязательные TC-* id (совпадают с AI Contract)
     - spec.md существует и завершён (prerequisite)
     - Нет незаполненных {{...}} маркеров в финальном документе
 -->
@@ -35,6 +42,15 @@
 Технический план реализации {{FEATURE_NAME}}.
 
 <!-- TODO: Добавьте: выбранный подход (1-2 предложения), затрагиваемые компоненты, оценка сложности (low/medium/high), основной риск -->
+
+## Coverage
+
+<!-- Какие FEAT/UC покрывает этот план — ОБЯЗАНЫ совпадать с AI Contract в spec.md -->
+
+| Kind | Id | Notes |
+|------|----|-------|
+| feature | FEAT-001 | <!-- TODO: замените на реальный FEAT-* из AI Contract --> |
+| usecase | UC-001-01 | <!-- TODO: перечислите каждый UC-*, покрытый планом --> |
 
 ## Options Considered + Recommended
 
@@ -87,7 +103,7 @@
 ### Design Decisions
 
 <!-- TODO: Новые архитектурные решения, принятые в этом плане (если есть) -->
-<!-- Формат: краткое решение + обоснование -->
+<!-- Формат: краткое решение + обоснование; ссылайтесь на DEC-* id когда они назначены -->
 
 ## File Changes
 
@@ -99,6 +115,17 @@
 | Файл / модуль | Действие | Описание изменений |
 |----------------|----------|-------------------|
 | <!-- TODO --> | create / modify / delete | <!-- TODO --> |
+
+## Plan Dependencies
+
+<!-- Зависимости от других задач / итераций / Agent Sessions (не npm-пакеты) -->
+<!-- Выравнивайте с roadmap rails и depends_on в tasks.md где применимо -->
+
+<!-- TODO: Перечислите блокирующую работу вне этого плана (или: "none") -->
+
+| Depends on | Kind | Why |
+|------------|------|-----|
+| <!-- напр. HARD-5 / T-11 / ITER-003 --> | iteration / task / session | <!-- TODO --> |
 
 ## Dependencies
 
@@ -116,6 +143,17 @@
 ### External Services
 
 <!-- TODO: Внешние сервисы/API (или: "не применимо") -->
+
+## Test Contracts
+
+<!-- Обязательные Test Contracts плана — id ОБЯЗАНЫ совпадать с AI Contract в spec.md -->
+<!-- Каждый TC реализуется вместе с кодом (Contract-First). Формат: "given X → expect Y" -->
+
+<!-- TODO: Перечислите TC-* id и однострочные behavioral expectations -->
+
+| Id | Requirement |
+|----|-------------|
+| TC-001-01-A | <!-- TODO: given X → expect Y --> |
 
 ## Risks
 

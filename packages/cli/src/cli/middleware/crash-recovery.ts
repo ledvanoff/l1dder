@@ -21,6 +21,12 @@ export async function checkCrashRecovery(ctx: CliContext): Promise<void> {
 
   const { globals, logger, prompt } = ctx;
 
+  // DF-030: `--quiet` suppresses decorative recovery notices (errors/warns for
+  // real failures still flow through logger elsewhere).
+  if (globals.quiet) {
+    return;
+  }
+
   if (globals.json || globals.noRecover) {
     logger.warn(
       `In-flight transition detected: ${marker.from} → ${marker.to}. ` +

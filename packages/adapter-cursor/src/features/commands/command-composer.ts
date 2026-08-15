@@ -11,6 +11,10 @@ export interface CompositionInput {
 /**
  * Map of slash command ids to their "next step" hints (SC10 explicit handoff).
  * Each entry is the next command the user should invoke.
+ *
+ * Intentionally omits `next` (`/l1dder-next`): that command is the projection
+ * dispatcher / primary entrypoint, not a phase with a chained successor.
+ * Phase-specific entries below remain the advanced surface handoff hints.
  */
 const NEXT_STEP_MAP: Readonly<Record<string, string>> = {
   constitution: '/l1dder-specify',

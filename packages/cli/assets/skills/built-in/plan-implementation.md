@@ -22,7 +22,7 @@ generation of plan.md.
 ## When to Use
 
 - The Phase Machine transitioned to PLAN (trigger: auto)
-- The user runs `/l1dder.plan` (slash command)
+- The user runs `/l1dder-plan` (slash command)
 - After SPECIFY is complete with a ready `spec.md`
 
 ## Steps

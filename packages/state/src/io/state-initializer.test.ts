@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest';
+import { DISCOVERY_MILESTONE_ORDER } from '@l1dder/core';
 import {
   FixedClock,
   InMemoryFileSystem,
   NullLogger,
 } from '@l1dder/core/testing';
-import { StateSchema, ConfigSchema } from '@l1dder/schemas';
+import {
+  CURRENT_SCHEMA_VERSION,
+  StateSchema,
+  ConfigSchema,
+} from '@l1dder/schemas';
 import { parseYaml } from '@l1dder/yaml';
 
 import { AtomicWriter } from './atomic-writer.js';
@@ -45,10 +50,37 @@ describe('StateInitializer', () => {
     if (parsed.ok) {
       expect(parsed.value.project.stage).toBe('discovery');
       expect(parsed.value.workflow.current_phase).toBe('idle');
-      expect(parsed.value.schema_version).toBe(1);
+      expect(parsed.value.schema_version).toBe(CURRENT_SCHEMA_VERSION);
       expect(parsed.value.project.name).toBe('test');
       expect(parsed.value.project.stage_history).toHaveLength(0);
+      expect(parsed.value.discovery.current).toBe('idea');
+      expect(parsed.value.discovery.milestones.map((m) => m.id)).toEqual([
+        ...DISCOVERY_MILESTONE_ORDER,
+      ]);
+      expect(
+        parsed.value.discovery.milestones.every((m) => m.status === 'pending'),
+      ).toBe(true);
     }
+  });
+
+  it('written state contains 7 initialized milestones with current idea', async () => {
+    const { initializer, fs } = createInitializer();
+
+    await initializer.initialize({
+      projectDir: '/project',
+      projectName: 'milestones',
+      brownfield: false,
+    });
+
+    const raw = await fs.readFile('/project/.l1dder/state.yml');
+    const parsed = parseYaml(raw, StateSchema);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.value.discovery.milestones).toHaveLength(7);
+    expect(parsed.value.discovery.current).toBe('idea');
+    expect(parsed.value.discovery.milestones.map((m) => m.id)).toEqual([
+      ...DISCOVERY_MILESTONE_ORDER,
+    ]);
   });
 
   it('initializes brownfield project with delivery stage', async () => {

@@ -22,7 +22,7 @@ export interface CheckKnowledgeOptions {
  * With `options.deep`, additionally runs the structural as-is↔to-be drift
  * comparison (DEC-6-2) for each of `architecture`/`erd`/`usecases`/`integrations`
  * that exists on both sides — mechanical facts only (missing sections, stale
- * git timestamps, size gaps, broken `design/*.md` cross-refs). Without `--deep`,
+ * git timestamps, size gaps, broken `archive/design/*.md` cross-refs). Without `--deep`,
  * behavior is unchanged (back-compat).
  */
 export async function checkKnowledge(
@@ -177,7 +177,10 @@ async function checkStructuralDrift(
 
 async function listDesignFiles(fs: FileSystemPort, projectRoot: string): Promise<string[]> {
   try {
-    const entries = await fs.readDir(join(projectRoot, 'design'));
+    // Tactical specs live in archive/design/. detectStructuralDrift extracts
+    // `design/<name>.md` (also from `archive/design/<name>.md` paths), so the
+    // list uses that form.
+    const entries = await fs.readDir(join(projectRoot, 'archive/design'));
     return entries.filter((e) => e.endsWith('.md')).map((e) => `design/${e}`);
   } catch {
     return [];

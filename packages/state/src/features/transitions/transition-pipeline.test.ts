@@ -294,4 +294,261 @@ describe('TransitionPipeline', () => {
       }
     });
   });
+
+  describe('workflow profile enforcement', () => {
+    // @tc TC-009-01-A
+    it('rejects tasks→implement under product_discovery with ProfileRouteError and does not mutate state', async () => {
+      const pipeline = createPipeline();
+      const state = createTestState({
+        project: { stage: 'delivery' },
+        workflow: {
+          current_phase: 'tasks',
+          mode: 'main',
+          profile: 'product_discovery',
+        },
+      });
+      const before = structuredClone(state);
+      const config = createTestConfig();
+
+      const result = await pipeline.execute(state, config, makeRequest('implement'));
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe('PROFILE_ROUTE');
+      }
+      expect(state).toEqual(before);
+    });
+
+    it('allows tasks→implement→update_asis under delivery profile', async () => {
+      const pipeline = createPipeline();
+      const config = createTestConfig();
+
+      const s1 = createTestState({
+        project: { stage: 'delivery' },
+        workflow: {
+          current_phase: 'tasks',
+          mode: 'main',
+          profile: 'delivery',
+        },
+      });
+      const r1 = await pipeline.execute(s1, config, makeRequest('implement'));
+      expect(r1.ok).toBe(true);
+      if (!r1.ok) return;
+
+      const r2 = await pipeline.execute(
+        r1.value.state,
+        config,
+        makeRequest('update_asis'),
+      );
+      expect(r2.ok).toBe(true);
+      if (r2.ok) {
+        expect(r2.value.state.workflow.current_phase).toBe('update_asis');
+      }
+    });
+
+    it('allows plan→update_tobe under feature_discovery at delivery stage but rejects tasks→implement', async () => {
+      const pipeline = createPipeline();
+      const config = createTestConfig();
+
+      const discoveryState = createTestState({
+        project: { stage: 'delivery' },
+        workflow: {
+          current_phase: 'plan',
+          mode: 'main',
+          profile: 'feature_discovery',
+        },
+      });
+      const allowed = await pipeline.execute(
+        discoveryState,
+        config,
+        makeRequest('update_tobe'),
+      );
+      expect(allowed.ok).toBe(true);
+
+      const deliveryAttempt = createTestState({
+        project: { stage: 'delivery' },
+        workflow: {
+          current_phase: 'tasks',
+          mode: 'main',
+          profile: 'feature_discovery',
+        },
+      });
+      const rejected = await pipeline.execute(
+        deliveryAttempt,
+        config,
+        makeRequest('implement'),
+      );
+      expect(rejected.ok).toBe(false);
+      if (!rejected.ok) {
+        expect(rejected.error.code).toBe('PROFILE_ROUTE');
+      }
+    });
+
+    it('force: true does not bypass the profile route', async () => {
+      const pipeline = createPipeline();
+      const state = createTestState({
+        project: { stage: 'delivery' },
+        workflow: {
+          current_phase: 'tasks',
+          mode: 'main',
+          profile: 'product_discovery',
+        },
+      });
+      const config = createTestConfig();
+
+      const result = await pipeline.execute(
+        state,
+        config,
+        makeRequest('implement', { force: true }),
+      );
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe('PROFILE_ROUTE');
+      }
+    });
+
+    it('given specify + delivery, returns to idle as an off-route escape', async () => {
+      const pipeline = createPipeline();
+      const state = createTestState({
+        project: { stage: 'delivery' },
+        workflow: {
+          current_phase: 'specify',
+          mode: 'main',
+          profile: 'delivery',
+        },
+      });
+      const config = createTestConfig();
+
+      const result = await pipeline.execute(state, config, makeRequest('idle'));
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value.outcome.kind).toBe('skip');
+        expect(result.value.outcome.newPhase).toBe('idle');
+        expect(result.value.state.workflow.current_phase).toBe('idle');
+        const last = result.value.state.workflow.phase_history.at(-1);
+        expect(last?.transition_kind).toBe('skip');
+        expect(last?.metadata).toMatchObject({
+          off_route_escape: true,
+          escaped_from: 'specify',
+          profile: 'delivery',
+        });
+      }
+    });
+
+    it('given specify + delivery, rejects plan and names idle as the allowed target', async () => {
+      const pipeline = createPipeline();
+      const state = createTestState({
+        project: { stage: 'delivery' },
+        workflow: {
+          current_phase: 'specify',
+          mode: 'main',
+          profile: 'delivery',
+        },
+      });
+      const config = createTestConfig();
+
+      const result = await pipeline.execute(state, config, makeRequest('plan'));
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe('PROFILE_ROUTE');
+        expect(result.error.message).toContain('Allowed targets: idle');
+      }
+    });
+
+    it('given update_tobe + product_discovery, advances to complete', async () => {
+      const pipeline = createPipeline();
+      const state = createTestState({
+        workflow: {
+          current_phase: 'update_tobe',
+          mode: 'main',
+          profile: 'product_discovery',
+        },
+      });
+      const config = createTestConfig();
+
+      const result = await pipeline.execute(state, config, makeRequest('complete'));
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value.outcome.newPhase).toBe('complete');
+        expect(result.value.outcome.kind).toBe('forward');
+      }
+    });
+
+    it('given update_tobe + product_discovery, advances to review', async () => {
+      const pipeline = createPipeline();
+      const state = createTestState({
+        workflow: {
+          current_phase: 'update_tobe',
+          mode: 'main',
+          profile: 'product_discovery',
+        },
+      });
+      const config = createTestConfig();
+
+      const result = await pipeline.execute(state, config, makeRequest('review'));
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value.outcome.newPhase).toBe('review');
+      }
+    });
+
+    it('given specify and no profile, still forbids a table-less jump to idle', async () => {
+      const pipeline = createPipeline();
+      const state = createTestState({
+        workflow: {
+          current_phase: 'specify',
+          mode: 'main',
+          profile: null,
+        },
+      });
+      const config = createTestConfig();
+
+      const result = await pipeline.execute(state, config, makeRequest('idle'));
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe('FORBIDDEN_TRANSITION');
+      }
+    });
+
+    it('quick/fast mode transitions are unaffected by a selected profile', async () => {
+      const pipeline = createPipeline();
+      const config = createTestConfig();
+
+      const quickState = createTestState({
+        project: { stage: 'delivery' },
+        workflow: {
+          current_phase: 'idle',
+          mode: 'quick',
+          profile: 'product_discovery',
+        },
+      });
+      const quick = await pipeline.execute(
+        quickState,
+        config,
+        makeRequest('quick_plan'),
+      );
+      expect(quick.ok).toBe(true);
+
+      const fastState = createTestState({
+        project: { stage: 'delivery' },
+        workflow: {
+          current_phase: 'idle',
+          mode: 'fast',
+          profile: 'hygiene',
+        },
+      });
+      const fast = await pipeline.execute(
+        fastState,
+        config,
+        makeRequest('fast_implement'),
+      );
+      expect(fast.ok).toBe(true);
+    });
+  });
 });

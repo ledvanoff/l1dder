@@ -49,7 +49,6 @@ export const GatesConfigSchema = z.object({
 /** Stage enforcement settings — how strictly stage rules are applied. */
 export const StageEnforcementSchema = z.object({
   restrict_phases: EnforcementSchema.default('advisory'),
-  require_criteria: EnforcementSchema.default('advisory'),
 });
 
 /**

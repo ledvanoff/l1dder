@@ -4,11 +4,15 @@ import type { ColorPalette } from './colors.js';
  * Successful command result — carries data and optional human text.
  *
  * `humanText` is rendered by HumanFormatter; `data` is serialized by JsonFormatter.
+ * When `quiet` is set on the formatter and `quietSummary` is present, only the
+ * one-line summary is printed (decorative banners/checklists suppressed).
  */
 export interface CommandResult {
   readonly command: string;
   readonly data: unknown;
   readonly humanText?: string | undefined;
+  /** One-line phase + Primary Action summary for `--quiet` human mode. */
+  readonly quietSummary?: string | undefined;
 }
 
 /**
@@ -31,11 +35,29 @@ export interface OutputFormatter {
 
 /**
  * Human-friendly formatter — colorized text to stdout, errors to stderr.
+ *
+ * Quiet mode (DF-030): decorative human output is replaced by `quietSummary`
+ * when provided; warnings/errors are never suppressed here (they use {@link error}).
  */
 export class HumanFormatter implements OutputFormatter {
-  constructor(private readonly colors: ColorPalette) {}
+  private readonly quiet: boolean;
+
+  constructor(
+    private readonly colors: ColorPalette,
+    opts?: { quiet?: boolean },
+  ) {
+    this.quiet = opts?.quiet ?? false;
+  }
 
   render(result: CommandResult): void {
+    if (this.quiet && result.quietSummary) {
+      process.stdout.write(result.quietSummary + '\n');
+      return;
+    }
+    if (this.quiet && !result.quietSummary) {
+      // Quiet without a summary: suppress decorative humanText entirely.
+      return;
+    }
     if (result.humanText) {
       process.stdout.write(result.humanText + '\n');
     } else {
@@ -54,6 +76,8 @@ export class HumanFormatter implements OutputFormatter {
 
 /**
  * JSON formatter — structured JSON to stdout, error JSON to stderr.
+ *
+ * Quiet never truncates JSON (DF-030: `--json` wins over `--quiet`).
  */
 export class JsonFormatter implements OutputFormatter {
   render(result: CommandResult): void {
@@ -84,6 +108,9 @@ export class JsonFormatter implements OutputFormatter {
 export function createFormatter(
   mode: 'human' | 'json',
   colors: ColorPalette,
+  opts?: { quiet?: boolean },
 ): OutputFormatter {
-  return mode === 'json' ? new JsonFormatter() : new HumanFormatter(colors);
+  return mode === 'json'
+    ? new JsonFormatter()
+    : new HumanFormatter(colors, { quiet: opts?.quiet ?? false });
 }

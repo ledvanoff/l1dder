@@ -2,10 +2,11 @@ import { join, basename } from 'node:path';
 
 import type { GenerationReport } from '@l1dder/core';
 import type { LanguageCode } from '@l1dder/schemas';
+import { AtomicWriter, StateWriter, createInitialState } from '@l1dder/state';
 
 import type { CliContext } from '../../context.js';
 import { ExitCode } from '../../output/exit-codes.js';
-import { copyAssets, PROFILES } from '../../assets.js';
+import { copyAssets, PROFILES, resolveAssetPath } from '../../assets.js';
 import {
   buildAdapterContext,
   getAdapterRegistry,
@@ -14,6 +15,7 @@ import {
   validateAdapterId,
 } from '../adapter-context.js';
 import { runTargetInstall } from '../install-runner.js';
+import { renderKnowledgeTemplate } from './render-template.js';
 
 /** Options for `l1dder init`. */
 interface InitOptions {
@@ -28,6 +30,15 @@ interface InitOptions {
 /** Supported documentation/chat languages for `--lang`. */
 const SUPPORTED_LANGUAGES: readonly LanguageCode[] = ['en', 'ru'];
 
+/** Default docs/chat language when prompting is disabled and `--lang` is absent. */
+const DEFAULT_LANGUAGE: LanguageCode = 'en';
+
+/** Default AI IDE adapter when prompting is disabled and `--ai` is absent. */
+const DEFAULT_ADAPTER_ID = 'cursor';
+
+/** Prompt value meaning "do not install any AI IDE adapter". */
+const SKIP_ADAPTER_VALUE = 'none';
+
 /** Supported optional install profiles for `--profile`. */
 const SUPPORTED_PROFILES: readonly string[] = Object.keys(PROFILES);
 
@@ -37,6 +48,16 @@ interface InitResult {
   data?: unknown;
   humanText?: string;
   error?: { code: string; message: string; hint?: string };
+}
+
+/** How language / AI IDE were resolved during init. */
+interface ResolvedInitChoices {
+  readonly lang: LanguageCode;
+  readonly ai: readonly string[];
+  readonly defaultsApplied: {
+    readonly lang: boolean;
+    readonly ai: boolean;
+  };
 }
 
 const PROJECT_NAME_REGEX = /^[a-zA-Z][a-zA-Z0-9_-]*$/;
@@ -53,16 +74,32 @@ export async function executeInit(
 ): Promise<InitResult> {
   const { fs, clock, logger, prompt, cwd, colors } = ctx;
   const l1dderDir = join(cwd, '.l1dder');
-  const adapterIds = parseAiFlagValues(opts.ai);
+  const explicitAdapterIds = parseAiFlagValues(opts.ai);
+  const interactive = !ctx.globals.noPrompt;
 
-  for (const adapterId of adapterIds) {
+  // `--ai none` is the non-interactive spelling of the "None / skip" prompt
+  // choice, so both paths can express "no AI IDE adapter".
+  const skipAdapters = explicitAdapterIds.includes(SKIP_ADAPTER_VALUE);
+  if (skipAdapters && explicitAdapterIds.length > 1) {
+    return {
+      exitCode: ExitCode.USAGE_ERROR,
+      error: {
+        code: 'INVALID_ADAPTER',
+        message: `--ai ${SKIP_ADAPTER_VALUE} cannot be combined with other adapters`,
+        hint: `Use --ai ${SKIP_ADAPTER_VALUE} alone to skip AI IDE integration`,
+      },
+    };
+  }
+
+  for (const adapterId of explicitAdapterIds) {
+    if (adapterId === SKIP_ADAPTER_VALUE) continue;
     if (!validateAdapterId(ctx, adapterId)) {
       return {
         exitCode: ExitCode.USAGE_ERROR,
         error: {
           code: 'INVALID_ADAPTER',
-          message: `Unknown adapter: "${adapterId}". Supported: ${getSupportedAdapters(ctx).join(', ')}`,
-          hint: 'Use --ai cursor or --ai claude',
+          message: `Unknown adapter: "${adapterId}". Supported: ${getSupportedAdapters(ctx).join(', ')}, ${SKIP_ADAPTER_VALUE}`,
+          hint: `Use --ai cursor, --ai claude, or --ai ${SKIP_ADAPTER_VALUE} to skip`,
         },
       };
     }
@@ -133,17 +170,9 @@ export async function executeInit(
     };
   }
 
-  // Resolve language: --lang flag wins; otherwise prompt (non-interactive → en).
-  // The chosen language sets both docs and chat; split them via config.yml edit.
-  let language: LanguageCode;
-  if (opts.lang !== undefined && isSupportedLanguage(opts.lang)) {
-    language = opts.lang;
-  } else {
-    language = await prompt.select<LanguageCode>('Documentation & chat language', [
-      { value: 'en', label: 'English' },
-      { value: 'ru', label: 'Русский (Russian)' },
-    ]);
-  }
+  const resolved = await resolveInitChoices(ctx, opts, explicitAdapterIds, interactive);
+  const language = resolved.lang;
+  const adapterIds = [...resolved.ai];
 
   const now = clock.now();
   const stage = brownfield ? 'delivery' : 'discovery';
@@ -167,31 +196,29 @@ export async function executeInit(
     await fs.mkdir(dir);
   }
 
-  // Generate state.yml
-  const stageHistory = brownfield
-    ? `\n  stage_history:\n    - from: discovery\n      to: delivery\n      timestamp: "${now}"\n      reason: "Brownfield initialization"`
-    : '\n  stage_history: []';
-
-  const stateContent = `schema_version: 1
-project:
-  name: "${projectName}"
-  stage: ${stage}${stageHistory}
-  created_at: "${now}"
-  updated_at: "${now}"
-workflow:
-  current_phase: idle
-  current_status: in_progress
-  mode: main
-  iteration: 0
-  phase_history: []
-  gate_history: []
-tasks:
-  items: []
-quick_tasks: []
-knowledge_updates: []
-`;
-
-  await fs.writeFile(join(l1dderDir, 'state.yml'), stateContent);
+  // Generate state.yml via the single canonical path (StateSchema + discovery slice).
+  const state = createInitialState({
+    projectName,
+    brownfield,
+    now,
+  });
+  const stateWriter = new StateWriter({
+    atomicWriter: new AtomicWriter({ fs, logger }),
+    logger,
+  });
+  const stateWrite = await stateWriter.writeState(
+    join(l1dderDir, 'state.yml'),
+    state,
+  );
+  if (!stateWrite.ok) {
+    return {
+      exitCode: ExitCode.GENERIC_ERROR,
+      error: {
+        code: 'STATE_WRITE_FAILED',
+        message: `Failed to write .l1dder/state.yml: ${stateWrite.error.message}`,
+      },
+    };
+  }
 
   // Generate config.yml
   const configContent = `# L1DDER configuration
@@ -223,13 +250,38 @@ ${adapterIds.length > 0 ? `adapters:\n${adapterIds.map((id) => `  - ${id}`).join
     logger.warn(`Could not copy bundled assets: ${(e as Error).message}`);
   }
 
-  // Create knowledge placeholders (language-aware)
+  // Create knowledge placeholders (language-aware), excluding roadmap
+  // which is rendered from the localized bundled template.
   const knowledgePlaceholders = buildKnowledgePlaceholders(projectName, language);
 
   for (const [path, content] of knowledgePlaceholders) {
     const fullPath = join(cwd, path);
     if (!(await fs.exists(fullPath))) {
       await fs.writeFile(fullPath, content);
+    }
+  }
+
+  const roadmapRel = 'knowledge/roadmap.md';
+  const roadmapFull = join(cwd, roadmapRel);
+  if (!(await fs.exists(roadmapFull))) {
+    const roadmapAsset = resolveAssetPath(
+      join('i18n', language, 'templates', 'knowledge', 'roadmap-template.md'),
+    );
+    const rendered = await renderKnowledgeTemplate(fs, roadmapAsset, {
+      PROJECT_NAME: projectName,
+      DATE: now.slice(0, 10),
+      AUTHOR: 'TODO',
+    });
+    if (rendered !== null) {
+      await fs.writeFile(roadmapFull, rendered);
+    } else {
+      logger.warn(
+        `Could not read roadmap template at ${roadmapAsset}; writing minimal placeholder`,
+      );
+      await fs.writeFile(
+        roadmapFull,
+        roadmapFallback(projectName, language),
+      );
     }
   }
 
@@ -246,15 +298,6 @@ ${adapterIds.length > 0 ? `adapters:\n${adapterIds.map((id) => `  - ${id}`).join
     }
   }
 
-  let wroteStaticAgents = false;
-  if (adapterIds.length === 0) {
-    await writeStaticAgentsMd(fs, cwd, projectName);
-    wroteStaticAgents = true;
-  } else if (!adapterIds.includes('cursor')) {
-    await writeStaticAgentsMd(fs, cwd, projectName);
-    wroteStaticAgents = true;
-  }
-
   // Append to .gitignore
   const gitignoreContent = `\n# L1DDER\n.l1dder/profile.yml\n.l1dder/install-state.yml\n.l1dder/handoff.md\n.l1dder/handoff-archive/\n.l1dder/context-brief.md\n`;
   const gitignorePath = join(cwd, '.gitignore');
@@ -267,8 +310,9 @@ ${adapterIds.length > 0 ? `adapters:\n${adapterIds.map((id) => `  - ${id}`).join
     await fs.writeFile(gitignorePath, gitignoreContent.trimStart());
   }
 
-  // Run adapter generation (if --ai specified)
+  // Sync selected AI IDE adapter(s) during init (same pipeline as `l1dder sync`).
   const adapterReports: Array<{ targetId: string; report: GenerationReport }> = [];
+  const adapterInstallFailures: string[] = [];
   if (adapterIds.length > 0) {
     for (const targetId of adapterIds) {
       try {
@@ -281,23 +325,31 @@ ${adapterIds.length > 0 ? `adapters:\n${adapterIds.map((id) => `  - ${id}`).join
         );
         adapterReports.push({ targetId, report });
       } catch (e) {
-        logger.warn(`Adapter generation failed for ${targetId}: ${(e as Error).message}`);
+        const message = e instanceof Error ? e.message : String(e);
+        adapterInstallFailures.push(`${targetId}: ${message}`);
+        logger.warn(`Adapter generation failed for ${targetId}: ${message}`);
       }
-    }
-
-    if (adapterReports.length === 0) {
-      await writeStaticAgentsMd(fs, cwd, projectName);
-      wroteStaticAgents = true;
     }
   }
 
   const aggregateAdapterReport = aggregateGenerationReports(adapterReports);
+
+  // Static AGENTS.md only when no adapter was selected, or adapter install left none.
+  // Claude does not emit AGENTS.md (DEC-XH-6), so non-cursor selections also need it.
+  let wroteStaticAgents = false;
+  const agentsMdPath = join(cwd, 'AGENTS.md');
+  const hasAgentsMd = await fs.exists(agentsMdPath);
+  if (!hasAgentsMd) {
+    await writeStaticAgentsMd(fs, cwd, projectName);
+    wroteStaticAgents = true;
+  }
 
   // Build file list
   const filesCreated = [
     '.l1dder/state.yml',
     '.l1dder/config.yml',
     ...knowledgePlaceholders.map(([p]) => p),
+    roadmapRel,
     ...standardsPlaceholders.map(([p]) => p),
     ...assetsCopied,
     '.gitignore',
@@ -313,13 +365,36 @@ ${adapterIds.length > 0 ? `adapters:\n${adapterIds.map((id) => `  - ${id}`).join
         { label: 'Verify project health', command: 'l1dder doctor', blocking: false },
       ]
     : [
-        { label: 'Document the product idea  (knowledge/idea.md)', command: null, blocking: false },
-        { label: 'Plan your roadmap: scope MVP + discovery sessions  (skill: plan-roadmap)', command: null, blocking: false },
-        { label: 'Work out architecture  (knowledge/to-be/architecture.md)', command: null, blocking: false },
-        { label: 'Define data model  (knowledge/to-be/erd.md)', command: null, blocking: false },
-        { label: 'Document use cases  (knowledge/to-be/usecases.md)', command: null, blocking: false },
-        { label: 'Check readiness', command: 'l1dder stage status', blocking: false },
-        { label: 'Verify project health', command: 'l1dder doctor', blocking: false },
+        {
+          label: 'Start the IDEA milestone brainstorm',
+          command: 'l1dder discovery start idea',
+          blocking: false,
+        },
+        {
+          label: 'Discuss the product idea with your AI agent (no files yet)',
+          command: null,
+          blocking: false,
+        },
+        {
+          label: 'Record brainstorm summary and planned sessions',
+          command: 'l1dder discovery plan idea --summary "..." --session AS-IDEA-1',
+          blocking: false,
+        },
+        {
+          label: 'Fill knowledge/idea.md and knowledge/roadmap.md (scaffolded)',
+          command: null,
+          blocking: false,
+        },
+        {
+          label: 'Check the discovery checklist',
+          command: 'l1dder discovery status',
+          blocking: false,
+        },
+        {
+          label: 'Verify project health',
+          command: 'l1dder doctor',
+          blocking: false,
+        },
       ];
 
   // Format output
@@ -329,6 +404,9 @@ ${adapterIds.length > 0 ? `adapters:\n${adapterIds.map((id) => `  - ${id}`).join
 
   if (brownfield) {
     lines.push(`${g.info} Brownfield mode (--existing)`);
+  }
+  if (!ctx.globals.json) {
+    appendDefaultsNotice(lines, resolved, g.info);
   }
   lines.push(`${g.pass} Project name: ${projectName}`);
   lines.push(`${g.info} Creating L1DDER scaffolding...`);
@@ -380,12 +458,16 @@ ${adapterIds.length > 0 ? `adapters:\n${adapterIds.map((id) => `  - ${id}`).join
     if (aggregateAdapterReport.skipped.length > 0) {
       lines.push(`  ${g.info} Skipped ${String(aggregateAdapterReport.skipped.length)} files (unchanged)`);
     }
-    if (aggregateAdapterReport.errors.length > 0) {
-      lines.push(`  ${g.fail} ${String(aggregateAdapterReport.errors.length)} errors during generation`);
-      for (const error of aggregateAdapterReport.errors) {
-        lines.push(`    ! ${error.path}: ${error.message}`);
-      }
-    }
+    appendAdapterErrorSummary(lines, aggregateAdapterReport.errors, g.fail);
+  }
+
+  const firstAdapterFailure = adapterInstallFailures[0];
+  if (firstAdapterFailure !== undefined) {
+    lines.push('');
+    lines.push(
+      `${g.fail} AI IDE adapter install failed. Project scaffolding is usable; retry with: l1dder sync`,
+    );
+    lines.push(`  ${firstAdapterFailure}`);
   }
 
   return {
@@ -394,6 +476,12 @@ ${adapterIds.length > 0 ? `adapters:\n${adapterIds.map((id) => `  - ${id}`).join
       project: { name: projectName, stage },
       mode: modeLabel,
       ...(opts.profile !== undefined ? { profile: opts.profile } : {}),
+      lang: language,
+      ai: adapterIds,
+      defaults_applied: {
+        lang: resolved.defaultsApplied.lang,
+        ai: resolved.defaultsApplied.ai,
+      },
       files_created: filesCreated,
       next_steps: nextSteps,
       ...(adapterReports.length > 0
@@ -403,6 +491,9 @@ ${adapterIds.length > 0 ? `adapters:\n${adapterIds.map((id) => `  - ${id}`).join
               report: entry.report,
             })),
           }
+        : {}),
+      ...(firstAdapterFailure !== undefined
+        ? { adapter_install_error: firstAdapterFailure }
         : {}),
     },
     humanText: lines.join('\n'),
@@ -415,10 +506,170 @@ function isSupportedLanguage(value: string): value is LanguageCode {
 }
 
 /**
+ * Resolve language and AI IDE adapter for init.
+ *
+ * Precedence: explicit flags → interactive prompts → non-interactive defaults
+ * (`--lang en`, `--ai cursor`). Non-interactive never silently hides defaults.
+ */
+async function resolveInitChoices(
+  ctx: CliContext,
+  opts: InitOptions,
+  explicitAdapterIds: readonly string[],
+  interactive: boolean,
+): Promise<ResolvedInitChoices> {
+  const { prompt } = ctx;
+
+  let lang: LanguageCode;
+  let langDefaulted = false;
+  if (opts.lang !== undefined && isSupportedLanguage(opts.lang)) {
+    lang = opts.lang;
+  } else if (interactive) {
+    lang = await prompt.select<LanguageCode>('Documentation & chat language', [
+      { value: 'en', label: 'English' },
+      { value: 'ru', label: 'Русский (Russian)' },
+    ]);
+  } else {
+    lang = DEFAULT_LANGUAGE;
+    langDefaulted = true;
+  }
+
+  let ai: readonly string[];
+  let aiDefaulted = false;
+  if (explicitAdapterIds.includes(SKIP_ADAPTER_VALUE)) {
+    ai = [];
+  } else if (explicitAdapterIds.length > 0) {
+    ai = explicitAdapterIds;
+  } else if (interactive) {
+    const supported = getSupportedAdapters(ctx);
+    const selected = await prompt.select<string>('AI IDE adapter', [
+      ...supported.map((id) => ({
+        value: id,
+        label: formatAdapterLabel(id),
+      })),
+      {
+        value: SKIP_ADAPTER_VALUE,
+        label: 'None / skip AI IDE adapter',
+      },
+    ]);
+    ai = selected === SKIP_ADAPTER_VALUE ? [] : [selected];
+  } else {
+    ai = [DEFAULT_ADAPTER_ID];
+    aiDefaulted = true;
+  }
+
+  return {
+    lang,
+    ai,
+    defaultsApplied: { lang: langDefaulted, ai: aiDefaulted },
+  };
+}
+
+/** Human-readable label for an adapter registry id. */
+function formatAdapterLabel(id: string): string {
+  if (id === 'cursor') return 'Cursor';
+  if (id === 'claude') return 'Claude Code';
+  return id;
+}
+
+/**
+ * Tell the user which non-interactive defaults were applied and how to override.
+ */
+function appendDefaultsNotice(
+  lines: string[],
+  resolved: ResolvedInitChoices,
+  infoGlyph: string,
+): void {
+  const { defaultsApplied, lang, ai } = resolved;
+  if (!defaultsApplied.lang && !defaultsApplied.ai) {
+    return;
+  }
+
+  const applied: string[] = [];
+  if (defaultsApplied.lang) {
+    applied.push(`--lang ${lang}`);
+  }
+  if (defaultsApplied.ai) {
+    applied.push(
+      ai.length > 0 ? `--ai ${ai.join(',')}` : 'no AI IDE adapter',
+    );
+  }
+
+  const overrides: string[] = [];
+  if (defaultsApplied.lang) {
+    overrides.push('--lang <en|ru>');
+  }
+  if (defaultsApplied.ai) {
+    overrides.push('--ai <cursor|claude>');
+  }
+
+  lines.push(
+    `${infoGlyph} Non-interactive defaults: ${applied.join(', ')}`,
+  );
+  lines.push(`  Override with: ${overrides.join(' ')}`);
+}
+
+/**
+ * Surface adapter-install errors without dumping a permission-error cascade.
+ */
+function appendAdapterErrorSummary(
+  lines: string[],
+  errors: readonly { path: string; message: string }[],
+  failGlyph: string,
+): void {
+  if (errors.length === 0) {
+    return;
+  }
+
+  const permissionErrors = errors.filter((error) =>
+    isFilesystemPermissionError(error.message),
+  );
+
+  if (permissionErrors.length > 0) {
+    lines.push(
+      `${failGlyph} Adapter install hit filesystem permission errors (${String(permissionErrors.length)} files).`,
+    );
+    lines.push(
+      '  Scaffolding is usable. Retry in a writable directory, or run: l1dder sync',
+    );
+    return;
+  }
+
+  const preview = errors.slice(0, 3);
+  lines.push(
+    `${failGlyph} ${String(errors.length)} error(s) during adapter generation`,
+  );
+  for (const error of preview) {
+    lines.push(`    ! ${error.path}: ${error.message}`);
+  }
+  if (errors.length > preview.length) {
+    lines.push(
+      `    … and ${String(errors.length - preview.length)} more (run: l1dder sync)`,
+    );
+  }
+}
+
+/** Detect EPERM/EACCES-style failures from adapter file writes. */
+function isFilesystemPermissionError(message: string): boolean {
+  return /EPERM|EACCES|permission denied/i.test(message);
+}
+
+/**
+ * Minimal roadmap placeholder used when the bundled template cannot be read.
+ */
+function roadmapFallback(projectName: string, lang: LanguageCode): string {
+  const title = 'Roadmap';
+  const hint =
+    lang === 'ru' ? 'TODO: Опишите план' : 'TODO: Describe the plan';
+  return `# ${title} — ${projectName}\n\n## Summary\n\n<!-- ${hint} -->\n`;
+}
+
+/**
  * Build the knowledge placeholder file set in the chosen docs language.
  *
  * Keeps `## Summary` structure (parsed by extractSummary) identical across
  * languages; only headings and TODO hints are localized.
+ * `knowledge/roadmap.md` is intentionally omitted — rendered from the
+ * localized bundled template in {@link executeInit}.
  */
 function buildKnowledgePlaceholders(
   projectName: string,
@@ -428,7 +679,6 @@ function buildKnowledgePlaceholders(
     lang === 'ru'
       ? {
           ideaTitle: 'Продуктовая идея',
-          roadmapTitle: 'Roadmap',
           archAsIs: 'Architecture (As-Is)',
           erdAsIs: 'ERD (As-Is)',
           usecasesAsIs: 'Use Cases (As-Is)',
@@ -438,7 +688,6 @@ function buildKnowledgePlaceholders(
           usecasesToBe: 'Use Cases (To-Be)',
           integrationsToBe: 'Integrations (To-Be)',
           idea: 'TODO: Опишите продукт',
-          roadmap: 'TODO: Опишите план',
           asIsPlaceholder: 'Placeholder: заполняется после первой delivery-итерации',
           placeholder: 'Placeholder',
           arch: 'TODO: Опишите целевую архитектуру',
@@ -446,7 +695,6 @@ function buildKnowledgePlaceholders(
         }
       : {
           ideaTitle: 'Product Idea',
-          roadmapTitle: 'Roadmap',
           archAsIs: 'Architecture (As-Is)',
           erdAsIs: 'ERD (As-Is)',
           usecasesAsIs: 'Use Cases (As-Is)',
@@ -456,7 +704,6 @@ function buildKnowledgePlaceholders(
           usecasesToBe: 'Use Cases (To-Be)',
           integrationsToBe: 'Integrations (To-Be)',
           idea: 'TODO: Describe the product',
-          roadmap: 'TODO: Describe the plan',
           asIsPlaceholder: 'Placeholder: filled in after the first delivery iteration',
           placeholder: 'Placeholder',
           arch: 'TODO: Describe the target architecture',
@@ -468,7 +715,6 @@ function buildKnowledgePlaceholders(
 
   return [
     ['knowledge/idea.md', doc(t.ideaTitle, t.idea)],
-    ['knowledge/roadmap.md', `# ${t.roadmapTitle} — ${projectName}\n\n## Summary\n\n<!-- ${t.roadmap} -->\n`],
     ['knowledge/as-is/architecture.md', doc(t.archAsIs, t.asIsPlaceholder)],
     ['knowledge/as-is/erd.md', doc(t.erdAsIs, t.placeholder)],
     ['knowledge/as-is/usecases.md', doc(t.usecasesAsIs, t.placeholder)],

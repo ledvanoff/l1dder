@@ -21,12 +21,12 @@ builtin: true
 ## Summary
 
 Launches the COMPLETE phase: archives specs, updates roadmap and worklog,
-and initiates transition `AS_IS_KU → COMPLETE`. The Phase Machine then
-auto-transitions `COMPLETE → IDLE` (PM3 rule #9: `auto:iteration-done`).
+and initiates transition `update_asis → complete`. The Phase Machine then
+auto-transitions `complete → idle` (PM3 rule #9: `auto:iteration-done`).
 
 ## When to Use
 
-- Current phase: `AS_IS_KNOWLEDGE_UPDATE` (as-is update completed)
+- Current phase: `update_asis` (AS_IS_KU / as-is update completed)
 - As-is-update-gate passed; all tasks done or skipped
 - Ready to close the current iteration
 
@@ -51,8 +51,8 @@ Key COMPLETE phase rules:
    - Mark completed iteration items `[x]`
    - Add summary line to "What was done" section
 5. Record iteration entry in `archive/worklog.md`
-6. Initiate transition `AS_IS_KU → COMPLETE`
-7. Phase Machine auto-transitions `COMPLETE → IDLE`
+6. Initiate transition `update_asis → complete`
+7. Phase Machine auto-transitions `complete → idle`
    (PM3 rule #9, trigger: `auto:iteration-done`)
 
 ## Acceptance Criteria
@@ -67,7 +67,7 @@ Key COMPLETE phase rules:
 
 - `current_phase == "idle"` (after auto-transition COMPLETE → IDLE)
 - `phase_history[]` contains TWO new entries:
-  1. `{ from: as_is_knowledge_update, to: complete, trigger: { kind: slash, command: complete } }`
+  1. `{ from: update_asis, to: complete, trigger: { kind: slash, command: complete } }`
   2. `{ from: complete, to: idle, trigger: { kind: auto, source: iteration-done } }`
 - `specs/archive/<iteration-id>/` contains archived deliverables
 - Project ready for next iteration
@@ -77,12 +77,12 @@ Key COMPLETE phase rules:
 | Scenario | Action |
 |---|---|
 | Not all tasks done/skipped | Report remaining tasks; suggest completing them |
-| `current_phase != as_is_knowledge_update` | Report current phase; suggest completing AS_IS_KU first |
+| `current_phase != update_asis` | Report current phase; suggest completing AS_IS_KU (`update_asis`) first |
 | Archive directory already exists (collision) | Append timestamp suffix to avoid overwrite |
 | Roadmap file not found | Warn; proceed with archiving (non-fatal) |
 
 ## Notes
 
 - This is the only command with `idempotent: false` — repeated invocation in IDLE has no meaning
-- Double transition mechanism: slash triggers AS_IS_KU → COMPLETE; auto-trigger completes COMPLETE → IDLE
+- Double transition mechanism: slash triggers `update_asis → complete`; auto-trigger completes `complete → idle`
 - After `/l1dder-complete`, next step is `/l1dder-specify` (new iteration) or `/l1dder-constitution` (ground rules refinement)

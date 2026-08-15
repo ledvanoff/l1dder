@@ -2,9 +2,11 @@
 
 <!--
   Template: specs/current/tasks.md
-  Phase Machine phase: TASKS (created by /l1dder.tasks)
-  Used by: l1dder tasks (scaffolding + AI generation based on plan.md)
-  Parsed by: extractSummary() — the ## Summary section (dynamic zone, priority 1 — never trim)
+  Phase Machine phase: TASKS (created by /l1dder-tasks)
+  Used by: /l1dder-tasks (slash command; scaffolding + AI generation based on plan.md)
+  Parsed by:
+    - extractSummary() — the ## Summary section (dynamic zone, priority 1 — never trim)
+    - parseTasksMarkdown() — the ## Task List table (columns: id, Task, depends_on, Status)
   Updated: within the TASKS and IMPLEMENT phases (task statuses are updated)
   Ownership: Architect (decomposition), Developer (execution)
   Lifecycle: short-term (per-feature, one iteration)
@@ -17,19 +19,27 @@
     {{TOTAL_TASKS}}  — the total number of tasks
     <!-- TODO: ... -- > — sections that need filling in
 
+  Migration note:
+    Tasks written before per-task Test Contract ids stay valid.
+    When updating, link each task's Test Contracts to TC-* ids from the
+    spec.md AI Contract / plan.md Test Contracts. There is no separate
+    ai-tasks.md file. Keep the ## Task List column names English
+    (id / Task / depends_on / Status) so parseTasksMarkdown can read them.
+
   Validation (l1dder doctor):
     - ## Summary exists and is non-empty
     - ## Task List contains a table with a depends_on column
     - Every task has a unique id (T-XX format)
     - depends_on references are valid (no references to non-existent ids)
     - No cyclic dependencies (DAG — directed acyclic graph)
+    - Each task details section lists Test Contract id(s) when the task has testable logic
     - plan.md exists and is complete (prerequisite)
     - No unfilled {{...}} markers in the final document
 
   State tracking:
     - Task status is updated via StateManager.task.start() / .complete() / .block()
     - depends_on guard: a task cannot move to started if its dependencies are not done
-    - Topological sorting determines the recommended order (l1dder task next)
+    - Topological sorting determines the recommended order (`l1dder task list`)
 -->
 
 > **Feature:** {{FEATURE_NAME}} | **Date:** {{DATE}} | **Author:** {{AUTHOR}}
@@ -50,8 +60,9 @@ Decomposition of {{FEATURE_NAME}} into {{TOTAL_TASKS}} tasks.
 <!-- A table of all tasks with dependencies -->
 <!-- depends_on — a MANDATORY field (an architectural requirement PM12, B3) -->
 <!-- depends_on format: comma-separated ids or "—" if there are no dependencies -->
-<!-- Status: pending | in_progress | done | blocked | skipped -->
+<!-- Status: pending | in_progress | done | skipped -->
 <!-- Complexity: S (< 1h) | M (1-4h) | L (4-8h) | XL (> 8h) -->
+<!-- Column names stay English (id / Task / depends_on / Status) for parseTasksMarkdown -->
 
 | id | Task | depends_on | Complexity | Status |
 |----|--------|-----------|------------|--------|
@@ -79,11 +90,14 @@ T-01 ──→ T-02 ──┐
 ## Task Details
 
 <!-- A detailed description of each task -->
-<!-- For each: what to do, acceptance criteria, test contracts, affected files -->
+<!-- For each: what to do, acceptance criteria, Test Contract id(s), affected files -->
+<!-- Test Contracts use TC-* ids from the spec.md AI Contract / plan.md -->
 
 ### T-01: <!-- TODO: name -->
 
 <!-- TODO: Task description -->
+
+**depends_on:** —
 
 **Acceptance Criteria:**
 
@@ -92,10 +106,10 @@ T-01 ──→ T-02 ──┐
 
 **Test Contracts:**
 
-<!-- Optional: expected behavioral tests (Contract-First, see standards/conventions.md) -->
-<!-- The AI writes these tests together with the code. Format: "given X → expect Y" -->
-<!-- Delete the section if the task contains no testable logic (scaffolding, configs) -->
-- <!-- TODO: behavioral test 1 -->
+<!-- Required when the task has testable logic. Use TC-* ids from the AI Contract. -->
+<!-- Format: "`TC-NNN-MM-L` — given X → expect Y" -->
+<!-- Delete the section only if the task has no testable logic (scaffolding, configs) -->
+- `TC-001-01-A` — <!-- TODO: given X → expect Y -->
 
 **Files:**
 
@@ -107,6 +121,8 @@ T-01 ──→ T-02 ──┐
 
 <!-- TODO: Task description -->
 
+**depends_on:** T-01
+
 **Acceptance Criteria:**
 
 - [ ] <!-- TODO: criterion 1 -->
@@ -114,10 +130,7 @@ T-01 ──→ T-02 ──┐
 
 **Test Contracts:**
 
-<!-- Optional: expected behavioral tests (Contract-First, see standards/conventions.md) -->
-<!-- The AI writes these tests together with the code. Format: "given X → expect Y" -->
-<!-- Delete the section if the task contains no testable logic (scaffolding, configs) -->
-- <!-- TODO: behavioral test 1 -->
+- `TC-001-01-A` — <!-- TODO: given X → expect Y -->
 
 **Files:**
 
@@ -129,6 +142,8 @@ T-01 ──→ T-02 ──┐
 
 <!-- TODO: Task description -->
 
+**depends_on:** T-01
+
 **Acceptance Criteria:**
 
 - [ ] <!-- TODO: criterion 1 -->
@@ -136,10 +151,7 @@ T-01 ──→ T-02 ──┐
 
 **Test Contracts:**
 
-<!-- Optional: expected behavioral tests (Contract-First, see standards/conventions.md) -->
-<!-- The AI writes these tests together with the code. Format: "given X → expect Y" -->
-<!-- Delete the section if the task contains no testable logic (scaffolding, configs) -->
-- <!-- TODO: behavioral test 1 -->
+- `TC-001-01-A` — <!-- TODO: given X → expect Y -->
 
 **Files:**
 
@@ -151,6 +163,8 @@ T-01 ──→ T-02 ──┐
 
 <!-- TODO: Task description -->
 
+**depends_on:** T-02, T-03
+
 **Acceptance Criteria:**
 
 - [ ] <!-- TODO: criterion 1 -->
@@ -158,10 +172,7 @@ T-01 ──→ T-02 ──┐
 
 **Test Contracts:**
 
-<!-- Optional: expected behavioral tests (Contract-First, see standards/conventions.md) -->
-<!-- The AI writes these tests together with the code. Format: "given X → expect Y" -->
-<!-- Delete the section if the task contains no testable logic (scaffolding, configs) -->
-- <!-- TODO: behavioral test 1 -->
+- `TC-001-01-A` — <!-- TODO: given X → expect Y -->
 
 **Files:**
 

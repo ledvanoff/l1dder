@@ -112,6 +112,7 @@ export async function buildAdapterContext(
     personas: personasResult.ok ? personasResult.value : [],
     standards: (standardsResult.ok ? standardsResult.value : {}) as unknown as AdapterContext['standards'],
     state: stateManager.currentPosition(),
+    projectName: stateManager.stateSnapshot().project.name,
     force: options.force ?? false,
     dryRun: options.dryRun ?? false,
   };

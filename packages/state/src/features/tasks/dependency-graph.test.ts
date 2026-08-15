@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { DependencyGraph } from './dependency-graph.js';
+import {
+  DependencyGraph,
+  ensureDependenciesMetForComplete,
+} from './dependency-graph.js';
 
 describe('DependencyGraph', () => {
   describe('topologicalSort', () => {
@@ -180,5 +183,35 @@ describe('DependencyGraph', () => {
 
       expect(graph.hasCycle()).toBe(true);
     });
+  });
+});
+
+describe('ensureDependenciesMetForComplete', () => {
+  it('rejects complete when a depends_on entry is still pending', () => {
+    const result = ensureDependenciesMetForComplete(
+      [
+        { id: 'T-01', depends_on: [], status: 'pending' },
+        { id: 'T-02', depends_on: ['T-01'], status: 'pending' },
+      ],
+      'T-02',
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe('DEPENDENCIES_NOT_MET');
+    expect(result.error.unmetDependencies).toEqual(['T-01']);
+  });
+
+  it('allows complete when every depends_on entry is done or skipped', () => {
+    const result = ensureDependenciesMetForComplete(
+      [
+        { id: 'T-01', depends_on: [], status: 'done' },
+        { id: 'T-02', depends_on: [], status: 'skipped' },
+        { id: 'T-03', depends_on: ['T-01', 'T-02'], status: 'pending' },
+      ],
+      'T-03',
+    );
+
+    expect(result.ok).toBe(true);
   });
 });

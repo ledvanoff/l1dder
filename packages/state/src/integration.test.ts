@@ -236,18 +236,24 @@ describe('Integration: stage management', () => {
       state: {
         project: { stage: 'discovery' },
       },
-      config: {
-        stage: { enforcement: { require_criteria: 'off' } },
-      },
     });
 
-    const adv1 = await manager.stage.advanceStage(
+    // Hard gate: incomplete discovery cannot advance.
+    const blocked = await manager.stage.advanceStage(
       manager.stateSnapshot(),
       manager.configSnapshot(),
     );
-    expect(adv1.ok).toBe(true);
-    if (!adv1.ok) return;
-    manager._updateState(() => adv1.value);
+    expect(blocked.ok).toBe(false);
+
+    // Audited bypass via setStage (mirrors CLI --force --reason).
+    const forced = manager.stage.setStage(
+      manager.stateSnapshot(),
+      'delivery',
+      'integration test bypass',
+    );
+    expect(forced.ok).toBe(true);
+    if (!forced.ok) return;
+    manager._updateState(() => forced.value);
     expect(manager.currentPosition().stage).toBe('delivery');
 
     const adv2 = await manager.stage.advanceStage(

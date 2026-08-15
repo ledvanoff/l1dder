@@ -53,13 +53,62 @@ function mockPosition(overrides?: Partial<WorkflowPosition>): WorkflowPosition {
 function createMockStateManager(
   position: WorkflowPosition,
   chatLanguage: 'en' | 'ru' = 'en',
-): Pick<StateManager, 'currentPosition' | 'configSnapshot'> {
+): Pick<StateManager, 'currentPosition' | 'configSnapshot'> & {
+  projection: { project: () => Promise<unknown> };
+} {
+  const projectionSnapshot = {
+    stage: { current: position.stage, discoveryReady: false },
+    milestone: { items: [], current: null, closed: 0, total: 0 },
+    profile: {
+      selected: null,
+      recommended: 'product_discovery',
+      enforced: false,
+    },
+    session: null,
+    nextEligible: null,
+    phase: {
+      current: position.phase,
+      status: position.status,
+      mode: position.mode,
+      alternatives: [],
+    },
+    gate: { awaiting: false, lastGate: null },
+    primaryAction: {
+      kind: 'none',
+      command: '',
+      reason: 'No further action',
+    },
+    blockers: [],
+    progress: {
+      milestonesClosed: 0,
+      milestonesTotal: 0,
+      tasksTotal: 0,
+      tasksDone: 0,
+      tasksInProgress: 0,
+      tasksPending: 0,
+      tasksBlocked: 0,
+      tasksSkipped: 0,
+      nextAvailable: null,
+    },
+    recovery: { clean: true },
+    readiness: {
+      milestonesClosed: false,
+      evidenceAvailable: false,
+      gaps: [],
+      ready: false,
+    },
+    planningCandidates: [],
+  };
+
   return {
     currentPosition: () => position,
     configSnapshot: () =>
       ({ language: { docs: chatLanguage, chat: chatLanguage } }) as ReturnType<
         StateManager['configSnapshot']
       >,
+    projection: {
+      project: () => Promise.resolve(projectionSnapshot),
+    },
   };
 }
 
@@ -101,7 +150,10 @@ function createTestCtx(overrides?: { throwOnState?: boolean }) {
       Promise.resolve(mockEngine) as unknown as ReturnType<typeof ctx.contextEngine>,
     state: overrides?.throwOnState
       ? () => Promise.reject(new NotInitializedError('/test-project'))
-      : () => ctx.state(),
+      : () =>
+          Promise.resolve(
+            createMockStateManager(mockPosition()) as unknown as StateManager,
+          ),
   };
 
   return { ctx: patchedCtx, mockEngine, fs };
@@ -121,7 +173,7 @@ function patchState(
 
 describe('executeContext', () => {
   it('default prints brief to stdout', async () => {
-    const { ctx } = createTestCtx();
+    const { ctx, mockEngine } = createTestCtx();
 
     const result = await executeContext(ctx, {});
 
@@ -135,6 +187,28 @@ describe('executeContext', () => {
       char_count: MOCK_BRIEF.content.length,
       sections: ['Summary', 'Architecture'],
     });
+    expect(mockEngine.brief).toHaveBeenCalled();
+    const briefArg = mockEngine.brief.mock.calls[0]?.[0] as
+      | { projection?: { stage?: string } }
+      | undefined;
+    expect(briefArg?.projection?.stage).toBe('delivery');
+  });
+
+  it('passes projection snapshot so brief stage beats contradictory roadmap narrative', async () => {
+    const { ctx, mockEngine } = createTestCtx();
+    // Delivery stage in state; engine receives authoritative projection.stage.
+    const result = await executeContext(ctx, {});
+
+    expect(result.exitCode).toBe(ExitCode.SUCCESS);
+    const briefArg = mockEngine.brief.mock.calls[0]?.[0] as
+      | { projection?: { stage?: string } }
+      | undefined;
+    expect(briefArg?.projection?.stage).toBe('delivery');
+    const data = result.data as {
+      primary_action?: { kind: string };
+    };
+    expect(typeof data.primary_action?.kind).toBe('string');
+    expect((data.primary_action?.kind ?? '').length).toBeGreaterThan(0);
   });
 
   it('--file saves brief to default path', async () => {
@@ -191,6 +265,36 @@ describe('executeContext', () => {
     expect(result.exitCode).toBe(ExitCode.NOT_INITIALIZED);
     expect(result.error?.code).toBe('NOT_INITIALIZED');
     expect(result.error?.hint).toContain('l1dder init');
+  });
+
+  it('returns exit 8 when not initialized (brief mode, DF-027 fail-closed)', async () => {
+    const { ctx } = createTestCtx({ throwOnState: true });
+
+    const result = await executeContext(ctx, {});
+
+    expect(result.exitCode).toBe(ExitCode.NOT_INITIALIZED);
+    expect(result.error?.code).toBe('NOT_INITIALIZED');
+  });
+
+  it('fails closed on schema-invalid state without emitting brief (DF-027)', async () => {
+    const { SchemaValidationError } = await import('@l1dder/core');
+    const { ctx, mockEngine } = createTestCtx();
+    const schemaError = new SchemaValidationError('.l1dder/state.yml', [
+      {
+        path: ['workflow', 'current_phase'],
+        message: 'Invalid option',
+      },
+    ]);
+    const patched: typeof ctx = {
+      ...ctx,
+      state: () => Promise.reject(schemaError),
+    };
+
+    const result = await executeContext(patched, {});
+
+    expect(result.exitCode).toBe(ExitCode.SCHEMA_VALIDATION);
+    expect(result.error?.message).toContain('workflow.current_phase');
+    expect(mockEngine.brief).not.toHaveBeenCalled();
   });
 
   it('--full renders full context to stdout', async () => {

@@ -27,6 +27,9 @@ const VALID_STATE: State = {
     current_phase: 'idle',
     current_status: 'in_progress',
     mode: 'main',
+    profile: null,
+    session: null,
+    session_history: [],
     iteration: 0,
     phase_history: [],
     gate_history: [],
@@ -35,6 +38,7 @@ const VALID_STATE: State = {
   quick_tasks: [],
   knowledge_updates: [],
   decisions: [],
+  discovery: { milestones: [], current: null, waivers: [] },
   skillRuns: [],
   skillVersions: [],
 };
@@ -49,7 +53,7 @@ const VALID_CONFIG: Config = {
     overrides: {},
   },
   stage: {
-    enforcement: { restrict_phases: 'advisory', require_criteria: 'advisory' },
+    enforcement: { restrict_phases: 'advisory' },
     delivery_criteria: {
       require_idea_not_skeleton: true,
       require_roadmap: true,
@@ -126,6 +130,54 @@ knowledge_updates: []
     expect(writeSpy).toHaveBeenCalledWith('/state.yml', expect.any(String));
   });
 
+  it('deletes keys absent from canonical state so cleared markers survive save→read', async () => {
+    const { writer, fs } = createWriter();
+    const yamlWithMarker = `# State file
+schema_version: 1
+project:
+  name: test
+  stage: discovery
+  stage_history: []
+  created_at: "2026-05-11T00:00:00Z"
+  updated_at: "2026-05-11T00:00:00Z"
+workflow:
+  current_phase: idle
+  current_status: in_progress
+  mode: main
+  iteration: 0
+  phase_history: []
+  gate_history: []
+tasks:
+  items: []
+quick_tasks: []
+knowledge_updates: []
+decisions: []
+skillRuns: []
+skillVersions: []
+_in_flight_transition:
+  from: idle
+  to: specify
+  started_at: "2026-05-11T00:00:00Z"
+  actor:
+    kind: system
+  trigger:
+    kind: cli
+    command: transition
+`;
+    const doc = L1dderDocument.fromString(yamlWithMarker);
+    const cleared: State = { ...VALID_STATE };
+
+    const result = await writer.writeState('/state.yml', cleared, doc);
+
+    expect(result.ok).toBe(true);
+    const content = await fs.readFile('/state.yml');
+    expect(content).toContain('# State file');
+    expect(content).not.toContain('_in_flight_transition');
+
+    const reparsed = L1dderDocument.fromString(content).toJS();
+    expect(reparsed).not.toHaveProperty('_in_flight_transition');
+  });
+
   it('writes config with round-trip preservation', async () => {
     const { writer, fs } = createWriter();
     const yamlWithComments = `# Config file
@@ -141,7 +193,6 @@ gates:
 stage:
   enforcement:
     restrict_phases: advisory
-    require_criteria: advisory
   delivery_criteria:
     require_idea_not_skeleton: true
     require_roadmap: true

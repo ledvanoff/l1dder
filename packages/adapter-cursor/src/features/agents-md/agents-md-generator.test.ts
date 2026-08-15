@@ -46,16 +46,57 @@ function createData(overrides?: Partial<AgentsMdData>): AgentsMdData {
 }
 
 describe('generateAgentsMd', () => {
-  it('generates AGENTS.md with all 5 sections', () => {
+  it('generates AGENTS.md with core sections including position model', () => {
     const result = generateAgentsMd(createData(), cursorManifest);
     expect(result.content).toContain('## Project Overview');
     expect(result.content).toContain('## Directory Structure');
+    expect(result.content).toContain('## Position Model');
     expect(result.content).toContain('## L1DDER Workflow');
     expect(result.content).toContain('## Working with This Project');
     expect(result.content).toContain('## Conventions Quick Reference');
   });
 
-  it('includes commands table', () => {
+  it('documents the progressive position model chain', () => {
+    const result = generateAgentsMd(createData(), cursorManifest);
+    expect(result.content).toContain(
+      'Stage → Milestone → Profile → Session → Phase → Gate → Primary Action',
+    );
+  });
+
+  it('lists workflow profiles and roadmap rails', () => {
+    const result = generateAgentsMd(createData(), cursorManifest);
+    expect(result.content).toContain('product_discovery');
+    expect(result.content).toContain('feature_discovery');
+    expect(result.content).toContain('delivery');
+    expect(result.content).toContain('hygiene');
+    expect(result.content).toContain('next eligible roadmap session');
+    expect(result.content).toContain('Quick/Fast');
+  });
+
+  it('requires registry-first lookup before inventing entities', () => {
+    const result = generateAgentsMd(createData(), cursorManifest);
+    expect(result.content).toContain('Registry-First');
+    expect(result.content).toContain('knowledge/project-registry.yml');
+  });
+
+  it('points to a single primary entrypoint and marks commands as reference', () => {
+    const result = generateAgentsMd(createData(), cursorManifest);
+    expect(result.content).toContain('### Primary Entrypoint');
+    expect(result.content).toContain('l1dder now');
+    expect(result.content).toContain('l1dder helpme');
+    expect(result.content).toContain('/l1dder-next');
+    expect(result.content).toContain('Commands (reference / advanced)');
+    expect(result.content).toContain('not an equal menu of next steps');
+  });
+
+  it('includes recovery entrypoints when lost or state looks broken', () => {
+    const result = generateAgentsMd(createData(), cursorManifest);
+    expect(result.content).toContain('Recovery / Entrypoints');
+    expect(result.content).toContain('l1dder doctor');
+    expect(result.content).toContain('l1dder status');
+  });
+
+  it('includes commands table from loaded command data', () => {
     const result = generateAgentsMd(createData(), cursorManifest);
     expect(result.content).toContain('`/l1dder-specify`');
     expect(result.content).toContain('`/l1dder-plan`');
@@ -84,6 +125,11 @@ describe('generateAgentsMd', () => {
     const r2 = generateAgentsMd(data, cursorManifest);
     expect(r1.content).toBe(r2.content);
     expect(r1.hash).toBe(r2.hash);
+  });
+
+  it('stays compact enough for an agent entrypoint', () => {
+    const result = generateAgentsMd(createData(), cursorManifest);
+    expect(result.content.split('\n').length).toBeLessThan(200);
   });
 
   it('includes project name in overview', () => {

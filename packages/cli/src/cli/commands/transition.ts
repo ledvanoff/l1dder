@@ -5,7 +5,7 @@ import {
   errorToCode,
   errorToHint,
 } from '../output/exit-codes.js';
-import { Phase } from '@l1dder/core';
+import { Phase, suggestCanonicalPhase } from '@l1dder/core';
 import type { TriggerSource, Actor, TransitionOutput } from '@l1dder/schemas';
 
 /** Options parsed from `l1dder transition` flags. */
@@ -56,11 +56,16 @@ export async function executeTransition(
   }
 
   if (!VALID_PHASES.has(opts.to)) {
+    const suggested = suggestCanonicalPhase(opts.to);
+    const hint = suggested
+      ? `Did you mean \`${suggested}\`? Run: l1dder transition --to ${suggested}`
+      : `Valid phases: ${[...VALID_PHASES].join(', ')}`;
     return {
       exitCode: ExitCode.USAGE_ERROR,
       error: {
         code: 'USAGE_ERROR',
-        message: `Invalid phase: "${opts.to}". Valid phases: ${[...VALID_PHASES].join(', ')}`,
+        message: `Invalid phase: "${opts.to}"`,
+        hint,
       },
     };
   }
@@ -87,16 +92,6 @@ export async function executeTransition(
     };
   }
 
-  if (opts.force && !opts.reason) {
-    return {
-      exitCode: ExitCode.USAGE_ERROR,
-      error: {
-        code: 'USAGE_ERROR',
-        message: '--reason is required when using --force',
-      },
-    };
-  }
-
   // ─── Build trigger ───
 
   const trigger = buildTrigger(triggerKind, opts);
@@ -119,6 +114,39 @@ export async function executeTransition(
         code: errorToCode(error),
         message: error instanceof Error ? error.message : 'Unknown error',
         ...(hint !== undefined && { hint }),
+      },
+    };
+  }
+
+  // DF-015: dry-run (and real) must not promise success when guided discovery
+  // has not started idea brainstorm yet. Bypass with --force --reason.
+  if (
+    opts.to === Phase.SPECIFY &&
+    !opts.force &&
+    sm.stateSnapshot().project.stage === 'discovery'
+  ) {
+    const projection = await sm.projection.project();
+    const idea = projection.milestone.items.find((m) => m.id === 'idea');
+    if (idea && idea.status === 'pending') {
+      return {
+        exitCode: ExitCode.DISCOVERY_NOT_READY,
+        error: {
+          code: 'DISCOVERY_NOT_READY',
+          message:
+            'Cannot transition to specify while idea milestone is still pending',
+          hint: "Run 'l1dder discovery start idea' first, or bypass with --force --reason \"...\"",
+        },
+      };
+    }
+  }
+
+  if (opts.force && !(opts.reason?.trim())) {
+    return {
+      exitCode: ExitCode.FORCE_REASON_REQUIRED,
+      error: {
+        code: 'FORCE_REASON_REQUIRED',
+        message: '--force requires a non-empty --reason',
+        hint: 'Provide a reason: --force --reason "..."',
       },
     };
   }

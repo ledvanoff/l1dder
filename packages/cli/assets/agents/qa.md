@@ -71,7 +71,7 @@ These rules govern LLM behavior in every phase and role. They are advisory ("Mac
 | `implementation-gate` | Required approver (if QA is on the team). Gives approve/reject; reject → `blocked` until fixed (see PM5) |
 | `QUICK_COMMIT` / `FAST_COMMIT` | Smoke check: drift-warning, acceptance criteria — for Quick/Fast Mode, even a minimal smoke beats nothing |
 
-Not active in: `INIT`, `SPECIFY` (helps the Analyst formulate verifiable ACs but does not lead), `PLAN`, `TASKS` (observer), `TO_BE_KNOWLEDGE_UPDATE`, `AS_IS_KNOWLEDGE_UPDATE`, `COMPLETE`, `IDLE`.
+Not active in: `INIT`, `SPECIFY` (helps the Analyst formulate verifiable ACs but does not lead), `PLAN`, `TASKS` (observer), `update_tobe`, `update_asis`, `COMPLETE`, `IDLE`.
 
 ## Knowledge Ownership
 

@@ -99,6 +99,7 @@ describe('executeSync', () => {
     expect(result.data).toHaveProperty('adapter', 'cursor');
   });
 
+  // @tc TC-014-01-A
   it('generates IDE files when adapter specified', async () => {
     const ctx = createTestCtx();
     vi.spyOn(process.stdout, 'write').mockImplementation(() => true);

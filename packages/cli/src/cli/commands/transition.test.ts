@@ -88,6 +88,32 @@ describe('executeTransition', () => {
     expect(result.humanText).toContain('forward');
   });
 
+  it('DF-022: historical phase alias suggests canonical name', async () => {
+    const ctx = await createTestCtx({ stateOverrides: { phase: 'idle' } });
+
+    const result = await executeTransition(ctx, {
+      to: 'to_be_knowledge_update',
+    });
+
+    expect(result.exitCode).toBe(ExitCode.USAGE_ERROR);
+    expect(result.error?.message).toBe(
+      'Invalid phase: "to_be_knowledge_update"',
+    );
+    expect(result.error?.hint?.toLowerCase()).toContain('did you mean');
+    expect(result.error?.hint).toContain('update_tobe');
+  });
+
+  it('DF-022: garbage phase keeps USAGE_ERROR without false alias', async () => {
+    const ctx = await createTestCtx({ stateOverrides: { phase: 'idle' } });
+
+    const result = await executeTransition(ctx, { to: 'not_a_phase_zzz' });
+
+    expect(result.exitCode).toBe(ExitCode.USAGE_ERROR);
+    expect(result.error?.message).toContain('Invalid phase');
+    expect(result.error?.hint?.toLowerCase()).not.toContain('did you mean');
+    expect(result.error?.hint).toContain('Valid phases');
+  });
+
   it('--dry-run validates without writing', async () => {
     const ctx = await createTestCtx({ stateOverrides: { phase: 'idle' } });
 
@@ -150,13 +176,66 @@ describe('executeTransition', () => {
     expect(result.humanText).toContain('yes');
   });
 
-  it('--force without --reason returns exit 2', async () => {
+  it('--force without --reason returns FORCE_REASON_REQUIRED', async () => {
     const ctx = await createTestCtx({ stateOverrides: { phase: 'idle' } });
 
     const result = await executeTransition(ctx, { to: 'specify', force: true });
 
-    expect(result.exitCode).toBe(ExitCode.USAGE_ERROR);
+    expect(result.exitCode).toBe(ExitCode.FORCE_REASON_REQUIRED);
     expect((result.error as { message: string }).message).toContain('--reason');
+  });
+
+  it('DF-015: dry-run to specify fails on discovery when idea is still pending', async () => {
+    const fs = new InMemoryFileSystem();
+    const clock = new FixedClock(NOW);
+    const logger = new NullLogger();
+    const prompt = new NonInteractiveAdapter();
+    const colors = createColorPalette(false);
+    const output = createFormatter('human', colors);
+    const cwd = '/test-project';
+    const globals = parseGlobals({ cwd });
+
+    await fs.mkdir(`${cwd}/.l1dder`);
+    await fs.writeFile(
+      `${cwd}/.l1dder/state.yml`,
+      `schema_version: 2
+project:
+  name: "test-project"
+  stage: discovery
+  stage_history: []
+  created_at: "${NOW}"
+  updated_at: "${NOW}"
+workflow:
+  current_phase: idle
+  current_status: in_progress
+  mode: main
+  profile: null
+  iteration: 0
+  phase_history: []
+  gate_history: []
+discovery:
+  milestones: []
+  current: null
+  waivers: []
+tasks:
+  items: []
+quick_tasks: []
+knowledge_updates: []
+decisions: []
+`,
+    );
+    await fs.writeFile(`${cwd}/.l1dder/config.yml`, CONFIG_YML);
+    const ctx = buildContext(globals, { fs, clock, logger, prompt, output, colors });
+
+    const dry = await executeTransition(ctx, { to: 'specify', dryRun: true });
+    expect(dry.exitCode).toBe(ExitCode.DISCOVERY_NOT_READY);
+    expect(dry.humanText ?? '').not.toContain('would succeed');
+
+    const real = await executeTransition(ctx, { to: 'specify' });
+    expect(real.exitCode).toBe(ExitCode.DISCOVERY_NOT_READY);
+
+    const sm = await ctx.state();
+    expect(sm.currentPosition().phase).toBe('idle');
   });
 
   it('missing --to returns exit 2', async () => {

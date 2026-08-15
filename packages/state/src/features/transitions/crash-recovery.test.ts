@@ -88,6 +88,27 @@ describe('CrashRecovery', () => {
         expect(result.error.code).toBe('CORRUPTED_STATE');
       }
     });
+
+    // @tc TC-004-01-A
+    it('second resolve after resume is a no-op and does not duplicate phase_history', () => {
+      const first = recovery.resolve(markerState, 'resume', clock);
+      expect(first.ok).toBe(true);
+      if (!first.ok) return;
+
+      // Simulate ghost marker still present after a partial persist (DF-007).
+      const withGhostMarker = {
+        ...first.value,
+        _in_flight_transition: markerState._in_flight_transition,
+      };
+
+      const second = recovery.resolve(withGhostMarker, 'resume', clock);
+      expect(second.ok).toBe(true);
+      if (!second.ok) return;
+
+      expect(second.value._in_flight_transition).toBeUndefined();
+      expect(second.value.workflow.phase_history).toHaveLength(1);
+      expect(second.value.workflow.current_phase).toBe('plan');
+    });
   });
 
   describe('setMarker / clearMarker', () => {

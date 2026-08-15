@@ -22,11 +22,11 @@ builtin: true
 
 Launches the TASKS phase: decomposes the planned implementation into
 atomic tasks in `specs/current/tasks.md`, synchronizes task tracking
-in `state.yml`, and initiates transition `TO_BE_KU → TASKS`.
+in `state.yml`, and initiates transition `update_tobe → tasks`.
 
 ## When to Use
 
-- Current phase: `TO_BE_KNOWLEDGE_UPDATE` (knowledge update completed)
+- Current phase: `update_tobe` (TO_BE_KU / knowledge update completed)
 - spec.md and plan.md exist and are finalized
 - Ready to begin delivery decomposition
 
@@ -73,7 +73,7 @@ Key TASKS phase rules:
 
 - `current_phase == "tasks"`, `current_status == "in_progress"`
 - `state.tasks.items[]` synchronized with tasks.md
-  (via `TaskTracker.syncFromFile()`)
+  (via `l1dder task sync` — project the Task List table into state)
 - Discovery-gate passed (config.yml.gates.discovery-gate)
 - `specs/current/tasks.md` exists and passes acceptance
 
@@ -83,7 +83,7 @@ Key TASKS phase rules:
 |---|---|
 | Cyclic dependency detected | Report the cycle; restructure tasks to break it |
 | Spec acceptance criteria not fully covered | Add missing tasks or extend existing ones |
-| `current_phase != to_be_knowledge_update` | Report current phase; suggest completing TO_BE_KU first |
+| `current_phase != update_tobe` | Report current phase; suggest completing TO_BE_KU (`update_tobe`) first |
 | Too many tasks for a single session | Split into multiple Agent Sessions; note in task grouping |
 
 ## Notes

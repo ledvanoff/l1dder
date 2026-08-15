@@ -12,7 +12,7 @@ import type {
   TransformedInstallFile,
   ValidationReport,
 } from '@l1dder/core';
-import { filterCommandsForAdapter, filterSkillsForAdapter } from '@l1dder/core';
+import { ROLE_NONE, filterCommandsForAdapter, filterSkillsForAdapter } from '@l1dder/core';
 import { KnowledgeReader } from '@l1dder/knowledge';
 import type { ConventionsBase, MergedStandards, WorkflowBase } from '@l1dder/knowledge';
 import { claudeManifest } from './claude-manifest.js';
@@ -132,6 +132,7 @@ function resolvePersona(
   personas: readonly ParsedPersona[],
 ): ParsedPersona | null {
   const role = command.frontMatter.role;
+  if (role === ROLE_NONE) return null;
   return personas.find((p) => p.id === role) ?? null;
 }
 
@@ -164,7 +165,7 @@ function buildRuleInput(
     workflow = merged.workflow.base;
   }
 
-  const projectName = basename(ctx.projectRoot);
+  const projectName = resolveProjectName(ctx);
   const projectStage = ctx.state?.stage ?? 'delivery';
 
   return {
@@ -176,6 +177,14 @@ function buildRuleInput(
     knowledgeFiles: [...metadata.knowledgePaths],
     manifest,
   };
+}
+
+/**
+ * Canonical project name from state, with directory basename as fallback.
+ */
+function resolveProjectName(ctx: AdapterContext): string {
+  const named = ctx.projectName?.trim();
+  return named && named.length > 0 ? named : basename(ctx.projectRoot);
 }
 
 async function collectProjectMetadata(

@@ -1,12 +1,11 @@
 import { z } from 'zod/v4';
 
-// ─── ISO Datetime helper ───
+import { DiscoverySchema } from './discovery.js';
+import { ActorSchema, IsoDatetime } from './primitives.js';
+import { WorkflowProfileIdSchema } from './workflow-profile.js';
 
-/**
- * ISO 8601 datetime string validator.
- * Used across all timestamp fields in state.yml.
- */
-const IsoDatetime = z.iso.datetime();
+export { ActorSchema };
+export type { Actor } from './primitives.js';
 
 // ─── Enums as Zod schemas ───
 // SYNC WARNING: PhaseSchema values MUST match @l1dder/core Phase const object.
@@ -89,30 +88,6 @@ export const TriggerSourceSchema = z.discriminatedUnion('kind', [
   RecoveryTrigger,
 ]);
 
-// ─── Actor (discriminated union with 3 variants) ───
-
-const HumanActor = z.object({
-  kind: z.literal('human'),
-  id: z.string(),
-});
-
-const AiActor = z.object({
-  kind: z.literal('ai'),
-  model: z.string(),
-  session_id: z.string().optional(),
-});
-
-const SystemActor = z.object({
-  kind: z.literal('system'),
-});
-
-/** Discriminated union for actors (human | ai | system). */
-export const ActorSchema = z.discriminatedUnion('kind', [
-  HumanActor,
-  AiActor,
-  SystemActor,
-]);
-
 // ─── Project ───
 
 /** Stage history entry — records project stage transitions. */
@@ -168,16 +143,77 @@ export const GateRecordSchema = z.object({
   history: z.array(GateHistoryActionSchema).default([]),
 });
 
+/** Waiver recorded when a session was force-started off the delivery rails. */
+export const AgentSessionWaiverSchema = z.object({
+  reason: z.string().min(1),
+  at: IsoDatetime,
+});
+
+/**
+ * Active Agent Session rail recorded in `workflow.session`.
+ *
+ * `iteration` is `null` when the session is not tracked on the delivery rails
+ * yet (empty rail index / unmatched force-start). `waiver` is set when the
+ * session was started with an audited `--force --reason` off-road bypass;
+ * otherwise `null`.
+ */
+export const AgentSessionRailSchema = z.object({
+  iteration: z.string().min(1).nullable(),
+  session: z.string().min(1),
+  profile: WorkflowProfileIdSchema,
+  started_at: IsoDatetime,
+  waiver: AgentSessionWaiverSchema.nullable().default(null),
+});
+
+/** How an Agent Session ended (append-only `workflow.session_history`). */
+export const AgentSessionOutcomeSchema = z.enum([
+  'completed',
+  'interrupted',
+  'handed_off',
+]);
+
+/**
+ * Closed Agent Session record — append-only history entry.
+ *
+ * Carries over rail fields from the active session; `ended_at` / `outcome` /
+ * `evidence` / `next_action` are set at session end.
+ */
+export const AgentSessionRecordSchema = z.object({
+  iteration: z.string().min(1).nullable(),
+  session: z.string().min(1),
+  profile: WorkflowProfileIdSchema,
+  started_at: IsoDatetime,
+  ended_at: IsoDatetime,
+  outcome: AgentSessionOutcomeSchema,
+  evidence: z.array(z.string().min(1)).default([]),
+  next_action: z.string().min(1).nullable().default(null),
+  waiver: AgentSessionWaiverSchema.nullable().default(null),
+});
+
 /** Workflow section of state.yml — tracks current phase, mode, and history. */
 export const WorkflowSchema = z.object({
   current_phase: PhaseSchema.default('idle'),
   current_status: PhaseStatusSchema.default('in_progress'),
   mode: WorkflowModeSchema.default('main'),
+  /**
+   * Selected workflow profile route, or `null` when enforcement is off.
+   * Profiles are never inferred silently — omit/null keeps legacy behavior.
+   */
+  profile: WorkflowProfileIdSchema.nullable().default(null),
+  /**
+   * Active Agent Session rail, or `null` when no session has been started.
+   * Populated by session start (HARD-5); absent/null keeps legacy behavior.
+   */
+  session: AgentSessionRailSchema.nullable().default(null),
+  /**
+   * Append-only closed Agent Session records (HARD-6).
+   * Absent/empty keeps legacy behavior; populated by session end.
+   */
+  session_history: z.array(AgentSessionRecordSchema).default([]),
   iteration: z.number().int().nonnegative().default(0),
   phase_history: z.array(PhaseHistoryEntrySchema).default([]),
   gate_history: z.array(GateRecordSchema).default([]),
 });
-
 // ─── Tasks ───
 
 /** Task status within an iteration. */
@@ -203,6 +239,15 @@ export const TaskSchema = z.object({
 /** Tasks section of state.yml. */
 export const TasksSchema = z.object({
   current_feature: z.string().optional(),
+  /**
+   * Project-relative path of the `tasks.md` the projection was synced from.
+   *
+   * Written by `l1dder task sync` so the implementation gate checks the file
+   * the project actually uses instead of assuming the default location.
+   * Optional and additive — state written by older releases stays valid, so no
+   * schema version bump is required.
+   */
+  source_path: z.string().min(1).optional(),
   items: z.array(TaskSchema).default([]),
 });
 
@@ -316,9 +361,18 @@ export const InFlightTransitionSchema = z.object({
 
 // ─── Root StateSchema ───
 
+/**
+ * Schema version written by the current release of L1DDER.
+ *
+ * Bumping this constant REQUIRES a registered migration in
+ * `@l1dder/state` (`migration/migrations/`) — the state loader refuses to
+ * upgrade a file it cannot migrate and rejects versions above this one.
+ */
+export const CURRENT_SCHEMA_VERSION = 4;
+
 /** Root schema for `.l1dder/state.yml` — the complete project state. */
 export const StateSchema = z.object({
-  schema_version: z.number().int().positive().default(1),
+  schema_version: z.number().int().positive().default(CURRENT_SCHEMA_VERSION),
   project: ProjectSchema,
   workflow: WorkflowSchema.prefault({}),
   tasks: TasksSchema.prefault({}),
@@ -326,6 +380,13 @@ export const StateSchema = z.object({
   knowledge_updates: z.array(KnowledgeUpdateSchema).default([]),
   /** Decision Ledger — append-only list of architectural decisions (advisory). */
   decisions: z.array(DecisionSchema).default([]),
+  /**
+   * Product-discovery milestone progress (HARD).
+   *
+   * Uses `.prefault({})` (not `.default({})`) so nested milestone/waiver defaults
+   * apply when legacy state.yml omits the `discovery` key entirely.
+   */
+  discovery: DiscoverySchema.prefault({}),
   /** Skill activation telemetry (Iteration 6, E5) — append-only, advisory. */
   skillRuns: z.array(SkillRunSchema).default([]),
   /** Skill content version history (Iteration 6, E5) — append-only, advisory. */
@@ -347,8 +408,6 @@ export type ProjectStage = z.infer<typeof ProjectStageSchema>;
 export type TransitionKind = z.infer<typeof TransitionKindSchema>;
 /** Trigger source discriminated union (cli | slash | auto | recovery). */
 export type TriggerSource = z.infer<typeof TriggerSourceSchema>;
-/** Actor discriminated union (human | ai | system). */
-export type Actor = z.infer<typeof ActorSchema>;
 /** Stage history entry type. */
 export type StageHistoryEntry = z.infer<typeof StageHistoryEntrySchema>;
 /** Project metadata type. */
@@ -363,6 +422,14 @@ export type GateHistoryAction = z.infer<typeof GateHistoryActionSchema>;
 export type GateRecord = z.infer<typeof GateRecordSchema>;
 /** Workflow section type. */
 export type Workflow = z.infer<typeof WorkflowSchema>;
+/** Active Agent Session rail recorded in `workflow.session`. */
+export type AgentSessionRail = z.infer<typeof AgentSessionRailSchema>;
+/** Force-start waiver on an Agent Session rail or history record. */
+export type AgentSessionWaiver = z.infer<typeof AgentSessionWaiverSchema>;
+/** How an Agent Session ended. */
+export type AgentSessionOutcome = z.infer<typeof AgentSessionOutcomeSchema>;
+/** Closed Agent Session history record. */
+export type AgentSessionRecord = z.infer<typeof AgentSessionRecordSchema>;
 /** Task status type. */
 export type TaskStatus = z.infer<typeof TaskStatusSchema>;
 /** Individual task type. */

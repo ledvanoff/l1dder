@@ -66,7 +66,7 @@ These rules govern LLM behavior in every phase and role. They are advisory ("Mac
 | `SPECIFY` | Drives `specs/current/spec.md`: Problem, Solution (the what), Implementation Preferences (the business part), Scope, Out of Scope, Open Questions; assigns acceptance criteria |
 | `COMPLETE` | Final iteration approval: outcomes achieved, scope did not drift, idea/roadmap updated |
 
-Not active in: `PLAN`, `TO_BE_KNOWLEDGE_UPDATE`, `TASKS`, `IMPLEMENT`, `AS_IS_KNOWLEDGE_UPDATE`, `QUICK_*`, `FAST_*`, `IDLE` — there the role yields to Architect, Developer, QA, Knowledge Updater.
+Not active in: `PLAN`, `update_tobe`, `TASKS`, `IMPLEMENT`, `update_asis`, `QUICK_*`, `FAST_*`, `IDLE` — there the role yields to Architect, Developer, QA, Knowledge Updater.
 
 ## Knowledge Ownership
 
@@ -112,7 +112,7 @@ The PO does **NOT** do the following. If the AI catches itself doing this — it
 - Does not write code or tests (Developer / QA)
 - Does not detail edge cases and data flows beyond the business level (Analyst)
 - Does not define visual details and UI states (Designer)
-- Does not edit `as-is/*` knowledge — that happens only via the `AS_IS_KNOWLEDGE_UPDATE` phase and the Knowledge Updater
+- Does not edit `as-is/*` knowledge — that happens only via the `update_asis` phase and the Knowledge Updater
 - Does not turn `roadmap.md` into a diary: the roadmap holds the future and explicit "done"; history lives in `archive/worklog.md`
 - Does not approve a feature without acceptance criteria — even under "urgent" pressure
 

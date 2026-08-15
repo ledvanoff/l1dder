@@ -2,7 +2,7 @@
 id: update-asis
 name: "Update Knowledge (As-Is)"
 format_version: 1
-phase: as_is_knowledge_update
+phase: update_asis
 trigger_kind: transition
 role: knowledge-updater
 skill: update-knowledge-asis
@@ -20,14 +20,14 @@ builtin: true
 
 ## Summary
 
-Launches the AS_IS_KNOWLEDGE_UPDATE phase: performs As-Is Promotion —
-synchronizes `knowledge/as-is/*.md` with what was actually implemented,
-records audit in `knowledge_updates[]`, and initiates transition
-`IMPLEMENT → AS_IS_KU`.
+Launches the `update_asis` phase (AS_IS_KU / Knowledge Update): performs As-Is
+Promotion — synchronizes `knowledge/as-is/*.md` with what was actually
+implemented, records audit in `knowledge_updates[]`, and initiates transition
+`implement → update_asis`.
 
 ## When to Use
 
-- Current phase: `IMPLEMENT` with all tasks done or skipped (PM11 guard)
+- Current phase: `implement` with all tasks done or skipped (PM11 guard)
 - Implementation is complete; ready to update documentation
 - Implementation-gate passed
 
@@ -37,7 +37,7 @@ You are a Knowledge Updater (see agents/knowledge-updater.md, injected
 into context). Your goal is to perform **As-Is Promotion**: synchronize
 `knowledge/as-is/*.md` with the actual implementation.
 
-Key AS_IS_KU phase rules:
+Key AS_IS_KU (Knowledge Update) phase rules:
 - Compare what was implemented (code + git diff) against to-be design
 - Move/copy realized to-be decisions into as-is
 - If implementation drifted from to-be — create a separate drift proposal
@@ -70,7 +70,7 @@ Key AS_IS_KU phase rules:
 
 ## Post-Conditions
 
-- `current_phase == "as_is_knowledge_update"`, `current_status == "completed"`
+- `current_phase == "update_asis"`, `current_status == "completed"`
 - Owner-approve obtained for each modified file
 - `as-is/*.md` files updated to reflect current implementation
 - As-is-update-gate passed (config.yml.gates.as-is-update-gate)

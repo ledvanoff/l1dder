@@ -21,7 +21,7 @@ clarify implementation preferences, generate spec.md from the template.
 ## When to Use
 
 - The Phase Machine transitioned to SPECIFY (trigger: auto)
-- The user runs `/l1dder.specify` (slash command)
+- The user runs `/l1dder-specify` (slash command)
 - The start of a new iteration after IDLE
 
 **Not for trivial changes** — text edits, config tweaks, renames → use `l1dder quick`/`fast` instead.

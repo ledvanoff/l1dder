@@ -1,4 +1,8 @@
-import type { FileSystemPort, LoggerPort } from '@l1dder/core';
+import type {
+  FileSystemPort,
+  LoggerPort,
+  SchemaIssueDetail,
+} from '@l1dder/core';
 
 /**
  * DoctorCheck — a single diagnostic result from a doctor section.
@@ -12,6 +16,7 @@ export interface DoctorCheck {
   readonly message: string;
   readonly hint?: string;
   readonly fixable?: boolean;
+  readonly details?: SchemaIssueDetail[];
 }
 
 /** Doctor section with grouped checks. */

@@ -40,7 +40,7 @@ const VALID_CONFIG = {
     overrides: {},
   },
   stage: {
-    enforcement: { restrict_phases: 'advisory', require_criteria: 'advisory' },
+    enforcement: { restrict_phases: 'advisory' },
     delivery_criteria: {
       require_idea_not_skeleton: true,
       require_roadmap: true,

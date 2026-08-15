@@ -7,6 +7,7 @@ import {
   ProjectStage,
   TransitionKind,
   WorkflowMode,
+  suggestCanonicalPhase,
 } from './phase.js';
 
 describe('Phase', () => {
@@ -95,5 +96,38 @@ describe('PHASE_TO_MODE', () => {
   it('maps fast phases to "fast"', () => {
     expect(PHASE_TO_MODE[Phase.FAST_IMPLEMENT]).toBe('fast');
     expect(PHASE_TO_MODE[Phase.FAST_COMPLETE]).toBe('fast');
+  });
+});
+
+describe('suggestCanonicalPhase', () => {
+  it('maps to_be_knowledge_update to UPDATE_TOBE', () => {
+    expect(suggestCanonicalPhase('to_be_knowledge_update')).toBe(
+      Phase.UPDATE_TOBE,
+    );
+  });
+
+  it('maps TO_BE_KU (case-insensitive) to UPDATE_TOBE', () => {
+    expect(suggestCanonicalPhase('TO_BE_KU')).toBe(Phase.UPDATE_TOBE);
+  });
+
+  it('maps Update-ToBe (hyphen + mixed case) to UPDATE_TOBE', () => {
+    expect(suggestCanonicalPhase('Update-ToBe')).toBe(Phase.UPDATE_TOBE);
+  });
+
+  it('maps historical AS_IS aliases to UPDATE_ASIS', () => {
+    expect(suggestCanonicalPhase('as_is_knowledge_update')).toBe(
+      Phase.UPDATE_ASIS,
+    );
+    expect(suggestCanonicalPhase('AS_IS_KU')).toBe(Phase.UPDATE_ASIS);
+  });
+
+  it('returns the same phase when input is already canonical', () => {
+    expect(suggestCanonicalPhase('update_tobe')).toBe(Phase.UPDATE_TOBE);
+    expect(suggestCanonicalPhase('implement')).toBe(Phase.IMPLEMENT);
+  });
+
+  it('returns null for unknown garbage input', () => {
+    expect(suggestCanonicalPhase('not_a_phase')).toBeNull();
+    expect(suggestCanonicalPhase('')).toBeNull();
   });
 });

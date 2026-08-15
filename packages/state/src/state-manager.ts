@@ -4,19 +4,32 @@ import type {
   LoggerPort,
   Result,
   WorkflowPosition,
+  WorkflowProfileId,
 } from '@l1dder/core';
-import {
+import { err, ok } from '@l1dder/core';
+import type {
   CorruptedStateError,
-  err,
-  ok,
+  NotInitializedError,
+  SchemaValidationError,
 } from '@l1dder/core';
-import type { NotInitializedError } from '@l1dder/core';
-import type { Config, Decision, SkillRun, SkillVersion, State } from '@l1dder/schemas';
+import type {
+  AgentSessionRecord,
+  Config,
+  Decision,
+  DiscoveryMilestone,
+  DiscoveryMilestoneId,
+  SkillRun,
+  SkillVersion,
+  State,
+} from '@l1dder/schemas';
 import { DecisionSchema, SkillRunSchema, SkillVersionSchema } from '@l1dder/schemas';
 import type { L1dderDocument } from '@l1dder/yaml';
 
 import type { ApproverPort } from './ports/approver-port.js';
+import type { GateConditionPort } from './ports/gate-condition-port.js';
+import { NoopGateConditions } from './ports/gate-condition-port.js';
 import { AtomicWriter } from './io/atomic-writer.js';
+import { StateLoader } from './io/state-loader.js';
 import { StateReader } from './io/state-reader.js';
 import { StateWriter } from './io/state-writer.js';
 import {
@@ -41,6 +54,31 @@ import { TaskManager } from './features/tasks/index.js';
 import { QuickTaskManager } from './features/quick/index.js';
 import type { DriftCheckerPort } from './features/quick/index.js';
 import { StageManager } from './features/stage/index.js';
+import {
+  DiscoveryOrchestrator,
+  WorkflowProfileService,
+} from './features/discovery/index.js';
+import type {
+  DiscoveryOrchestratorError,
+  MilestoneBlocker,
+  PlanMilestoneInput,
+  WaiveMilestoneInput,
+} from './features/discovery/index.js';
+import {
+  EmptyDeliveryRailIndex,
+  WorkflowProjectionService,
+  type DebtBacklogIndexPort,
+  type DeliveryRailIndexPort,
+  type ReadinessEvidencePort,
+  type WorkflowProjection,
+} from './features/projection/index.js';
+import {
+  SessionService,
+  type SessionEndError,
+  type SessionEndInput,
+  type SessionServiceError,
+  type SessionStartForceOptions,
+} from './features/session/index.js';
 
 /**
  * Dependencies injected into StateManager via `create()` factory.
@@ -51,6 +89,17 @@ export interface StateManagerDeps {
   readonly logger: LoggerPort;
   readonly approver: ApproverPort;
   readonly driftChecker?: DriftCheckerPort;
+  /** Optional debt/backlog index for advisory planning candidates (HARD-4). */
+  readonly debtBacklog?: DebtBacklogIndexPort;
+  /** Optional READY evidence collector (HARD-4). */
+  readonly readiness?: ReadinessEvidencePort;
+  /** Optional delivery-rail index for session start / projection (HARD-5). */
+  readonly deliveryRails?: DeliveryRailIndexPort;
+  /**
+   * Optional gate pre-conditions (fail-closed task checks, etc.).
+   * Defaults to {@link NoopGateConditions}.
+   */
+  readonly conditions?: GateConditionPort;
 }
 
 /**
@@ -65,6 +114,7 @@ export interface StateManagerOptions {
  */
 export type StateManagerLoadError =
   | NotInitializedError
+  | SchemaValidationError
   | CorruptedStateError;
 
 /**
@@ -76,8 +126,8 @@ export type StateManagerLoadError =
  * Created via async `StateManager.create()` factory which loads and validates
  * state.yml + config.yml. Returns a ready-to-use instance.
  *
- * Sub-objects `.transition`, `.task`, `.stage`, `.quick` expose namespaced APIs
- * (stubs in AS-7, wired in AS-8 and AS-9).
+ * Sub-objects `.transition`, `.task`, `.stage`, `.quick`, `.profile`,
+ * `.discovery`, `.projection`, `.session` expose namespaced APIs.
  */
 export class StateManager {
   private state: State;
@@ -103,6 +153,30 @@ export class StateManager {
   /** Project Stage management — discovery → delivery → maintenance. */
   readonly stage: StageManager;
 
+  /**
+   * Explicit workflow profile selection — never infers a profile silently.
+   *
+   * Use `select` / `clear` to persist; `recommended` is advisory only.
+   */
+  readonly profile: ProfileFacade;
+
+  /**
+   * Discovery milestone mutations and reads — delegates to {@link DiscoveryOrchestrator}.
+   *
+   * Rejected mutations leave `state.yml` untouched.
+   */
+  readonly discovery: DiscoveryFacade;
+
+  /**
+   * Read-only workflow projection — the single checklist / next-action source.
+   */
+  readonly projection: ProjectionFacade;
+
+  /**
+   * Agent Session start/end against delivery rails — persists only on success.
+   */
+  readonly session: SessionFacade;
+
   /** Crash recovery — detects and resolves in-flight transition markers. */
   readonly recovery: CrashRecovery;
 
@@ -113,7 +187,7 @@ export class StateManager {
     configDoc: L1dderDocument,
     statePath: string,
     configPath: string,
-    projectDir: string,
+    _projectDir: string,
     stateWriter: StateWriter,
     stateInitializer: StateInitializer,
     deps: StateManagerDeps,
@@ -131,10 +205,28 @@ export class StateManager {
     this.deps = deps;
     this.recovery = crashRecovery;
 
+    const orchestrator = new DiscoveryOrchestrator(deps.clock);
+    const deliveryRails = deps.deliveryRails ?? new EmptyDeliveryRailIndex();
+    const projectionService = new WorkflowProjectionService({
+      clock: deps.clock,
+      orchestrator,
+      ...(deps.debtBacklog !== undefined ? { debtBacklog: deps.debtBacklog } : {}),
+      ...(deps.readiness !== undefined ? { readiness: deps.readiness } : {}),
+      deliveryRails,
+    });
+
     this.transition = new TransitionFacade(this, transitionPipeline, crashRecovery, deps.clock);
     this.task = new TaskManager(deps.clock, deps.logger);
     this.quick = new QuickTaskManager(deps.clock, deps.logger, deps.driftChecker);
-    this.stage = new StageManager(deps.clock, deps.logger, deps.fs, projectDir);
+    this.stage = new StageManager(deps.clock, deps.logger, orchestrator);
+    this.profile = new ProfileFacade(this, new WorkflowProfileService());
+    this.discovery = new DiscoveryFacade(this, orchestrator);
+    this.projection = new ProjectionFacade(this, projectionService);
+    this.session = new SessionFacade(
+      this,
+      new SessionService({ clock: deps.clock }),
+      deliveryRails,
+    );
   }
 
   /**
@@ -156,6 +248,7 @@ export class StateManager {
     const atomicWriter = new AtomicWriter({ fs: deps.fs, logger });
     const stateWriter = new StateWriter({ atomicWriter, logger });
     const stateReader = new StateReader({ fs: deps.fs, logger });
+    const stateLoader = new StateLoader({ fs: deps.fs, logger });
     const stateInitializer = new StateInitializer({
       stateWriter,
       clock: deps.clock,
@@ -163,30 +256,24 @@ export class StateManager {
       fs: deps.fs,
     });
 
-    const stateResult = await stateReader.readState(statePath);
+    const stateResult = await stateLoader.load(statePath);
     if (!stateResult.ok) {
-      if (stateResult.error.code === 'NOT_INITIALIZED') {
-        return err(stateResult.error);
-      }
-      return err(
-        new CorruptedStateError(
-          statePath,
-          stateResult.error.message,
-        ),
-      );
+      // Preserve SchemaValidationError so CLI/doctor can surface Zod path+message
+      // (DF-002/028). Do not wrap into CorruptedStateError.
+      return err(stateResult.error);
+    }
+
+    if (stateResult.value.migrated) {
+      logger.info('Loaded state after schema migration', {
+        statePath,
+        schema_version: stateResult.value.state.schema_version,
+        backupPath: stateResult.value.backupPath,
+      });
     }
 
     const configResult = await stateReader.readConfig(configPath);
     if (!configResult.ok) {
-      if (configResult.error.code === 'NOT_INITIALIZED') {
-        return err(configResult.error);
-      }
-      return err(
-        new CorruptedStateError(
-          configPath,
-          configResult.error.message,
-        ),
-      );
+      return err(configResult.error);
     }
 
     // Cleanup orphaned .next files from previous crashes
@@ -194,10 +281,11 @@ export class StateManager {
 
     // Wire transition pipeline (AS-8)
     const crashRecovery = new CrashRecovery();
+    const conditions = deps.conditions ?? new NoopGateConditions();
     const transitionPipeline = new TransitionPipeline({
       idempotency: new IdempotencyChecker(),
       stageGuard: new StageGuard(logger),
-      gateEngine: new GateEngine(deps.approver, logger, deps.clock),
+      gateEngine: new GateEngine(deps.approver, logger, deps.clock, conditions),
       phaseStatus: new PhaseStatusManager(),
       rollback: new RollbackHandler(),
       clock: deps.clock,
@@ -395,9 +483,294 @@ export class StateManager {
 }
 
 /**
+ * Thin facade over {@link SessionService} exposed as `StateManager.session`.
+ *
+ * Loads delivery rails from the injected index and persists only on success.
+ */
+class SessionFacade {
+  private readonly manager: StateManager;
+  private readonly service: SessionService;
+  private readonly deliveryRails: DeliveryRailIndexPort;
+
+  constructor(
+    manager: StateManager,
+    service: SessionService,
+    deliveryRails: DeliveryRailIndexPort,
+  ) {
+    this.manager = manager;
+    this.service = service;
+    this.deliveryRails = deliveryRails;
+  }
+
+  /**
+   * Start an Agent Session and persist `workflow.session` on success.
+   *
+   * @param sessionId - Requested session id (e.g. `HARD-5`)
+   * @param profile - Fallback / selected profile when rails are unknown
+   * @param forceOptions - Optional audited `--force --reason` bypass
+   */
+  async start(
+    sessionId: string,
+    profile: WorkflowProfileId,
+    forceOptions?: SessionStartForceOptions,
+  ): Promise<Result<void, SessionServiceError | CorruptedStateError>> {
+    const rails = await this.deliveryRails.load();
+    const result = this.service.start(
+      this.manager.stateSnapshot(),
+      sessionId,
+      rails,
+      profile,
+      forceOptions,
+    );
+    if (!result.ok) {
+      return result;
+    }
+    return this.manager.applyAndSave(() => result.value);
+  }
+
+  /**
+   * End the active Agent Session, append history, and clear the rail.
+   *
+   * @param input - Outcome, evidence, and optional next action
+   */
+  async end(
+    input: SessionEndInput,
+  ): Promise<
+    Result<AgentSessionRecord, SessionEndError | CorruptedStateError>
+  > {
+    const result = this.service.end(this.manager.stateSnapshot(), input);
+    if (!result.ok) {
+      return result;
+    }
+    const saved = await this.manager.applyAndSave(() => result.value.state);
+    if (!saved.ok) {
+      return saved;
+    }
+    return ok(result.value.record);
+  }
+}
+
+/**
+ * Thin facade over {@link WorkflowProjectionService} exposed as `StateManager.projection`.
+ *
+ * Commands must consume this read model instead of constructing the service.
+ */
+class ProjectionFacade {
+  private readonly manager: StateManager;
+  private readonly service: WorkflowProjectionService;
+
+  constructor(manager: StateManager, service: WorkflowProjectionService) {
+    this.manager = manager;
+    this.service = service;
+  }
+
+  /**
+   * Build the full workflow projection for the current in-memory state.
+   */
+  async project(): Promise<WorkflowProjection> {
+    return this.service.project(
+      this.manager.stateSnapshot(),
+      this.manager.configSnapshot(),
+    );
+  }
+}
+
+/**
+ * Thin facade over {@link DiscoveryOrchestrator} exposed as `StateManager.discovery`.
+ *
+ * Ensures milestones are initialized before mutations and persists only on success.
+ */
+class DiscoveryFacade {
+  private readonly manager: StateManager;
+  private readonly orchestrator: DiscoveryOrchestrator;
+
+  constructor(manager: StateManager, orchestrator: DiscoveryOrchestrator) {
+    this.manager = manager;
+    this.orchestrator = orchestrator;
+  }
+
+  /**
+   * Ordered 7-milestone checklist (virtual defaults when uninitialized).
+   */
+  list(): readonly DiscoveryMilestone[] {
+    return this.orchestrator.list(this.manager.stateSnapshot());
+  }
+
+  /**
+   * Current discovery cursor.
+   */
+  current(): DiscoveryMilestoneId | null {
+    return this.orchestrator.current(this.manager.stateSnapshot());
+  }
+
+  /**
+   * Coded blockers for a milestone.
+   */
+  blockers(id: DiscoveryMilestoneId): readonly MilestoneBlocker[] {
+    return this.orchestrator.blockers(this.manager.stateSnapshot(), id);
+  }
+
+  /**
+   * Whether every applicable milestone is closed.
+   */
+  isReady(): boolean {
+    return this.orchestrator.isReady(this.manager.stateSnapshot());
+  }
+
+  /**
+   * Persist canonical milestone records when missing (idempotent).
+   */
+  async initialize(): Promise<Result<void, DiscoveryOrchestratorError | CorruptedStateError>> {
+    return this.applyOrchestrator((state) => this.orchestrator.initialize(state));
+  }
+
+  /**
+   * Start brainstorming (`pending → brainstorming`).
+   */
+  async startBrainstorm(
+    id: DiscoveryMilestoneId,
+  ): Promise<Result<void, DiscoveryOrchestratorError | CorruptedStateError>> {
+    return this.applyOrchestrator((state) => this.orchestrator.startBrainstorm(state, id));
+  }
+
+  /**
+   * Start work (`planned → in_progress`).
+   */
+  async startWork(
+    id: DiscoveryMilestoneId,
+  ): Promise<Result<void, DiscoveryOrchestratorError | CorruptedStateError>> {
+    return this.applyOrchestrator((state) => this.orchestrator.startWork(state, id));
+  }
+
+  /**
+   * Plan a milestone after brainstorm.
+   */
+  async plan(
+    id: DiscoveryMilestoneId,
+    input: PlanMilestoneInput,
+  ): Promise<Result<void, DiscoveryOrchestratorError | CorruptedStateError>> {
+    return this.applyOrchestrator((state) => this.orchestrator.plan(state, id, input));
+  }
+
+  /**
+   * Complete a milestone with evidence paths.
+   */
+  async complete(
+    id: DiscoveryMilestoneId,
+    evidence: readonly string[],
+  ): Promise<Result<void, DiscoveryOrchestratorError | CorruptedStateError>> {
+    return this.applyOrchestrator((state) =>
+      this.orchestrator.complete(state, id, evidence),
+    );
+  }
+
+  /**
+   * Audited waiver of a milestone.
+   */
+  async waive(
+    id: DiscoveryMilestoneId,
+    input: WaiveMilestoneInput,
+  ): Promise<Result<void, DiscoveryOrchestratorError | CorruptedStateError>> {
+    return this.applyOrchestrator((state) => this.orchestrator.waive(state, id, input));
+  }
+
+  /**
+   * Reopen a closed milestone with an audit reason.
+   */
+  async reopen(
+    id: DiscoveryMilestoneId,
+    reason: string,
+  ): Promise<Result<void, DiscoveryOrchestratorError | CorruptedStateError>> {
+    return this.applyOrchestrator((state) =>
+      this.orchestrator.reopen(state, id, reason),
+    );
+  }
+
+  /**
+   * Mark a conditional milestone `not_applicable`.
+   */
+  async markNotApplicable(
+    id: DiscoveryMilestoneId,
+    rationale: string,
+  ): Promise<Result<void, DiscoveryOrchestratorError | CorruptedStateError>> {
+    return this.applyOrchestrator((state) =>
+      this.orchestrator.markNotApplicable(state, id, rationale),
+    );
+  }
+
+  /**
+   * Run an orchestrator mutation against an initialized state; persist only on ok.
+   */
+  private async applyOrchestrator(
+    mutate: (state: State) => Result<State, DiscoveryOrchestratorError>,
+  ): Promise<Result<void, DiscoveryOrchestratorError | CorruptedStateError>> {
+    const snapshot = this.manager.stateSnapshot();
+    const initialized = this.orchestrator.initialize(snapshot);
+    if (!initialized.ok) {
+      return initialized;
+    }
+
+    const result = mutate(initialized.value);
+    if (!result.ok) {
+      return result;
+    }
+
+    return this.manager.applyAndSave(() => result.value);
+  }
+}
+
+/**
+ * Thin facade over {@link WorkflowProfileService} exposed as `StateManager.profile`.
+ *
+ * Persists profile changes via {@link StateManager.applyAndSave}.
+ */
+class ProfileFacade {
+  private readonly manager: StateManager;
+  private readonly service: WorkflowProfileService;
+
+  constructor(manager: StateManager, service: WorkflowProfileService) {
+    this.manager = manager;
+    this.service = service;
+  }
+
+  /**
+   * Select an explicit workflow profile and persist it.
+   *
+   * Profiles are never inferred — callers must choose deliberately.
+   */
+  async select(
+    profile: WorkflowProfileId,
+  ): Promise<Result<void, CorruptedStateError>> {
+    return this.manager.applyAndSave((state) =>
+      this.service.selectProfile(state, profile),
+    );
+  }
+
+  /**
+   * Clear the selected workflow profile (`null` = enforcement off) and persist.
+   */
+  async clear(): Promise<Result<void, CorruptedStateError>> {
+    return this.manager.applyAndSave((state) => this.service.clearProfile(state));
+  }
+
+  /**
+   * Advisory profile suggestion from the current project stage.
+   *
+   * Does not mutate state — surface to the user and call {@link select} explicitly.
+   */
+  recommended(): WorkflowProfileId {
+    return this.service.recommendedProfile(this.manager.stateSnapshot());
+  }
+}
+
+/**
  * Thin facade over TransitionPipeline exposed as `StateManager.transition`.
  *
- * Coordinates: set in-flight marker → persist → execute pipeline → clear marker → persist.
+ * Coordinates: execute pipeline → set in-flight marker → persist → apply new
+ * state with the marker cleared → persist.
+ *
+ * The pipeline decides before anything is written, so a rejected transition
+ * (including {@link ProfileRouteError}) touches neither memory nor disk.
  */
 class TransitionFacade {
   private readonly manager: StateManager;
@@ -418,12 +791,17 @@ class TransitionFacade {
   }
 
   /**
-   * Execute a phase transition with crash-safe in-flight marker.
+   * Execute a phase transition with a crash-safe in-flight marker.
    *
    * Flow:
-   * 1. Set `_in_flight_transition` marker + save (crash point #1)
-   * 2. Execute pipeline (validate → guard → gate → apply)
-   * 3. Clear marker + save (crash point #2 — resolved on next load)
+   * 1. Execute pipeline (validate → guard → gate → apply) against a snapshot
+   * 2. Set `_in_flight_transition` marker + save (crash point #1)
+   * 3. Apply new state with the marker cleared + save (crash point #2 —
+   *    resolved on next load)
+   *
+   * The decision comes first on purpose: writing the marker before validation
+   * meant a refused transition still rewrote `project.updated_at`, so "rejected
+   * without mutation" only held semantically (DEBT-004).
    */
   async execute(
     request: TransitionRequest,
@@ -431,7 +809,17 @@ class TransitionFacade {
     const state = this.manager.stateSnapshot() as State;
     const config = this.manager.configSnapshot() as Config;
 
-    // 1. Set in-flight marker before starting (crash-safety)
+    // 1. Decide first — a rejected request leaves state and disk untouched.
+    const result = await this.pipeline.execute(state, config, request);
+    if (!result.ok) {
+      return err(result.error);
+    }
+
+    if (request.dryRun) {
+      return ok(result.value.outcome);
+    }
+
+    // 2. Open the crash-safety window around the write itself.
     this.manager._updateState((s) =>
       this.recovery.setMarker(
         s,
@@ -443,35 +831,19 @@ class TransitionFacade {
       ),
     );
 
-    if (!request.dryRun) {
-      const saveResult = await this.manager.save();
-      if (!saveResult.ok) {
-        this.manager._updateState((s) => this.recovery.clearMarker(s));
-        return err(saveResult.error);
-      }
-    }
-
-    // 2. Execute transition pipeline
-    const result = await this.pipeline.execute(state, config, request);
-
-    if (!result.ok) {
-      // Rollback marker on failure
+    const markerSaved = await this.manager.save();
+    if (!markerSaved.ok) {
       this.manager._updateState((s) => this.recovery.clearMarker(s));
-      if (!request.dryRun) {
-        await this.manager.save();
-      }
-      return err(result.error);
+      return err(markerSaved.error);
     }
 
-    // 3. Apply new state + clear marker + save
+    // 3. Apply new state + clear marker + save.
     const newState = this.recovery.clearMarker(result.value.state);
     this.manager._updateState(() => newState);
 
-    if (!request.dryRun) {
-      const saveResult = await this.manager.save();
-      if (!saveResult.ok) {
-        return err(saveResult.error);
-      }
+    const saveResult = await this.manager.save();
+    if (!saveResult.ok) {
+      return err(saveResult.error);
     }
 
     return ok(result.value.outcome);

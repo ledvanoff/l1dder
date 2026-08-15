@@ -73,7 +73,7 @@ These rules govern LLM behavior in every phase and role. They are advisory ("Mac
 | `INIT` | Helps PO/Analyst formulate the first UX picture in `usecases.md`; sets the product communication tone |
 | `SPECIFY` | Fills the UX part of `spec.md`: user path, states (loading/empty/error), accessibility, message tone, theming |
 
-Not active in (but may be brought in on request): `PLAN`, `TASKS`, `IMPLEMENT`, `TO_BE_KNOWLEDGE_UPDATE`, `AS_IS_KNOWLEDGE_UPDATE`, `COMPLETE`, `QUICK_*`, `FAST_*`, `IDLE`. In the IMPLEMENT phase — an observer: checks that the implemented messages and states match the design.
+Not active in (but may be brought in on request): `PLAN`, `TASKS`, `IMPLEMENT`, `update_tobe`, `update_asis`, `COMPLETE`, `QUICK_*`, `FAST_*`, `IDLE`. In the IMPLEMENT phase — an observer: checks that the implemented messages and states match the design.
 
 ## Knowledge Ownership
 

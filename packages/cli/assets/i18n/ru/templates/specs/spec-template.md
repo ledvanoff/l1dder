@@ -2,9 +2,11 @@
 
 <!--
   Шаблон: specs/current/spec.md
-  Фаза Phase Machine: SPECIFY (создаётся /l1dder.specify)
-  Используется: l1dder specify (scaffolding + AI-генерация)
-  Парсится: extractSummary() — секция ## Summary (dynamic zone, priority 1 — never trim)
+  Фаза Phase Machine: SPECIFY (создаётся /l1dder-specify)
+  Используется: /l1dder-specify (slash-команда; scaffolding + AI-генерация)
+  Парсится:
+    - extractSummary() — секция ## Summary (dynamic zone, priority 1 — never trim)
+    - parseSpecContract() — fenced yaml блок под ## AI Contract (machine-readable)
   Обновляется: в рамках фазы SPECIFY текущей итерации
   Ownership: Product Owner / Analyst / Designer (роли фазы SPECIFY)
   Lifecycle: краткосрочный (per-feature, одна итерация)
@@ -15,14 +17,27 @@
     {{AUTHOR}}       — автор (роль или имя)
     <!-- TODO: ... -- > — секции, требующие заполнения
 
+  Структура (один spec bundle — отдельного ai-spec.md НЕТ):
+    1) Human Summary — прозаические секции ниже (## Summary … ## Open Questions)
+    2) AI Contract   — машиночитаемый блок ## AI Contract (ключи на английском)
+
+  Migration note (legacy-спеки до этого контракта):
+    Спеки без ## AI Contract остаются валидными. Doctor выдаёт warning с
+    подсказкой по миграции, а не error. Чтобы мигрировать: добавьте
+    ## AI Contract с yaml-ключами ниже (feature, usecases, decisions, models,
+    test_contracts). Не создавайте второй файл.
+
   Валидация (l1dder doctor):
     - ## Summary существует и не пуст
     - ## Implementation Preferences существует (архитектурное требование)
+    - ## AI Contract yaml валиден, если присутствует (warn если нет / fail если сломан)
     - Нет незаполненных {{...}} маркеров в финальном документе
     - Нет <!-- TODO --> без owner'а после завершения SPECIFY
 -->
 
 > **Фича:** {{FEATURE_NAME}} | **Дата:** {{DATE}} | **Автор:** {{AUTHOR}}
+
+<!-- ========== Human Summary (проза для ревьюера-человека) ========== -->
 
 ## Summary
 
@@ -105,3 +120,27 @@
 | # | Вопрос | Статус | Решение |
 |---|--------|--------|---------|
 | 1 | <!-- TODO --> | blocking / deferred | — |
+
+<!-- ========== AI Contract (machine-readable; ключи остаются English) ========== -->
+
+## AI Contract
+
+<!--
+  MACHINE-READABLE блок. Заголовок и YAML-ключи — English в любой локали.
+  Замените placeholder ID на реальные registry ids. models/decisions могут быть [].
+  usecases — непустой список. Ключ test_contracts обязателен (список может быть []).
+
+  Спека на одну фичу использует `feature: FEAT-NNN` (как ниже). Спека итерации,
+  покрывающей несколько фич, вместо этого пишет `iteration: <ID>` и список
+  `features: [FEAT-NNN, ...]`. Обе формы валидны.
+-->
+
+```yaml
+feature: FEAT-001
+usecases:
+  - UC-001-01
+decisions: []
+models: []
+test_contracts:
+  - TC-001-01-A
+```

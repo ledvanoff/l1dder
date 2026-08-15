@@ -36,6 +36,9 @@ l1dder init --existing --ai cursor # brownfield (adopt an existing codebase)
 # See where you are
 l1dder status
 
+# What to do next (same projection as /l1dder-next in the IDE)
+l1dder now
+
 # Run a quick task without the full phase cycle
 l1dder quick "add a health-check endpoint"
 l1dder quick --finish
@@ -47,25 +50,53 @@ l1dder context
 l1dder doctor
 ```
 
+## Typical session loop
+
+```bash
+l1dder now                          # or /l1dder-next in the IDE
+l1dder profile select delivery
+l1dder session start <id>
+# …do the work…
+l1dder task sync                    # or: l1dder task complete T-01
+l1dder session end --outcome completed --evidence "…"
+# interrupted work: l1dder handoff
+```
+
 ## Key Commands
 
 | Command | Description |
 |---------|-------------|
 | `l1dder init [--existing] [--ai <ide>]` | Initialize a project (greenfield or brownfield) |
 | `l1dder status` | Current phase, stage, and tasks |
-| `l1dder doctor` | Project health check |
+| `l1dder now` / `l1dder helpme` | Next step from the workflow projection (`now` is an alias of `helpme`) |
+| `l1dder profile status` / `select` / `clear` | Choose a workflow profile before starting work |
+| `l1dder session status` / `start` / `end` | Open and close an Agent Session |
+| `l1dder task sync` / `list` / `complete` | Sync `tasks.md` (source of truth) into state |
+| `l1dder registry check` / `sync` / `show` | Validate and regenerate the project registry |
+| `l1dder handoff` | Write `.l1dder/handoff.md` for an interrupted session |
+| `l1dder doctor` | Project health check (`--deep`, `--fix`, `--section`, `--mode`) |
 | `l1dder quick "<task>"` | Quick task outside the full phase cycle |
 | `l1dder context` | Generate a Project Brief for AI agents |
-| `l1dder stage status` / `stage advance` | Inspect / advance the project stage |
-| `l1dder transition <phase>` | Move between workflow phases |
+| `l1dder stage status` / `stage advance` / `stage set` | Inspect / advance / set the project stage (`advance --dry-run`; `set --to <stage>`) |
+| `l1dder transition --to <phase>` | Move between workflow phases |
+| `l1dder discovery status` / `start` / `plan` / `complete` | Drive the Product Discovery milestones |
 | `l1dder sync --ai <ide>` | Generate IDE integration files |
 | `l1dder check` | Verify standards compliance |
-| `l1dder helpme` | Get guidance on what to do next |
 
 ## Documentation
 
 Full documentation is on the way. For now, run `l1dder <command> --help` for
 per-command usage, or `l1dder helpme` for guided next steps.
+
+## Contributing
+
+**Issues are the best way to contribute** — bug reports, ideas, and questions are
+very welcome. This repository is an **auto-generated public mirror**: it is
+regenerated on every release, so direct commits here are overwritten. Pull
+requests are welcome too, but they are not merged directly — a maintainer
+re-implements accepted changes through the private source repository and credits
+you in the changeset, PR, and changelog. See [CONTRIBUTING.md](./CONTRIBUTING.md)
+for details. No CLA required.
 
 ## License
 

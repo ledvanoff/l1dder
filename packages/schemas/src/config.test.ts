@@ -26,7 +26,6 @@ const defaultConfig = {
   stage: {
     enforcement: {
       restrict_phases: 'advisory',
-      require_criteria: 'advisory',
     },
     delivery_criteria: {
       require_idea_not_skeleton: true,

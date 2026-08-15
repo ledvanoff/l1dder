@@ -6,17 +6,23 @@ import {
   errorToCode,
   errorToHint,
 } from '../../output/exit-codes.js';
+import { buildHumanOutput } from '../../output/human-output.js';
 import type { StageStatusOutput } from '@l1dder/schemas';
+import { evaluateDiscoveryReadiness } from '../shared/discovery-readiness.js';
+import {
+  toBlockerBriefs,
+  toPrimaryActionBrief,
+} from '../shared/projection-brief.js';
 
 /**
  * Execute `l1dder stage status` — show current stage, enforcement, readiness, history.
  *
- * Displays an ordered Discovery Checklist (milestones 1→5) with per-criterion
- * status and detail, plus a readiness score and advisory recommendation.
+ * Discovery Checklist uses the same ordered 7 milestones as `status` / `helpme`
+ * (via {@link evaluateDiscoveryReadiness} → WorkflowProjection).
  */
 export async function executeStageStatus(
   ctx: CliContext,
-): Promise<StageResult> {
+): Promise<StageResult & { quietSummary?: string; data?: StageStatusOutput }> {
   let sm;
   try {
     sm = await ctx.state();
@@ -34,6 +40,9 @@ export async function executeStageStatus(
 
   const state = sm.stateSnapshot();
   const config = sm.configSnapshot();
+  const projection = await sm.projection.project();
+  const primaryAction = toPrimaryActionBrief(projection);
+  const blockers = toBlockerBriefs(projection);
 
   const currentStage = sm.stage.currentStage(state);
   const enforcement = config.stage.enforcement.restrict_phases;
@@ -41,6 +50,7 @@ export async function executeStageStatus(
   const advanceResult = await sm.stage.canAdvance(state, config);
 
   let readinessData: StageStatusOutput['readiness'];
+  let nextStage: string | undefined;
 
   if (!advanceResult.ok) {
     readinessData = {
@@ -49,19 +59,38 @@ export async function executeStageStatus(
       criteria: [],
     };
   } else {
-    const { criteria } = advanceResult.value;
-    const metCount = criteria.filter((c) => c.met).length;
-
-    readinessData = {
-      score: `${String(metCount)}/${String(criteria.length)}`,
-      ready: criteria.every((c) => c.met),
-      criteria: criteria.map((c) => ({
-        id: c.id,
-        label: c.label,
-        met: c.met,
-        detail: c.detail,
-      })),
-    };
+    nextStage = advanceResult.value.nextStage;
+    if (state.project.stage === 'discovery') {
+      const view = await evaluateDiscoveryReadiness(sm);
+      readinessData = {
+        score: view.score,
+        ready: view.ready,
+        criteria: view.milestones.map((m) => ({
+          id: m.id,
+          label: m.label,
+          status: m.status,
+          met: m.met,
+          required: m.required,
+          evidence_count: m.evidence_count,
+          planned_session_count: m.planned_session_count,
+          current: m.current,
+          ...(m.detail ? { detail: m.detail } : {}),
+        })),
+      };
+    } else {
+      const { criteria } = advanceResult.value;
+      const metCount = criteria.filter((c) => c.met).length;
+      readinessData = {
+        score: `${String(metCount)}/${String(criteria.length)}`,
+        ready: criteria.every((c) => c.met),
+        criteria: criteria.map((c) => ({
+          id: c.id,
+          label: c.label,
+          met: c.met,
+          detail: c.detail,
+        })),
+      };
+    }
   }
 
   const history = state.project.stage_history.map((h) => ({
@@ -71,16 +100,26 @@ export async function executeStageStatus(
     ...(h.reason ? { reason: h.reason } : {}),
   }));
 
-  const data: StageStatusOutput = {
+  const data = {
     stage: currentStage,
     enforcement,
     readiness: readinessData,
     history,
+    primary_action: primaryAction,
+    blockers: [...blockers],
   };
 
-  const humanText = formatStageStatusHuman(ctx, data, advanceResult.ok ? advanceResult.value.nextStage : undefined);
+  const compactBody = formatStageStatusHuman(ctx, data, nextStage);
+  const { humanText, quietSummary } = buildHumanOutput({
+    globals: ctx.globals,
+    colors: ctx.colors,
+    phase: projection.phase.current,
+    primaryAction,
+    blockers,
+    compactBody,
+  });
 
-  return { exitCode: ExitCode.SUCCESS, data, humanText };
+  return { exitCode: ExitCode.SUCCESS, data, humanText, quietSummary };
 }
 
 function formatStageStatusHuman(
@@ -109,7 +148,8 @@ function formatStageStatusHuman(
       const glyph = c.met ? colors.glyph.pass : colors.glyph.fail;
       const labelText = c.met ? colors.success(c.label) : c.label;
       const detailText = c.detail ? ` — ${colors.dim(c.detail)}` : '';
-      lines.push(`  ${glyph} ${labelText}${detailText}`);
+      const cursor = c.current ? colors.info(' ←') : '';
+      lines.push(`  ${glyph} ${labelText}${detailText}${cursor}`);
     }
 
     lines.push('');

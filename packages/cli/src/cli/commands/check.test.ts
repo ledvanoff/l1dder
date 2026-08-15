@@ -61,6 +61,7 @@ function createMockCtx(files: Record<string, string>): CliContext {
     shell: undefined,
     state: () => Promise.reject(new Error('not initialized')),
     knowledge: () => { throw new Error('not initialized'); },
+    deliveryRails: () => { throw new Error('not initialized'); },
     contextEngine: () => { throw new Error('not initialized'); },
   };
 }

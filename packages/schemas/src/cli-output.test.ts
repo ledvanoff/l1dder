@@ -7,6 +7,7 @@ import {
   StatusOutputSchema,
   CheckOutputSchema,
   DoctorOutputSchema,
+  RegistryOutputSchema,
   ContextBriefOutputSchema,
   QuickOutputSchema,
   StageStatusOutputSchema,
@@ -56,7 +57,7 @@ describe('InitOutputSchema', () => {
       mode: 'greenfield',
       files_created: ['.l1dder/state.yml', '.l1dder/config.yml'],
       next_steps: [
-        { label: 'Run /l1dder.specify', command: null, blocking: false },
+        { label: 'Run /l1dder-specify', command: null, blocking: false },
         { label: 'Generate project brief', command: 'l1dder context', blocking: false },
       ],
     };
@@ -80,7 +81,13 @@ describe('StatusOutputSchema', () => {
       project: { name: 'my-saas', stage: 'delivery', created: '2026-05-09' },
       workflow: { phase: 'implement', status: 'in_progress', mode: 'main', iteration: '7-payment-flow' },
       tasks: { total: 8, done: 2, in_progress: 1, pending: 5, blocked: 0, skipped: 0, next_available: 'task-3' },
-      next_steps: [{ label: 'Continue task-3', command: '/l1dder.implement', blocking: false }],
+      next_steps: [{ label: 'Continue task-3', command: '/l1dder-implement', blocking: false }],
+      primary_action: {
+        kind: 'complete_task',
+        command: 'l1dder task complete task-3',
+        reason: 'Task task-3 is in progress',
+      },
+      blockers: [],
     };
     expect(StatusOutputSchema.parse(data)).toMatchObject(data);
   });
@@ -91,6 +98,39 @@ describe('StatusOutputSchema', () => {
       workflow: { phase: 'idle', status: 'in_progress', mode: 'main', iteration: null },
       tasks: { total: 0, done: 0, in_progress: 0, pending: 0, blocked: 0, skipped: 0, next_available: null },
       next_steps: [],
+      primary_action: {
+        kind: 'select_profile',
+        command: 'l1dder profile select product_discovery',
+        reason: 'No workflow profile is selected',
+      },
+      blockers: [{ code: 'PROFILE_NOT_SELECTED', message: 'Select a workflow profile' }],
+    };
+    expect(StatusOutputSchema.parse(data)).toMatchObject(data);
+  });
+
+  it('accepts needs_input plus required_inputs and advisory blocker level', () => {
+    const data = {
+      project: { name: 'p', stage: 'discovery', created: '2026-01-01' },
+      workflow: { phase: 'idle', status: 'in_progress', mode: 'main', iteration: null },
+      tasks: { total: 0, done: 0, in_progress: 0, pending: 0, blocked: 0, skipped: 0, next_available: null },
+      next_steps: [],
+      primary_action: {
+        kind: 'plan_milestone',
+        command: 'l1dder discovery plan idea',
+        reason: 'Milestone idea is brainstorming',
+        needs_input: true,
+        required_inputs: [
+          { flag: '--summary', description: 'Non-empty plan summary' },
+          { flag: '--session', description: 'Planned session id', repeatable: true },
+        ],
+      },
+      blockers: [
+        {
+          code: 'DISCOVERY_NOT_READY',
+          message: 'Discovery stage is active but not every applicable milestone is closed.',
+          level: 'advisory' as const,
+        },
+      ],
     };
     expect(StatusOutputSchema.parse(data)).toMatchObject(data);
   });
@@ -137,7 +177,18 @@ describe('DoctorOutputSchema', () => {
           id: 'state',
           label: 'State consistency',
           checks: [
-            { id: 'state-valid', level: 'pass', message: 'schema v1' },
+            {
+              id: 'state-valid',
+              level: 'pass',
+              message: 'schema v1',
+              details: [
+                {
+                  path: 'workflow.current_phase',
+                  message: 'Invalid option',
+                  code: 'invalid_value',
+                },
+              ],
+            },
           ],
         },
       ],
@@ -162,6 +213,30 @@ describe('DoctorOutputSchema', () => {
       ],
     };
     expect(DoctorOutputSchema.parse(data)).toMatchObject(data);
+  });
+});
+
+describe('RegistryOutputSchema', () => {
+  it('validates sync / check / show payloads', () => {
+    const data = {
+      action: 'sync' as const,
+      manifest_path: 'knowledge/project-registry.yml',
+      view_path: 'knowledge/registry.md',
+      content_hash: 'abcdef012345',
+      wrote: true,
+      unchanged: false,
+      issue_summary: { error: 0, warning: 1 },
+      issues: [
+        {
+          code: 'REGISTRY_TC_EVIDENCE_MISSING',
+          ref: 'TC-001-01-A',
+          message: 'no evidence',
+          severity: 'warning' as const,
+        },
+      ],
+      lookup_instruction: '## Registry-first lookup',
+    };
+    expect(RegistryOutputSchema.parse(data)).toMatchObject(data);
   });
 });
 
@@ -226,6 +301,12 @@ describe('StageStatusOutputSchema', () => {
       history: [
         { from: 'discovery', to: 'delivery', timestamp: '2026-05-08T12:00:00Z', reason: 'Ready' },
       ],
+      primary_action: {
+        kind: 'advance_stage',
+        command: 'l1dder stage advance',
+        reason: 'Discovery checklist is READY',
+      },
+      blockers: [],
     };
     expect(StageStatusOutputSchema.parse(data)).toMatchObject(data);
   });

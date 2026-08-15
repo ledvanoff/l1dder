@@ -84,17 +84,52 @@ export class StateWriter {
   }
 
   /**
-   * Recursively set all keys from `data` into the document at the given prefix.
-   * This preserves existing comment nodes while updating values.
+   * Synchronize `data` into the document at `prefix`: delete keys absent from
+   * `data` (DEC-HARD-12), then set present keys. Nested plain objects delete
+   * recursively; values are written with `set` (whole subtree) to keep YAML
+   * node types stable.
    */
   private applyObjectToDoc(
     document: L1dderDocument,
     data: Record<string, unknown>,
     prefix: string,
   ): void {
+    this.deleteAbsentKeys(document, data, prefix);
+
     for (const [key, value] of Object.entries(data)) {
       const path = prefix ? `${prefix}.${key}` : key;
       document.set(path, value);
     }
   }
+
+  /**
+   * Remove document keys (and nested plain-object keys) that are missing from
+   * the canonical data object so cleared optional fields do not ghost after save.
+   */
+  private deleteAbsentKeys(
+    document: L1dderDocument,
+    data: Record<string, unknown>,
+    prefix: string,
+  ): void {
+    const existing = prefix === '' ? document.toJS() : document.get(prefix);
+    if (!isPlainObject(existing)) return;
+
+    for (const key of Object.keys(existing)) {
+      const path = prefix ? `${prefix}.${key}` : key;
+      if (!(key in data)) {
+        document.delete(path);
+        continue;
+      }
+      const nextData = data[key];
+      const nextExisting = existing[key];
+      if (isPlainObject(nextData) && isPlainObject(nextExisting)) {
+        this.deleteAbsentKeys(document, nextData, path);
+      }
+    }
+  }
+}
+
+/** True for non-null plain objects (not arrays). */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

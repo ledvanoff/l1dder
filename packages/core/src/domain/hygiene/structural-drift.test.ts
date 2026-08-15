@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { detectStructuralDrift } from './structural-drift.js';
 
 describe('detectStructuralDrift', () => {
+  // @tc TC-015-01-A
   it('flags a section present in to-be but missing from as-is', () => {
     const asIs = { path: 'knowledge/as-is/architecture.md', content: '## Summary\ntext\n' };
     const toBe = {

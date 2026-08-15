@@ -1,12 +1,16 @@
 import { join } from 'node:path';
 import { StateSchema } from '@l1dder/schemas';
-import { generateHandoff } from '@l1dder/context';
+import {
+  HANDOFF_RELATIVE_PATH,
+  coreSectionById,
+  generateHandoff,
+  preferredRuHeading,
+} from '@l1dder/context';
 import { parseYaml } from '@l1dder/yaml';
 import type { HookPayload, HookResult } from '@l1dder/schemas';
 import type { HookHandlerDeps } from '../hook-handler.js';
 
 const STATE_FILE = '.l1dder/state.yml';
-const HANDOFF_FILE = '.l1dder/handoff.md';
 
 const DEFAULT_MAX_CHARS = 8000;
 
@@ -34,14 +38,14 @@ export async function precompactHandoffSaveHandler(
       ? generateHandoff(parseResult.value, { maxChars }).content
       : buildFallbackHandoff();
 
-    const handoffPath = join(deps.projectRoot, HANDOFF_FILE);
+    const handoffPath = join(deps.projectRoot, HANDOFF_RELATIVE_PATH);
     const handoffDir = join(deps.projectRoot, '.l1dder');
     await deps.fs.mkdir(handoffDir);
     await deps.fs.writeFile(handoffPath, content);
   } catch {
     // Non-critical — write a minimal stub so session-start still works.
     try {
-      const handoffPath = join(deps.projectRoot, HANDOFF_FILE);
+      const handoffPath = join(deps.projectRoot, HANDOFF_RELATIVE_PATH);
       const handoffDir = join(deps.projectRoot, '.l1dder');
       await deps.fs.mkdir(handoffDir);
       await deps.fs.writeFile(handoffPath, buildFallbackHandoff());
@@ -57,15 +61,15 @@ export async function precompactHandoffSaveHandler(
 function buildFallbackHandoff(): string {
   const now = new Date().toISOString();
   return [
-    '## Контекст сессии',
+    preferredRuHeading(coreSectionById('session_context')),
     '',
     `Handoff сгенерирован автоматически при компакции контекста: ${now}`,
     '',
-    '## Текущее состояние',
+    preferredRuHeading(coreSectionById('current_state')),
     '',
     'State.yml недоступен — восстанови контекст вручную.',
     '',
-    '## Следующие шаги',
+    preferredRuHeading(coreSectionById('next_steps')),
     '',
     'Проверь `knowledge/roadmap.md` для определения следующей задачи.',
     '',

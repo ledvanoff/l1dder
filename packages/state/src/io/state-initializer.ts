@@ -1,8 +1,9 @@
 import type { ClockPort, FileSystemPort, LoggerPort, Result } from '@l1dder/core';
 import { NotInitializedError, err, ok } from '@l1dder/core';
 import type { Config, State } from '@l1dder/schemas';
-import { ConfigSchema, StateSchema } from '@l1dder/schemas';
+import { ConfigSchema } from '@l1dder/schemas';
 
+import { createInitialState } from './initial-state.js';
 import type { StateWriter } from './state-writer.js';
 
 /**
@@ -111,32 +112,14 @@ export class StateInitializer {
     return this.fs.exists(`${projectDir}/.l1dder/state.yml`);
   }
 
+  /**
+   * Canonical default state — delegates to {@link createInitialState}.
+   */
   private createDefaultState(options: InitOptions, now: string): State {
-    const stage = options.brownfield ? 'delivery' : 'discovery';
-    const stageHistory = options.brownfield
-      ? [{ from: 'discovery' as const, to: 'delivery' as const, timestamp: now, reason: 'Brownfield initialization' }]
-      : [];
-
-    return StateSchema.parse({
-      schema_version: 1,
-      project: {
-        name: options.projectName,
-        stage,
-        stage_history: stageHistory,
-        created_at: now,
-        updated_at: now,
-      },
-      workflow: {
-        current_phase: 'idle',
-        current_status: 'in_progress',
-        mode: 'main',
-        iteration: 0,
-        phase_history: [],
-        gate_history: [],
-      },
-      tasks: { items: [] },
-      quick_tasks: [],
-      knowledge_updates: [],
+    return createInitialState({
+      projectName: options.projectName,
+      brownfield: options.brownfield,
+      now,
     });
   }
 

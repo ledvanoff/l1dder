@@ -1,8 +1,7 @@
 import { join } from 'node:path';
+import { HANDOFF_RELATIVE_PATH } from '@l1dder/context';
 import type { HookPayload, HookResult } from '@l1dder/schemas';
 import type { HookHandlerDeps } from '../hook-handler.js';
-
-const HANDOFF_FILE = '.l1dder/handoff.md';
 
 const DEFAULT_MAX_CHARS = 8000;
 
@@ -26,7 +25,7 @@ export async function sessionStartBoundedContextHandler(
   const maxChars = deps.sessionStartMaxChars ?? DEFAULT_MAX_CHARS;
 
   try {
-    const handoffPath = join(deps.projectRoot, HANDOFF_FILE);
+    const handoffPath = join(deps.projectRoot, HANDOFF_RELATIVE_PATH);
     const exists = await deps.fs.exists(handoffPath);
 
     if (!exists) {

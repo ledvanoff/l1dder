@@ -119,4 +119,25 @@ describe('validateHandoff', () => {
     expect(result.missing).toContain('Current State');
     expect(result.missing).toContain('Next Steps');
   });
+
+  it('accepts core plus optional rich blocks', () => {
+    const rich = [
+      VALID_HANDOFF_EN,
+      '',
+      '## Decisions',
+      '- DEC-1: Use Zod 4',
+      '',
+      '## Open Questions',
+      '- When to bump schema?',
+      '',
+      '## Recommended First Command',
+      '```',
+      'l1dder session status',
+      '```',
+    ].join('\n');
+
+    const result = validateHandoff(rich);
+    expect(result.valid).toBe(true);
+    expect(result.missing).toHaveLength(0);
+  });
 });

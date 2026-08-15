@@ -20,7 +20,10 @@ import type {
 import { resolveProfile } from './features/resolve/resolve.js';
 import { allocate } from './features/allocate/allocate.js';
 import { renderContext } from './features/render/renderer.js';
-import { buildBrief } from './features/brief/brief-builder.js';
+import {
+  buildBrief,
+  type BuildBriefOptions,
+} from './features/brief/brief-builder.js';
 import { detectHandoff } from './features/handoff/handoff-detector.js';
 import { CharBasedTokenCounter } from './adapters/char-based-token-counter.js';
 import { estimateCategoryTokens } from './domain/constants.js';
@@ -181,9 +184,19 @@ export class ContextEngine {
    *
    * Phase-independent: always produces the same sections structure.
    * Uses extractSummary for each knowledge file.
+   *
+   * Pass `options.projection` (mapped from `WorkflowProjectionService`) so
+   * Workflow Status claims cannot contradict runtime (DF-025). Wiring the
+   * real projection is the CLI caller's responsibility.
    */
-  async brief(): Promise<BriefResult> {
-    return buildBrief(this.fs, this.tokenCounter, this.clock, this.projectRoot);
+  async brief(options?: BuildBriefOptions): Promise<BriefResult> {
+    return buildBrief(
+      this.fs,
+      this.tokenCounter,
+      this.clock,
+      this.projectRoot,
+      options,
+    );
   }
 
   /**

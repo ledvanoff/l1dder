@@ -59,16 +59,21 @@ describe('E2E: init --ai cursor → sync', () => {
     expect(syncCode).toBe(0);
   });
 
-  it('init without --ai does not create .cursor/', async () => {
+  it('init without --ai defaults to cursor and creates .cursor/', async () => {
     const overrides = createOverrides();
 
     const exitCode = await capturedRunCli(
-      ['init', '--name', 'no-adapter'],
+      ['init', '--name', 'default-adapter'],
       overrides,
     );
     expect(exitCode).toBe(0);
 
-    expect(existsSync(join(testDir, '.cursor'))).toBe(false);
+    expect(existsSync(join(testDir, '.cursor'))).toBe(true);
+    expect(existsSync(join(testDir, '.cursor', 'rules', 'l1dder.mdc'))).toBe(true);
+    const config = await import('node:fs/promises').then((fs) =>
+      fs.readFile(join(testDir, '.l1dder', 'config.yml'), 'utf-8'),
+    );
+    expect(config).toContain('- cursor');
   });
 
   it('init --ai invalid-adapter returns exit 2', async () => {

@@ -22,11 +22,13 @@ function seedAssets(fs: InMemoryFileSystem): string {
   void fs.writeFile(join(root, 'skills', 'starter', 'security-review.md'), '# sec');
 
   // localized en
+  void fs.writeFile(join(root, 'i18n', 'en', 'templates', 'handoff-template.md'), '## Session Context\n');
   void fs.writeFile(join(root, 'i18n', 'en', 'templates', 'knowledge', 'idea-template.md'), '# Idea (en)');
   void fs.writeFile(join(root, 'i18n', 'en', 'templates', 'specs', 'spec-template.md'), '# Spec (en)');
   void fs.writeFile(join(root, 'i18n', 'en', 'standards', '.base', 'workflow.base.yml'), 'ai_chat: en');
 
   // localized ru
+  void fs.writeFile(join(root, 'i18n', 'ru', 'templates', 'handoff-template.md'), '## Контекст сессии\n');
   void fs.writeFile(join(root, 'i18n', 'ru', 'templates', 'knowledge', 'idea-template.md'), '# Идея (ru)');
   void fs.writeFile(join(root, 'i18n', 'ru', 'templates', 'specs', 'spec-template.md'), '# Спека (ru)');
   void fs.writeFile(join(root, 'i18n', 'ru', 'standards', '.base', 'workflow.base.yml'), 'ai_chat: ru');
@@ -42,8 +44,10 @@ describe('copyAssets', () => {
     const copied = await copyAssets('/proj', fs);
 
     expect(copied).toContain(join('templates/knowledge', 'idea-template.md'));
+    expect(copied).toContain(join('templates', 'handoff-template.md'));
     expect(copied).toContain(join('agents', 'architect.md'));
     expect(await fs.readFile('/proj/templates/knowledge/idea-template.md')).toBe('# Idea (en)');
+    expect(await fs.readFile('/proj/templates/handoff-template.md')).toBe('## Session Context\n');
     expect(await fs.readFile('/proj/standards/.base/workflow.base.yml')).toBe('ai_chat: en');
   });
 

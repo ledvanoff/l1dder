@@ -89,6 +89,11 @@ export interface AdapterContext {
   readonly standards: ResolvedStandards;
   readonly team?: ResolvedTeam;
   readonly state?: WorkflowPosition;
+  /**
+   * Canonical project name from `state.project.name`.
+   * Adapters fall back to `basename(projectRoot)` when omitted.
+   */
+  readonly projectName?: string;
   readonly force: boolean;
   readonly dryRun: boolean;
 }

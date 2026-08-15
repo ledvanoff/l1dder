@@ -21,7 +21,7 @@ state, decisions made, open questions, and the next step.
 ## When to Use
 
 - A session is interrupted midway (context window exhausted, a break)
-- The user runs `/l1dder.pause` (slash command)
+- The user runs `/l1dder-pause` (slash command)
 - An explicit user request to preserve context for a new session
 
 ## Steps
@@ -39,7 +39,8 @@ state, decisions made, open questions, and the next step.
    - Dependencies on other tasks
 6. List the files changed in the current session
 7. Capture uncommitted changes (a git status snapshot)
-8. Produce `.l1dder/handoff.md` from the `templates/handoff-prompt.md` template
+8. Produce `.l1dder/handoff.md` from the `templates/handoff-template.md` template
+   (or run `l1dder handoff` / `l1dder session end --outcome handed_off`)
 
 ## Validation
 

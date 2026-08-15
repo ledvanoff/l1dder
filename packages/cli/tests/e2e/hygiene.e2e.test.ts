@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { mkdtempSync, rmSync, readFileSync, appendFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, rmSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -151,33 +151,32 @@ describe('E2E: Hygiene Sessions (doctor --deep, HYGIENE transitions, sync --prun
       const overrides = createOverrides();
       await capturedRunCli(['init', '--name', 'hyg-forbidden'], overrides);
 
-      await capturedRunCli(['transition', '--to', 'specify'], overrides);
+      // DF-015 blocks idle→specify while idea is pending; force into specify
+      // so we can assert the hygiene whitelist rejection from that phase.
+      const toSpecify = await capturedRunCli(
+        ['transition', '--to', 'specify', '--force', '--reason', 'e2e setup'],
+        overrides,
+      );
+      expect(toSpecify).toBe(0);
+
       const code = await capturedRunCli(['transition', '--to', 'hygiene'], overrides);
       expect(code).toBe(3); // FORBIDDEN_TRANSITION
     });
   });
 
   describe('sync --prune orphan detection (full CLI, dry-run)', () => {
-    // Real (non-dry-run) `.cursor/` writes are sandbox-restricted (see
-    // adapter.e2e.test.ts) — `mkdir('.cursor')` itself is blocked regardless
-    // of where the temp dir lives, so this path only exercises dry-run
-    // reporting through the real CLI. The actual disk removal performed by
-    // `sync --prune` (production `FileSystemPort.removeDir`/`deleteFile`) is
-    // validated directly against real disk in
-    // `install-runner.real-fs.test.ts` (T-13), using a non-`.cursor` fake
-    // adapter target to sidestep the sandbox restriction.
+    // Real (non-dry-run) prune deletes are covered in
+    // `install-runner.real-fs.test.ts` (T-13). This path exercises dry-run
+    // orphan reporting through the real CLI after init's default cursor sync.
     it('reports a stale install-state entry as orphaned without touching disk', async () => {
       const overrides = createOverrides();
       await capturedRunCli(['init', '--name', 'hyg-prune'], overrides);
 
-      // No adapter was configured via --ai, but `sync` defaults to `cursor`
-      // (adapter-context.ts). Seed a stale install-state entry for a skill
-      // that will never appear in a fresh project's (empty) transform output.
+      // Init defaults to --ai cursor and writes install-state. Inject a stale
+      // skill entry that will never appear in this project's transform output.
       const installStatePath = join(testDir, '.l1dder', 'install-state.yml');
-      const installStateYaml = [
-        'schema_version: 1',
-        'targets:',
-        '  cursor:',
+      const existing = readFileSync(installStatePath, 'utf-8');
+      const orphanEntry = [
         '    - path: .cursor/skills-l1dder/deleted-skill/SKILL.md',
         '      hash: aaaaaaaaaaaa',
         '      source: built-in',
@@ -186,7 +185,16 @@ describe('E2E: Hygiene Sessions (doctor --deep, HYGIENE transitions, sync --prun
         '      timestamp: 2026-01-01T00:00:00.000Z',
         '',
       ].join('\n');
-      appendFileSync(installStatePath, installStateYaml);
+      writeFileSync(installStatePath, `${existing.trimEnd()}\n${orphanEntry}`);
+
+      const orphanPath = join(
+        testDir,
+        '.cursor',
+        'skills-l1dder',
+        'deleted-skill',
+        'SKILL.md',
+      );
+      expect(existsSync(orphanPath)).toBe(false);
 
       const { exitCode, body } = await runCliJson(['sync', '--dry-run', '--prune'], overrides);
       expect(exitCode).toBe(0);
@@ -195,7 +203,8 @@ describe('E2E: Hygiene Sessions (doctor --deep, HYGIENE transitions, sync --prun
       expect(data?.orphaned).toContain('.cursor/skills-l1dder/deleted-skill/SKILL.md');
       // Dry-run never mutates state or disk.
       expect(data?.pruned).toHaveLength(0);
-      expect(existsSync(join(testDir, '.cursor'))).toBe(false);
+      expect(existsSync(join(testDir, '.cursor'))).toBe(true);
+      expect(existsSync(orphanPath)).toBe(false);
     });
   });
 });

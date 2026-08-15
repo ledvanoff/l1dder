@@ -140,4 +140,61 @@ describe('runHook — basic flow', () => {
     expect(stderrData).toContain('[L1DDER]');
     expect(stdoutData.length).toBeGreaterThan(0);
   });
+
+  it('emits Cursor followup_message JSON on Stop when session is unclosed', async () => {
+    const now = '2026-08-10T19:00:00Z';
+    const stateYml = `schema_version: 4
+project:
+  name: "stop-hook-test"
+  stage: delivery
+  stage_history: []
+  created_at: "${now}"
+  updated_at: "${now}"
+workflow:
+  current_phase: implement
+  current_status: in_progress
+  mode: main
+  profile: delivery
+  session:
+    iteration: ITER-001
+    session: HARD-6
+    profile: delivery
+    started_at: "${now}"
+    waiver: null
+  session_history: []
+  iteration: 1
+  phase_history: []
+  gate_history: []
+discovery:
+  milestones: []
+  current: null
+  waivers: []
+tasks:
+  items: []
+quick_tasks: []
+knowledge_updates: []
+decisions: []
+`;
+    const shell = makeShell();
+    const fs = makeFs({
+      readFile: vi.fn().mockImplementation((path: string) => {
+        if (path.endsWith('state.yml')) {
+          return Promise.resolve(stateYml);
+        }
+        return Promise.reject(new Error('not found'));
+      }),
+    });
+    const stdin = JSON.stringify({ status: 'completed', loop_count: 0 });
+
+    const exitCode = await runHook('Stop', stdin, {
+      projectRoot: '/project',
+      shell,
+      fs,
+    }, { hooksGlobal: undefined, profile: 'minimal', disabledHooks: undefined });
+
+    expect(exitCode).toBe(0);
+    expect(stderrData).toContain('[L1DDER]');
+    const parsed = JSON.parse(stdoutData) as { followup_message?: string };
+    expect(parsed.followup_message).toMatch(/session end|handoff|Done \/ Next/i);
+  });
 });

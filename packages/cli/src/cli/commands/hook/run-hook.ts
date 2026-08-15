@@ -15,6 +15,7 @@ import { formatAfterEditHandler } from './handlers/format-after-edit.js';
 import { strategicCompactReminderHandler } from './handlers/strategic-compact-reminder.js';
 import { precompactHandoffSaveHandler } from './handlers/precompact-handoff-save.js';
 import { sessionStartBoundedContextHandler } from './handlers/session-start-bounded-context.js';
+import { sessionClosureReminderHandler } from './handlers/session-closure-reminder.js';
 
 // ─── Handler registry ─────────────────────────────────────────────────────────
 
@@ -25,6 +26,7 @@ const HOOK_HANDLERS: Readonly<Record<string, HookHandler>> = {
   'strategic-compact-reminder': strategicCompactReminderHandler,
   'precompact-handoff-save': precompactHandoffSaveHandler,
   'session-start-bounded-context': sessionStartBoundedContextHandler,
+  'session-closure-reminder': sessionClosureReminderHandler,
 };
 
 // ─── Dispatcher dependencies ──────────────────────────────────────────────────
@@ -222,6 +224,19 @@ export async function runHook(
 
   if (final.outcome === 'block') {
     return 2;
+  }
+
+  // Cursor `stop` expects optional `{ followup_message }` JSON on stdout
+  // (see Cursor hooks docs). Echoing stdin would break that contract.
+  if (payload.event === 'Stop') {
+    if (final.outcome === 'warn' && final.messages.length > 0) {
+      process.stdout.write(
+        `${JSON.stringify({ followup_message: final.messages.join('\n\n') })}\n`,
+      );
+      return 0;
+    }
+    process.stdout.write('{}\n');
+    return 0;
   }
 
   // allow / warn: pass-through stdin.

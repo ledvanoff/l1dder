@@ -137,10 +137,9 @@ describe('executeStatus', () => {
       next_available: null,
     });
 
-    expect(result.humanText).toContain('T-01');
-    expect(result.humanText).toContain('T-03');
-    expect(result.humanText).toContain('done');
-    expect(result.humanText).toContain('in_progress');
+    // Task list is verbose-only; default human shows Primary Action only.
+    expect(result.humanText).toContain('Primary Action');
+    expect(result.humanText).not.toContain('T-01');
   });
 
   it('--json outputs valid StatusOutput data', async () => {
@@ -189,7 +188,7 @@ describe('executeStatus', () => {
     expect(errData.hint).toContain('l1dder init');
   });
 
-  it('shows next steps based on idle phase', async () => {
+  it('shows projection primary action for idle phase', async () => {
     const ctx = await createTestCtx({
       stateOverrides: { phase: 'idle', iteration: 0 },
     });
@@ -197,13 +196,14 @@ describe('executeStatus', () => {
     const result = await executeStatus(ctx);
 
     expect(result.exitCode).toBe(ExitCode.SUCCESS);
-    const stepsData = result.data as { next_steps: Array<{ label: string }> };
-    expect(stepsData.next_steps.length).toBeGreaterThan(0);
-
-    const labels = stepsData.next_steps.map((s) => s.label);
-    const hasSpecify = labels.some((l: string) => l.includes('iteration') || l.includes('specify') || l.includes('Specify'));
-    const hasQuick = labels.some((l: string) => l.includes('quick') || l.includes('Quick'));
-    expect(hasSpecify || hasQuick).toBe(true);
+    const data = result.data as {
+      next_steps: Array<{ label: string; command: string | null }>;
+      primary_action: { command: string; kind: string };
+    };
+    expect(data.next_steps.length).toBeGreaterThan(0);
+    expect(data.primary_action.kind.length).toBeGreaterThan(0);
+    expect(result.humanText).toContain('Primary Action');
+    expect(result.humanText).not.toMatch(/\/l1dder\./);
   });
 
   it('computes blocked correctly from dependency graph', async () => {
@@ -227,7 +227,7 @@ describe('executeStatus', () => {
     expect(depData.tasks.next_available).toBe('T-01');
   });
 
-  it('shows complete phase next steps', async () => {
+  it('shows complete phase primary action from projection', async () => {
     const ctx = await createTestCtx({
       stateOverrides: { phase: 'complete' },
     });
@@ -235,8 +235,30 @@ describe('executeStatus', () => {
     const result = await executeStatus(ctx);
 
     expect(result.exitCode).toBe(ExitCode.SUCCESS);
-    const completeData = result.data as { next_steps: Array<{ label: string }> };
-    const labels = completeData.next_steps.map((s) => s.label);
-    expect(labels.some((l) => l.toLowerCase().includes('close'))).toBe(true);
+    const data = result.data as {
+      primary_action: { command: string; kind: string; reason: string };
+      next_steps: Array<{ label: string }>;
+    };
+    expect(data.primary_action.kind.length).toBeGreaterThan(0);
+    expect(data.next_steps.length).toBeGreaterThan(0);
+    expect(result.humanText).toContain('Primary Action');
+  });
+
+  it('default human output does not list full task checklist (progressive disclosure)', async () => {
+    const ctx = await createTestCtx({
+      stateOverrides: {
+        phase: 'implement',
+        tasks: [
+          { id: 'T-01', title: 'Setup', status: 'done' },
+          { id: 'T-02', title: 'Next', status: 'pending', depends_on: [] },
+        ],
+      },
+    });
+
+    const result = await executeStatus(ctx);
+
+    expect(result.humanText).toContain('Primary Action');
+    expect(result.humanText).not.toContain('T-01');
+    expect(result.quietSummary).toMatch(/implement →/);
   });
 });

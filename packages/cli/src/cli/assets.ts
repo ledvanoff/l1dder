@@ -37,6 +37,8 @@ const NEUTRAL_ASSET_DIRS = [
  * `<targetDir>/<dir>` so the project tree layout stays language-agnostic.
  */
 const LOCALIZED_ASSET_DIRS = [
+  // Files directly under templates/ (e.g. handoff-template.md); subdirs are skipped.
+  'templates',
   'templates/knowledge',
   'templates/specs',
   'standards/.base',

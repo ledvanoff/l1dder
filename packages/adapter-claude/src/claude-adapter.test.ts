@@ -49,4 +49,28 @@ describe('ClaudeAdapter content filtering', () => {
     expect(paths).not.toContain('.claude/skills/cursor-only-skill/SKILL.md');
     expect(claudeManifest.excludeTags).toContain('cursor-only');
   });
+
+  it('uses canonical projectName in CLAUDE.md instead of directory basename', async () => {
+    const adapter = new ClaudeAdapter({ fs: new InMemoryFileSystem(), logger: new NullLogger() });
+    const files = await adapter.transformForInstall({
+      projectRoot: '/e2e-h-hard/fix-gate',
+      projectName: 'shop-bot',
+      config: {
+        schema_version: 1,
+        role_mode: 'solo',
+        language: { docs: 'en', chat: 'en' },
+        adapters: ['claude'],
+      } as AdapterContext['config'],
+      skills: [],
+      commands: [],
+      personas: [],
+      standards: {},
+      force: false,
+      dryRun: false,
+    });
+
+    const claudeMd = files.find((file) => file.path.endsWith('CLAUDE.md'));
+    expect(claudeMd?.content).toContain('shop-bot');
+    expect(claudeMd?.content).not.toContain('fix-gate');
+  });
 });

@@ -99,3 +99,40 @@ export const PHASE_TO_MODE: Readonly<Record<Phase, WorkflowMode>> = {
   [Phase.FAST_IMPLEMENT]: WorkflowMode.FAST,
   [Phase.FAST_COMPLETE]: WorkflowMode.FAST,
 };
+
+/** Canonical phase string set — sole validity source alongside PhaseSchema. */
+const PHASE_VALUES: ReadonlySet<string> = new Set(Object.values(Phase));
+
+/**
+ * Historical phase name aliases found in assets/docs (never valid Phase values).
+ *
+ * Keys are normalized (`trim` + lowercase + `-` → `_`).
+ */
+const PHASE_INPUT_ALIASES: Readonly<Record<string, Phase>> = {
+  to_be_knowledge_update: Phase.UPDATE_TOBE,
+  to_be_ku: Phase.UPDATE_TOBE,
+  as_is_knowledge_update: Phase.UPDATE_ASIS,
+  as_is_ku: Phase.UPDATE_ASIS,
+};
+
+/**
+ * Suggest a canonical {@link Phase} for a mistyped or historically aliased input.
+ *
+ * **Diagnostic only.** Do not accept the returned value as proof that `input`
+ * was a valid phase name — aliases must never become accepted Phase identifiers.
+ * Sole sources of phase validity remain {@link Phase} and `PhaseSchema`.
+ *
+ * Normalization: trim, lowercase, hyphens → underscores. Matching is exact
+ * against canonical values or an explicit historical-alias table (no fuzzy
+ * distance matching).
+ *
+ * @param input - raw user/CLI/doc string
+ * @returns matching {@link Phase}, or `null` when no suggestion exists
+ */
+export function suggestCanonicalPhase(input: string): Phase | null {
+  const normalized = input.trim().toLowerCase().replaceAll('-', '_');
+  if (PHASE_VALUES.has(normalized)) {
+    return normalized as Phase;
+  }
+  return PHASE_INPUT_ALIASES[normalized] ?? null;
+}

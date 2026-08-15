@@ -9,7 +9,7 @@ import {
 } from '@l1dder/core';
 import type { State, Task } from '@l1dder/schemas';
 
-import { DependencyGraph } from './dependency-graph.js';
+import { DependencyGraph, resolveNextAvailableTaskId } from './dependency-graph.js';
 import { isValidTaskStatusTransition } from './task-status.js';
 
 /** Union of errors produced by TaskManager operations. */
@@ -141,27 +141,7 @@ export class TaskManager {
    * Returns `null` when all tasks are done/skipped.
    */
   nextTask(state: State): Result<string | null, DependenciesNotMetError> {
-    if (state.tasks.items.length === 0) {
-      return ok(null);
-    }
-
-    const graph = new DependencyGraph(state.tasks.items);
-    const sortResult = graph.topologicalSort();
-    if (!sortResult.ok) {
-      return err(sortResult.error);
-    }
-
-    const completedIds = this.getCompletedTaskIds(state);
-    const taskMap = new Map(state.tasks.items.map((t) => [t.id, t]));
-
-    for (const id of sortResult.value) {
-      const task = taskMap.get(id);
-      if (task && task.status === 'pending' && graph.canStart(id, completedIds)) {
-        return ok(id);
-      }
-    }
-
-    return ok(null);
+    return resolveNextAvailableTaskId(state.tasks.items);
   }
 
   /**

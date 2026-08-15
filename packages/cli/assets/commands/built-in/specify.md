@@ -118,7 +118,7 @@ If any criterion is not met — do NOT call transition. See ## Error Handling.
 | Scenario | Exit code | Action |
 |---|---|---|
 | Acceptance failed (e.g. empty Implementation Preferences) | — | Report the specific criterion; offer to complete spec.md in dialog |
-| `current_phase != idle` (precondition fail) | — | Report: "Current phase is `<phase>`. To start new SPECIFY, complete current iteration (`/l1dder.complete`) or do explicit rollback (`l1dder transition --to idle --force --reason '...'`)" |
+| `current_phase != idle` (precondition fail) | — | Report: "Current phase is `<phase>`. To start new SPECIFY, complete current iteration (`/l1dder-complete`) or do explicit rollback (`l1dder transition --to idle --force --reason '...'`)" |
 | CLI exit 3 (ForbiddenTransitionError) | 3 | Forward stderr/JSON error; suggest `l1dder status` |
 | CLI exit 6/7 (CorruptedState/SchemaValidation) | 6, 7 | Critical — suggest `l1dder doctor --fix`; do NOT retry transition |
 | CLI exit 8 (NotInitialized) | 8 | Report: "Project not initialized — run `l1dder init`" |

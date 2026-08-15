@@ -1,6 +1,7 @@
 import type { AdapterManifest, ParsedSlashCommand } from '@l1dder/core';
 import { computeContentHash } from '../../domain/content-hasher.js';
 import { generateMarker, generateSourceComment } from '../../domain/marker.js';
+import { yamlQuotedString } from '../../domain/yaml-string.js';
 
 /** Result of transforming a L1DDER slash command into a Cursor command file. */
 export interface CommandTransformResult {
@@ -8,6 +9,9 @@ export interface CommandTransformResult {
   readonly content: string;
   readonly hash: string;
 }
+
+/** `phase` value of a command that may run from any phase. */
+const WILDCARD_PHASE = '*';
 
 /**
  * Build Cursor `description` from slash command metadata (AD4).
@@ -18,12 +22,13 @@ function buildDescription(command: ParsedSlashCommand): string {
   const summary = command.sections.summary ?? command.frontMatter.name;
   const firstSentence = summary.split(/\.\s/)[0]?.replace(/\n/g, ' ').trim() ?? summary;
 
-  let description = firstSentence;
-  if (!description.endsWith('.')) description += '.';
+  // Parts are joined with '. ', so each one carries no trailing period of its own.
+  const parts: string[] = [firstSentence.replace(/\.+$/, '')];
 
-  const parts: string[] = [description];
-
-  parts.push(`Phase: ${command.frontMatter.phase}`);
+  // A wildcard command runs in every phase, so naming one would be misleading.
+  if (command.frontMatter.phase !== WILDCARD_PHASE) {
+    parts.push(`Phase: ${command.frontMatter.phase}`);
+  }
 
   if (command.frontMatter.accepts_argument) {
     parts.push('Accepts argument');
@@ -69,8 +74,8 @@ export function transformCommand(
 
   const bodyContent = [
     '---',
-    `description: "${description}"`,
-    `when_to_use: "${whenToUse}"`,
+    `description: ${yamlQuotedString(description)}`,
+    `when_to_use: ${yamlQuotedString(whenToUse)}`,
     '---',
     '',
     composedBody,

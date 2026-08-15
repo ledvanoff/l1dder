@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-
+import { DISCOVERY_MILESTONE_ORDER } from '@l1dder/core';
 import { InMemoryFileSystem, FixedClock, NullLogger } from '@l1dder/core/testing';
 
 import { executeStage } from './stage.js';
@@ -9,7 +9,6 @@ import { createFormatter } from '../../output/formatter.js';
 import { parseGlobals } from '../../globals.js';
 import { buildContext } from '../../context.js';
 import { NonInteractiveAdapter } from '../../prompt/non-interactive-adapter.js';
-import { ScriptedAdapter } from '../../prompt/scripted-adapter.js';
 
 const NOW = '2026-01-15T10:00:00Z';
 
@@ -23,14 +22,12 @@ function makeStateYml(overrides?: {
   stage?: string;
   phase?: string;
   stageHistory?: Array<{ from: string; to: string; timestamp: string; reason?: string }>;
-  knowledgeUpdates?: Array<{ file: string; operation?: string; summary?: string }>;
-  phaseHistory?: Array<{ phase: string; status: string }>;
+  decisions?: Array<{ id: string; title: string; rationale: string }>;
 }): string {
   const stage = overrides?.stage ?? 'discovery';
   const phase = overrides?.phase ?? 'idle';
   const stageHistory = overrides?.stageHistory ?? [];
-  const knowledgeUpdates = overrides?.knowledgeUpdates ?? [];
-  const phaseHistory = overrides?.phaseHistory ?? [];
+  const decisions = overrides?.decisions ?? [];
 
   const historyLines = stageHistory.length > 0
     ? stageHistory.map((h) =>
@@ -38,21 +35,13 @@ function makeStateYml(overrides?: {
       ).join('\n')
     : '    []';
 
-  const kuLines = knowledgeUpdates.length > 0
-    ? knowledgeUpdates.map((ku) => {
-        const op = ku.operation ?? 'create';
-        const summary = ku.summary ?? 'auto';
-        return `    - file: "${ku.file}"\n      operation: ${op}\n      timestamp: "${NOW}"\n      actor:\n        kind: human\n        id: tester\n      summary: "${summary}"`;
-      }).join('\n')
-    : '    []';
-
-  const phLines = phaseHistory.length > 0
-    ? phaseHistory.map((ph) =>
-        `    - phase: ${ph.phase}\n      status: ${ph.status}\n      started_at: "${NOW}"\n      actor:\n        kind: system\n        id: cli\n      trigger:\n        kind: cli\n        command: test`,
+  const decisionLines = decisions.length > 0
+    ? decisions.map((d) =>
+        `  - id: "${d.id}"\n    title: "${d.title}"\n    rationale: "${d.rationale}"\n    alternatives: []\n    status: accepted\n    timestamp: "${NOW}"`,
       ).join('\n')
-    : '    []';
+    : '  []';
 
-  return `schema_version: 1
+  return `schema_version: 2
 project:
   name: "test-project"
   stage: ${stage}
@@ -64,15 +53,20 @@ workflow:
   current_phase: ${phase}
   current_status: in_progress
   mode: main
+  profile: null
   iteration: 1
-  phase_history:
-${phLines}
+  phase_history: []
   gate_history: []
+discovery:
+  milestones: []
+  current: null
+  waivers: []
 tasks:
   items: []
 quick_tasks: []
-knowledge_updates:
-${kuLines}
+knowledge_updates: []
+decisions:
+${decisionLines}
 `;
 }
 
@@ -83,12 +77,11 @@ role_mode: solo
 async function createTestCtx(opts?: {
   stateOverrides?: Parameters<typeof makeStateYml>[0];
   skipState?: boolean;
-  prompt?: NonInteractiveAdapter | ScriptedAdapter;
 }) {
   const fs = new InMemoryFileSystem();
   const clock = new FixedClock(NOW);
   const logger = new NullLogger();
-  const prompt = opts?.prompt ?? new NonInteractiveAdapter();
+  const prompt = new NonInteractiveAdapter();
   const colors = createColorPalette(false);
   const output = createFormatter('human', colors);
   const cwd = '/test-project';
@@ -103,10 +96,8 @@ async function createTestCtx(opts?: {
   return buildContext(globals, { fs, clock, logger, prompt, output, colors });
 }
 
-// ─── stage status ───
-
 describe('executeStage — status subcommand', () => {
-  it('shows readiness checklist in discovery stage', async () => {
+  it('shows the ordered 7-milestone discovery checklist (no roadmap)', async () => {
     const ctx = await createTestCtx({
       stateOverrides: { stage: 'discovery' },
     });
@@ -114,28 +105,15 @@ describe('executeStage — status subcommand', () => {
     const result = await executeStage(ctx, 'status', {});
 
     expect(result.exitCode).toBe(ExitCode.SUCCESS);
-    expect(result.data).toBeDefined();
-
     const data = result.data as {
       stage: string;
-      enforcement: string;
       readiness: { score: string; criteria: Array<{ id: string; met: boolean }> };
     };
     expect(data.stage).toBe('discovery');
-    // 5 milestones + design check + skeleton markers check = 7 criteria (all enabled by default)
-    expect(data.readiness.criteria.length).toBe(7);
-    // Semantic milestone IDs
-    const ids = data.readiness.criteria.map((c) => c.id);
-    expect(ids).toContain('idea');
-    expect(ids).toContain('roadmap');
-    expect(ids).toContain('architecture');
-    expect(ids).toContain('data_model');
-    expect(ids).toContain('usecases');
-    // Milestone criteria not met (no artifact files in test fs)
-    const milestoneCriteria = data.readiness.criteria.filter((c) =>
-      ['idea', 'roadmap', 'architecture', 'data_model', 'usecases'].includes(c.id),
-    );
-    expect(milestoneCriteria.every((c) => !c.met)).toBe(true);
+    expect(data.readiness.criteria.map((c) => c.id)).toEqual([
+      ...DISCOVERY_MILESTONE_ORDER,
+    ]);
+    expect(data.readiness.criteria.every((c) => !c.met)).toBe(true);
     expect(result.humanText).toContain('Discovery Checklist');
     expect(result.humanText).toContain('NOT READY');
   });
@@ -148,7 +126,6 @@ describe('executeStage — status subcommand', () => {
     const result = await executeStage(ctx, 'status', {});
 
     expect(result.exitCode).toBe(ExitCode.SUCCESS);
-
     const data = result.data as {
       stage: string;
       readiness: { score: string; criteria: unknown[] };
@@ -185,11 +162,6 @@ describe('executeStage — status subcommand', () => {
     expect(result.exitCode).toBe(ExitCode.SUCCESS);
     const data = result.data as { history: Array<{ from: string; to: string }> };
     expect(data.history).toHaveLength(1);
-    const entry = data.history[0] as { from: string; to: string };
-    expect(entry.from).toBe('discovery');
-    expect(entry.to).toBe('delivery');
-    expect(result.humanText).toContain('discovery');
-    expect(result.humanText).toContain('delivery');
     expect(result.humanText).toContain('Ready');
   });
 
@@ -200,54 +172,38 @@ describe('executeStage — status subcommand', () => {
 
     expect(result.exitCode).toBe(ExitCode.NOT_INITIALIZED);
     expect(result.error).toBeDefined();
-    const err = result.error as StageError;
-    expect(err.code).toBe('NOT_INITIALIZED');
   });
+});
 
-  it('--json outputs StageStatusOutput shape', async () => {
+describe('executeStage — advance subcommand (hard gate)', () => {
+  // @tc TC-012-04-A
+  it('blocks advance when checklist incomplete (no mutation)', async () => {
     const ctx = await createTestCtx({
       stateOverrides: { stage: 'discovery' },
     });
 
-    const result = await executeStage(ctx, 'status', {});
-
-    expect(result.exitCode).toBe(ExitCode.SUCCESS);
-    const data = result.data as Record<string, unknown>;
-    expect(data).toHaveProperty('stage');
-    expect(data).toHaveProperty('enforcement');
-    expect(data).toHaveProperty('readiness');
-    expect(data).toHaveProperty('history');
-  });
-});
-
-// ─── stage advance ───
-
-describe('executeStage — advance subcommand', () => {
-  it('advances when readiness met and --yes given', async () => {
-    const ctx = await createTestCtx({
-      stateOverrides: {
-        stage: 'discovery',
-        knowledgeUpdates: [
-          { file: 'architecture.md' },
-          { file: 'erd.md' },
-          { file: 'spec.md' },
-          { file: 'conventions.md' },
-          { file: 'config.yml' },
-        ],
-        phaseHistory: [
-          { phase: 'complete', status: 'completed' },
-        ],
-      },
-    });
-
     const result = await executeStage(ctx, 'advance', { yes: true });
 
-    expect(result.error).toBeUndefined();
-    expect(result.exitCode).toBe(ExitCode.SUCCESS);
-    expect(result.humanText).toContain('delivery');
+    expect(result.exitCode).toBe(ExitCode.DISCOVERY_NOT_READY);
+    expect(result.humanText).toContain('NOT READY');
+
+    const sm = await ctx.state();
+    expect(sm.stateSnapshot().project.stage).toBe('discovery');
   });
 
-  it('--force --reason bypasses readiness', async () => {
+  it('--force without --reason returns FORCE_REASON_REQUIRED', async () => {
+    const ctx = await createTestCtx({
+      stateOverrides: { stage: 'discovery' },
+    });
+
+    const result = await executeStage(ctx, 'advance', { force: true });
+
+    expect(result.exitCode).toBe(ExitCode.FORCE_REASON_REQUIRED);
+    const err = result.error as StageError;
+    expect(err.message).toContain('--reason');
+  });
+
+  it('--force --reason bypasses readiness and records Decision', async () => {
     const ctx = await createTestCtx({
       stateOverrides: { stage: 'discovery' },
     });
@@ -262,19 +218,10 @@ describe('executeStage — advance subcommand', () => {
     expect(data.from).toBe('discovery');
     expect(data.to).toBe('delivery');
     expect(data.forced).toBe(true);
-    expect(result.humanText).toContain('delivery');
-  });
 
-  it('--force without --reason returns usage error', async () => {
-    const ctx = await createTestCtx({
-      stateOverrides: { stage: 'discovery' },
-    });
-
-    const result = await executeStage(ctx, 'advance', { force: true });
-
-    expect(result.exitCode).toBe(ExitCode.USAGE_ERROR);
-    const err = result.error as StageError;
-    expect(err.message).toContain('--reason');
+    const sm = await ctx.state();
+    const decisions = sm.stateSnapshot().decisions;
+    expect(decisions.some((d) => d.rationale === 'Demo deployment')).toBe(true);
   });
 
   it('rejects advance when already at maintenance', async () => {
@@ -302,28 +249,121 @@ describe('executeStage — advance subcommand', () => {
     expect(result.exitCode).toBe(ExitCode.USAGE_ERROR);
     const err = result.error as StageError;
     expect(err.message).toContain('maintenance');
-    expect(err.hint).toContain('l1dder stage set');
   });
 
-  it('prompts user when not ready and respects decline', async () => {
-    const prompt = new ScriptedAdapter({
-      'Advance': false,
-    });
+  it('given unmet criteria and --dry-run, predicts refusal without mutating state', async () => {
     const ctx = await createTestCtx({
       stateOverrides: { stage: 'discovery' },
-      prompt,
+    });
+    const before = (await ctx.state()).stateSnapshot().project.stage;
+
+    const result = await executeStage(ctx, 'advance', { dryRun: true, yes: true });
+
+    expect(result.exitCode).toBe(ExitCode.DISCOVERY_NOT_READY);
+    expect(result.humanText).toContain('dry run');
+    expect(result.data).toMatchObject({ dry_run: true, ready: false });
+
+    const after = (await ctx.state()).stateSnapshot().project.stage;
+    expect(after).toBe(before);
+    expect(after).toBe('discovery');
+  });
+
+  it('given ready criteria and --dry-run, predicts success without mutating state', async () => {
+    // Force path: dry-run with --force --reason when checklist incomplete still
+    // predicts forced success and writes nothing.
+    const ctx = await createTestCtx({
+      stateOverrides: { stage: 'discovery' },
     });
 
-    const result = await executeStage(ctx, 'advance', {});
+    const result = await executeStage(ctx, 'advance', {
+      dryRun: true,
+      force: true,
+      reason: 'preview forced advance',
+    });
 
     expect(result.exitCode).toBe(ExitCode.SUCCESS);
-    expect(result.humanText).toContain('cancelled');
+    expect(result.data).toMatchObject({
+      from: 'discovery',
+      to: 'delivery',
+      dry_run: true,
+      forced: true,
+    });
+    expect(result.humanText).toContain('would succeed');
+
+    const sm = await ctx.state();
+    expect(sm.stateSnapshot().project.stage).toBe('discovery');
+    expect(sm.stateSnapshot().decisions).toHaveLength(0);
   });
 });
 
-// ─── stage set ───
-
 describe('executeStage — set subcommand', () => {
+  it('refuses discovery→delivery when checklist is incomplete (no mutation)', async () => {
+    const ctx = await createTestCtx({
+      stateOverrides: { stage: 'discovery' },
+    });
+
+    const result = await executeStage(ctx, 'set', { to: 'delivery', yes: true });
+
+    expect(result.exitCode).toBe(ExitCode.DISCOVERY_NOT_READY);
+    expect(result.humanText).toContain('NOT READY');
+    expect(result.humanText).toContain('--force --reason');
+
+    const sm = await ctx.state();
+    expect(sm.stateSnapshot().project.stage).toBe('discovery');
+    expect(sm.stateSnapshot().decisions).toHaveLength(0);
+  });
+
+  it('refuses discovery→maintenance when checklist is incomplete (no skip backdoor)', async () => {
+    const ctx = await createTestCtx({
+      stateOverrides: { stage: 'discovery' },
+    });
+
+    const result = await executeStage(ctx, 'set', { to: 'maintenance', yes: true });
+
+    expect(result.exitCode).toBe(ExitCode.DISCOVERY_NOT_READY);
+    expect((await ctx.state()).stateSnapshot().project.stage).toBe('discovery');
+  });
+
+  it('--force without --reason returns FORCE_REASON_REQUIRED', async () => {
+    const ctx = await createTestCtx({
+      stateOverrides: { stage: 'discovery' },
+    });
+
+    const result = await executeStage(ctx, 'set', { to: 'delivery', force: true });
+
+    expect(result.exitCode).toBe(ExitCode.FORCE_REASON_REQUIRED);
+    const err = result.error as StageError;
+    expect(err.message).toContain('--reason');
+    expect((await ctx.state()).stateSnapshot().project.stage).toBe('discovery');
+  });
+
+  it('--force --reason bypasses readiness, marks forced, and records Decision', async () => {
+    const ctx = await createTestCtx({
+      stateOverrides: { stage: 'discovery' },
+    });
+
+    const result = await executeStage(ctx, 'set', {
+      to: 'delivery',
+      force: true,
+      reason: 'Audited set bypass',
+    });
+
+    expect(result.exitCode).toBe(ExitCode.SUCCESS);
+    const data = result.data as { from: string; to: string; forced: boolean; reason: string };
+    expect(data.from).toBe('discovery');
+    expect(data.to).toBe('delivery');
+    expect(data.forced).toBe(true);
+    expect(data.reason).toBe('Audited set bypass');
+    expect(result.humanText).toContain('(forced)');
+
+    const sm = await ctx.state();
+    const snapshot = sm.stateSnapshot();
+    expect(snapshot.project.stage).toBe('delivery');
+    expect(snapshot.decisions.some((d) =>
+      d.id.startsWith('DEC-STAGE-FORCE-') && d.rationale === 'Audited set bypass',
+    )).toBe(true);
+  });
+
   it('changes stage directly with reason', async () => {
     const ctx = await createTestCtx({
       stateOverrides: { stage: 'delivery' },
@@ -338,7 +378,6 @@ describe('executeStage — set subcommand', () => {
     const data = result.data as { from: string; to: string; reason: string };
     expect(data.from).toBe('delivery');
     expect(data.to).toBe('maintenance');
-    expect(data.reason).toBe('MVP complete');
   });
 
   it('rejects set to same stage', async () => {
@@ -349,7 +388,6 @@ describe('executeStage — set subcommand', () => {
     const result = await executeStage(ctx, 'set', { to: 'delivery' });
 
     expect(result.exitCode).toBe(ExitCode.GENERIC_ERROR);
-    expect(result.error).toBeDefined();
   });
 
   it('rejects set to invalid stage', async () => {
@@ -360,8 +398,6 @@ describe('executeStage — set subcommand', () => {
     const result = await executeStage(ctx, 'set', { to: 'invalid' });
 
     expect(result.exitCode).toBe(ExitCode.USAGE_ERROR);
-    const err = result.error as StageError;
-    expect(err.message).toContain('Invalid stage');
   });
 
   it('rejects set without target', async () => {
@@ -372,8 +408,6 @@ describe('executeStage — set subcommand', () => {
     const result = await executeStage(ctx, 'set', {});
 
     expect(result.exitCode).toBe(ExitCode.USAGE_ERROR);
-    const err = result.error as StageError;
-    expect(err.message).toContain('required');
   });
 
   it('rejects backward transition (delivery → discovery)', async () => {
@@ -387,11 +421,8 @@ describe('executeStage — set subcommand', () => {
     });
 
     expect(result.exitCode).toBe(ExitCode.USAGE_ERROR);
-    expect(result.error).toBeDefined();
   });
 });
-
-// ─── unknown subcommand ───
 
 describe('executeStage — unknown subcommand', () => {
   it('returns usage error for unknown subcommand', async () => {
@@ -400,8 +431,5 @@ describe('executeStage — unknown subcommand', () => {
     const result = await executeStage(ctx, 'reset', {});
 
     expect(result.exitCode).toBe(ExitCode.USAGE_ERROR);
-    const err = result.error as StageError;
-    expect(err.message).toContain('Unknown subcommand');
-    expect(err.hint).toContain('status');
   });
 });

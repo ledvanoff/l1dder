@@ -140,17 +140,37 @@ describe('ContextEngine Integration', () => {
 
   describe('brief generation', () => {
     it('produces compact output from knowledge files', async () => {
+      const { stringifyYaml } = await import('@l1dder/yaml');
+      const { StateSchema } = await import('@l1dder/schemas');
+      const stateYaml = stringifyYaml(
+        StateSchema.parse({
+          schema_version: 1,
+          project: {
+            name: 'test',
+            stage: 'delivery',
+            stage_history: [],
+            created_at: '2026-05-11T00:00:00Z',
+            updated_at: '2026-05-11T00:00:00Z',
+          },
+          workflow: {
+            current_phase: 'implement',
+            current_status: 'in_progress',
+            mode: 'main',
+            iteration: 3,
+            phase_history: [],
+            gate_history: [],
+          },
+          tasks: { items: [] },
+          quick_tasks: [],
+          knowledge_updates: [],
+          decisions: [],
+          skillRuns: [],
+          skillVersions: [],
+        }),
+      );
       const fs = makeFs({
         ...smallKnowledgeFiles(),
-        '.l1dder/state.yml': [
-          'project:',
-          '  stage: delivery',
-          'workflow:',
-          '  current_phase: implement',
-          '  current_status: in_progress',
-          '  mode: main',
-          '  iteration: 3',
-        ].join('\n'),
+        '.l1dder/state.yml': stateYaml,
       });
       const engine = createTestContextEngine({ fs });
 
@@ -160,6 +180,7 @@ describe('ContextEngine Integration', () => {
       expect(result.sections.length).toBeGreaterThan(0);
       expect(result.tokenEstimate).toBeGreaterThan(0);
       expect(result.content).toContain('Project idea summary.');
+      expect(result.content).toContain('**Phase:** implement');
     });
   });
 

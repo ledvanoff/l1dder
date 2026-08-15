@@ -3,10 +3,11 @@ import type { HookDefinition } from '@l1dder/schemas';
 /**
  * Built-in hook definitions for L1DDER.
  *
- * 6 hooks covering security enforcement (pre-commit-guard),
+ * 7 hooks covering security enforcement (pre-commit-guard),
  * doc protection (doc-file-guard), code quality (format-after-edit),
- * context management (strategic-compact-reminder), and E3 handoff
- * automation (precompact-handoff-save, session-start-bounded-context).
+ * context management (strategic-compact-reminder), E3 handoff
+ * automation (precompact-handoff-save, session-start-bounded-context),
+ * and Agent Session closure reminder (session-closure-reminder on Stop).
  */
 const BUILTIN_HOOKS: readonly HookDefinition[] = [
   {
@@ -76,6 +77,17 @@ const BUILTIN_HOOKS: readonly HookDefinition[] = [
       'Loads .l1dder/handoff.md at session start, truncated to session_start_max_chars, to bootstrap AI context.',
     profiles: ['minimal', 'standard', 'strict'],
     outcome_level: 'allow',
+    builtin: true,
+  },
+  {
+    id: 'session-closure-reminder',
+    name: 'Session Closure Reminder (HARD-6)',
+    format_version: 1,
+    event: 'Stop',
+    description:
+      'Follows up on Stop when an Agent Session is still active so the agent closes it via session end / handoff and emits Done / Next. Degrades to l1dder doctor when state is unreadable; never hard-blocks.',
+    profiles: ['minimal', 'standard', 'strict'],
+    outcome_level: 'warn',
     builtin: true,
   },
 ] as const;

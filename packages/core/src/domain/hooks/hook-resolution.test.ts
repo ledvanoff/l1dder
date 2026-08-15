@@ -11,7 +11,8 @@ describe('resolveActiveHooks', () => {
       disabled: [],
       env: {},
     });
-    // minimal profile: pre-commit-guard, precompact-handoff-save, session-start-bounded-context
+    // minimal profile: pre-commit-guard, precompact-handoff-save,
+    // session-start-bounded-context, session-closure-reminder
     for (const h of active) {
       expect(h.profiles).toContain('minimal');
     }
@@ -19,6 +20,7 @@ describe('resolveActiveHooks', () => {
     expect(ids).toContain('pre-commit-guard');
     expect(ids).toContain('precompact-handoff-save');
     expect(ids).toContain('session-start-bounded-context');
+    expect(ids).toContain('session-closure-reminder');
     expect(ids).not.toContain('format-after-edit');
     expect(ids).not.toContain('strategic-compact-reminder');
   });

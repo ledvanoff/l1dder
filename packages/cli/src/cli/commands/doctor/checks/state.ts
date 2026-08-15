@@ -1,22 +1,45 @@
-import type { State } from '@l1dder/schemas';
+import { CURRENT_SCHEMA_VERSION, type State } from '@l1dder/schemas';
 import type { DoctorCheck } from '../types.js';
 
 const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000;
 
+/** Options that adjust actionable hints based on flags already supplied (DF-033). */
+export interface CheckStateOptions {
+  readonly noRecover?: boolean;
+}
+
+/**
+ * Build an in-flight marker hint that does not suggest flags already in use.
+ */
+export function inFlightHint(opts?: CheckStateOptions): string {
+  if (opts?.noRecover) {
+    return "Run 'l1dder doctor --fix' to clear the marker, or resolve the transition manually";
+  }
+  return "Run 'l1dder doctor --fix' to clear the marker";
+}
+
 /**
  * State consistency checks: validates state.yml internal correctness.
  */
-export function checkState(state: State, now: string): DoctorCheck[] {
+export function checkState(
+  state: State,
+  now: string,
+  opts?: CheckStateOptions,
+): DoctorCheck[] {
   const checks: DoctorCheck[] = [];
 
   // schema_version
-  if (state.schema_version === 1) {
-    checks.push({ id: 'state-schema-version', level: 'pass', message: 'schema_version = 1' });
+  if (state.schema_version === CURRENT_SCHEMA_VERSION) {
+    checks.push({
+      id: 'state-schema-version',
+      level: 'pass',
+      message: `schema_version = ${String(CURRENT_SCHEMA_VERSION)}`,
+    });
   } else {
     checks.push({
       id: 'state-schema-version',
       level: 'warn',
-      message: `Unexpected schema_version: ${String(state.schema_version)}`,
+      message: `Unexpected schema_version: ${String(state.schema_version)} (expected ${String(CURRENT_SCHEMA_VERSION)})`,
     });
   }
 
@@ -26,7 +49,7 @@ export function checkState(state: State, now: string): DoctorCheck[] {
       id: 'state-in-flight',
       level: 'fail',
       message: 'In-flight transition marker detected (possible crash)',
-      hint: "Run 'l1dder transition' to resolve or use --no-recover",
+      hint: inFlightHint(opts),
       fixable: true,
     });
   } else {

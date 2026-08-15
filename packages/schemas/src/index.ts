@@ -10,6 +10,7 @@
 // ─── State (state.yml) ───
 
 export {
+  CURRENT_SCHEMA_VERSION,
   PhaseSchema,
   PhaseStatusSchema,
   WorkflowModeSchema,
@@ -23,6 +24,10 @@ export {
   PhaseHistoryEntrySchema,
   GateHistoryActionSchema,
   GateRecordSchema,
+  AgentSessionWaiverSchema,
+  AgentSessionRailSchema,
+  AgentSessionOutcomeSchema,
+  AgentSessionRecordSchema,
   WorkflowSchema,
   TaskStatusSchema,
   TaskSchema,
@@ -52,6 +57,10 @@ export type {
   PhaseHistoryEntry,
   GateHistoryAction,
   GateRecord,
+  AgentSessionRail,
+  AgentSessionWaiver,
+  AgentSessionOutcome,
+  AgentSessionRecord,
   Workflow,
   TaskStatus,
   Task,
@@ -66,6 +75,125 @@ export type {
   SkillVersion,
   State,
 } from './state.js';
+
+// ─── Discovery (state.yml discovery section) ───
+
+export {
+  DiscoveryMilestoneIdSchema,
+  DiscoveryMilestoneStatusSchema,
+  DiscoveryMilestoneSchema,
+  DiscoveryWaiverSchema,
+  DiscoverySchema,
+} from './discovery.js';
+
+export type {
+  DiscoveryMilestoneId,
+  DiscoveryMilestoneStatus,
+  DiscoveryMilestone,
+  DiscoveryWaiver,
+  Discovery,
+} from './discovery.js';
+
+// ─── Debt / Backlog pools (registry index) ───
+
+export {
+  DebtIdSchema,
+  BacklogIdSchema,
+  PoolItemStatusSchema,
+  DebtSeveritySchema,
+  BacklogPrioritySchema,
+  BacklogKindSchema,
+  PoolNominationSchema,
+  DebtItemSchema,
+  BacklogItemSchema,
+} from './debt-backlog.js';
+
+export type {
+  PoolItemStatus,
+  DebtSeverity,
+  BacklogPriority,
+  BacklogKind,
+  PoolNomination,
+  DebtItem,
+  BacklogItem,
+} from './debt-backlog.js';
+
+// ─── Project Registry (traceability manifest) ───
+
+export {
+  CURRENT_REGISTRY_SCHEMA_VERSION,
+  FeatureIdSchema,
+  UsecaseIdSchema,
+  ModelIdSchema,
+  EnumIdSchema,
+  TestContractIdSchema,
+  IntegrationIdSchema,
+  DecisionIdSchema,
+  SymbolIdSchema,
+  IterationIdSchema,
+  DeliverySessionIdSchema,
+  DeliveryRailStatusSchema,
+  SymbolKindSchema,
+  FeatureStatusSchema,
+  FeatureSourcesSchema,
+  FeatureEntrySchema,
+  UsecaseCoversSchema,
+  UsecaseSourcesSchema,
+  UsecaseEntrySchema,
+  DecisionEntryStatusSchema,
+  DecisionEntrySchema,
+  IntegrationEntrySchema,
+  ModelEntrySchema,
+  EnumEntrySchema,
+  TestContractEntrySchema,
+  SymbolEntrySchema,
+  DeliverySessionEntrySchema,
+  IterationEntrySchema,
+  ProjectRegistrySchema,
+  projectRegistryJsonSchema,
+} from './registry.js';
+
+export type {
+  FeatureId,
+  UsecaseId,
+  ModelId,
+  EnumId,
+  TestContractId,
+  IntegrationId,
+  DecisionId,
+  SymbolId,
+  IterationId,
+  DeliverySessionId,
+  DeliveryRailStatus,
+  SymbolKind,
+  FeatureStatus,
+  FeatureSources,
+  Feature,
+  UsecaseCovers,
+  UsecaseSources,
+  Usecase,
+  DecisionEntryStatus,
+  DecisionEntry,
+  Integration,
+  Model,
+  EnumEntry,
+  TestContract,
+  SymbolEntry,
+  DeliverySessionEntry,
+  IterationEntry,
+  ProjectRegistry,
+} from './registry.js';
+
+// ─── Spec AI Contract (feature spec.md machine block) ───
+
+export { SpecContractSchema } from './spec-contract.js';
+export type { SpecContract } from './spec-contract.js';
+
+// ─── Workflow Profile ───
+
+export { WorkflowProfileIdSchema } from './workflow-profile.js';
+
+export type { WorkflowProfileId } from './workflow-profile.js';
 
 // ─── Install State (install-state.yml) ───
 
@@ -154,6 +282,7 @@ export type {
 export {
   SlashTriggerKindSchema,
   SlashOverrideStrategySchema,
+  SlashCommandPhaseSchema,
   SlashCommandFrontMatterSchema,
   SlashCommandBodySchema,
   ParsedSlashCommandSchema,
@@ -162,6 +291,7 @@ export {
 export type {
   SlashTriggerKind,
   SlashOverrideStrategy,
+  SlashCommandPhase,
   SlashCommandFrontMatter,
   SlashCommandBody,
   ParsedSlashCommand,
@@ -213,11 +343,18 @@ export {
   StatusOutputSchema,
   CheckOutputSchema,
   DoctorOutputSchema,
+  RegistryIssueOutputSchema,
+  RegistryOutputSchema,
   ContextBriefOutputSchema,
   QuickOutputSchema,
   StageStatusOutputSchema,
   TransitionOutputSchema,
   HelpmeOutputSchema,
+  DiscoveryStatusOutputSchema,
+  PrimaryActionBriefSchema,
+  PrimaryActionRequiredInputSchema,
+  BlockerLevelSchema,
+  BriefWorkflowSnapshotSchema,
 } from './cli-output.js';
 
 export type {
@@ -228,9 +365,16 @@ export type {
   StatusOutput,
   CheckOutput,
   DoctorOutput,
+  RegistryIssueOutput,
+  RegistryOutput,
   ContextBriefOutput,
   QuickOutput,
   StageStatusOutput,
   TransitionOutput,
   HelpmeOutput,
+  DiscoveryStatusOutput,
+  PrimaryActionBrief,
+  PrimaryActionRequiredInput,
+  BlockerLevel,
+  BriefWorkflowSnapshot,
 } from './cli-output.js';

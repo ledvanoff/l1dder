@@ -11,8 +11,8 @@ import {
 } from './transitions-table.js';
 
 describe('TRANSITIONS', () => {
-  it('has exactly 23 rules (8 main fwd + 5 rollback + 3 hygiene + 4 quick + 3 fast)', () => {
-    expect(TRANSITIONS).toHaveLength(23);
+  it('has exactly 28 rules (11 main fwd + 5 rollback + 5 hygiene/review + 4 quick + 3 fast)', () => {
+    expect(TRANSITIONS).toHaveLength(28);
   });
 
   it('every rule references valid Phase values', () => {
@@ -50,9 +50,12 @@ describe('TRANSITIONS', () => {
     expect(serialized).toMatchInlineSnapshot(`
       [
         "main:idle->specify(forward)",
+        "main:idle->tasks(forward)",
         "main:specify->plan(forward)",
         "main:plan->update_tobe(forward)",
         "main:update_tobe->tasks(forward)",
+        "main:update_tobe->review(forward)",
+        "main:update_tobe->complete(forward)",
         "main:tasks->implement(forward)",
         "main:implement->update_asis(forward)",
         "main:update_asis->complete(forward)",
@@ -65,6 +68,8 @@ describe('TRANSITIONS', () => {
         "main:idle->hygiene(mode_switch)",
         "main:complete->hygiene(mode_switch)",
         "main:hygiene->idle(forward)",
+        "main:hygiene->review(forward)",
+        "main:review->complete(forward)",
         "quick:idle->quick_plan(mode_switch)",
         "quick:quick_plan->quick_implement(forward)",
         "quick:quick_implement->quick_complete(forward)",
@@ -168,6 +173,15 @@ describe('requiredGatesFor', () => {
     ]);
   });
 
+  it('returns discovery-gate for UPDATE_TOBE→REVIEW and UPDATE_TOBE→COMPLETE', () => {
+    expect(requiredGatesFor(Phase.UPDATE_TOBE, Phase.REVIEW, WorkflowMode.MAIN)).toEqual([
+      'discovery-gate',
+    ]);
+    expect(requiredGatesFor(Phase.UPDATE_TOBE, Phase.COMPLETE, WorkflowMode.MAIN)).toEqual([
+      'discovery-gate',
+    ]);
+  });
+
   it('returns implementation-gate for IMPLEMENT→UPDATE_ASIS', () => {
     expect(requiredGatesFor(Phase.IMPLEMENT, Phase.UPDATE_ASIS, WorkflowMode.MAIN)).toEqual([
       'implementation-gate',
@@ -182,12 +196,17 @@ describe('requiredGatesFor', () => {
 });
 
 describe('listAvailableTransitions', () => {
-  it('returns two transitions from IDLE in main mode (specify + hygiene)', () => {
+  it('returns three transitions from IDLE in main mode (specify + tasks + hygiene)', () => {
     const available = listAvailableTransitions(Phase.IDLE, WorkflowMode.MAIN);
-    expect(available).toHaveLength(2);
+    expect(available).toHaveLength(3);
     const targets = available.map((r) => r.to);
     expect(targets).toContain(Phase.SPECIFY);
+    expect(targets).toContain(Phase.TASKS);
     expect(targets).toContain(Phase.HYGIENE);
+  });
+
+  it('offers IDLE→TASKS ungated so a delivery session can enter its route', () => {
+    expect(requiredGatesFor(Phase.IDLE, Phase.TASKS, WorkflowMode.MAIN)).toEqual([]);
   });
 
   it('returns two transitions from COMPLETE in main mode (idle + hygiene)', () => {
@@ -198,10 +217,12 @@ describe('listAvailableTransitions', () => {
     expect(targets).toContain(Phase.HYGIENE);
   });
 
-  it('returns one transition from HYGIENE (back to idle)', () => {
+  it('returns two transitions from HYGIENE (idle short-circuit + review)', () => {
     const available = listAvailableTransitions(Phase.HYGIENE, WorkflowMode.MAIN);
-    expect(available).toHaveLength(1);
-    expect(available[0]?.to).toBe(Phase.IDLE);
+    expect(available).toHaveLength(2);
+    const targets = available.map((r) => r.to);
+    expect(targets).toContain(Phase.IDLE);
+    expect(targets).toContain(Phase.REVIEW);
   });
 
   it('returns two transitions from PLAN (forward + rollback)', () => {
@@ -212,8 +233,18 @@ describe('listAvailableTransitions', () => {
     expect(targets).toContain(Phase.SPECIFY);
   });
 
-  it('returns empty for REVIEW (no transitions)', () => {
-    expect(listAvailableTransitions(Phase.REVIEW, WorkflowMode.MAIN)).toHaveLength(0);
+  it('offers UPDATE_TOBE forward exits to tasks, review, and complete', () => {
+    const available = listAvailableTransitions(Phase.UPDATE_TOBE, WorkflowMode.MAIN);
+    const forward = available.filter((r) => r.kind === TransitionKind.FORWARD).map((r) => r.to);
+    expect(forward).toContain(Phase.TASKS);
+    expect(forward).toContain(Phase.REVIEW);
+    expect(forward).toContain(Phase.COMPLETE);
+  });
+
+  it('returns one transition from REVIEW (closing into complete)', () => {
+    const available = listAvailableTransitions(Phase.REVIEW, WorkflowMode.MAIN);
+    expect(available).toHaveLength(1);
+    expect(available[0]?.to).toBe(Phase.COMPLETE);
   });
 
   it('returns quick mode entry from IDLE', () => {

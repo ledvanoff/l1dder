@@ -15,6 +15,7 @@ export {
   ProjectStage,
   TransitionKind,
   PHASE_TO_MODE,
+  suggestCanonicalPhase,
 } from './domain/phase.js';
 
 // Re-export types (Phase etc. are both const + type, re-exported above)
@@ -35,6 +36,34 @@ export {
   listAvailableTransitions,
   isRollbackAllowed,
 } from './domain/transitions-table.js';
+
+// ─── Domain: Discovery milestones ───
+
+export {
+  DiscoveryMilestone,
+  DISCOVERY_MILESTONE_ORDER,
+  CONDITIONAL_MILESTONES,
+  milestoneIndex,
+  nextMilestoneAfter,
+  previousMilestoneOf,
+  isConditionalMilestone,
+} from './domain/discovery.js';
+
+export type { DiscoveryMilestoneId } from './domain/discovery.js';
+
+// ─── Domain: Workflow profiles ───
+
+export {
+  WorkflowProfile,
+  PROFILE_ROUTES,
+  isPhaseAllowedInProfile,
+  isOffRouteIdleEscape,
+  isTransitionAllowedInProfile,
+  listProfileTransitions,
+  recommendProfile,
+} from './domain/workflow-profile.js';
+
+export type { WorkflowProfileId } from './domain/workflow-profile.js';
 
 // ─── Domain: Hygiene (structural drift) ───
 
@@ -66,13 +95,28 @@ export {
   InvalidTaskStatusTransitionError,
   InvalidStageTransitionError,
   AlreadyAtStageError,
+  MilestoneNotFoundError,
+  MilestoneOrderError,
+  MilestoneStatusTransitionError,
+  MilestoneEvidenceRequiredError,
+  MilestonePlanIncompleteError,
+  MilestoneRationaleRequiredError,
+  MilestoneNotConditionalError,
+  WaiverReasonRequiredError,
+  ProfileRouteError,
 } from './errors/state-errors.js';
 export type {
   TransitionError,
   StateLoadError,
   TaskError,
   StageError,
+  MilestoneError,
 } from './errors/state-errors.js';
+export {
+  formatSchemaIssues,
+  toSchemaIssueDetails,
+} from './errors/schema-issues.js';
+export type { SchemaIssueDetail } from './errors/schema-issues.js';
 
 // ─── Ports ───
 
@@ -81,6 +125,17 @@ export type { ClockPort } from './ports/clock.js';
 export type { LoggerPort } from './ports/logger.js';
 export type { ShellPort, ShellExecOptions, ShellResult } from './ports/shell.js';
 export type { PromptPort, PromptChoice } from './ports/prompt.js';
+export type {
+  SymbolIndexerPort,
+  CodeSymbol,
+  DiscoveredSymbolKind,
+} from './ports/symbol-indexer.js';
+export type {
+  TestContractEvidencePort,
+  TestContractEvidence,
+  TestContractEvidenceIndex,
+  TestContractMarkerWarning,
+} from './ports/test-contract-evidence.js';
 
 // ─── Domain: Skills ───
 
@@ -100,7 +155,16 @@ export type { ParsedPersona } from './domain/persona.js';
 // ─── Domain: Slash Commands ───
 
 export type { ParsedSlashCommand, SlashCommandRegistry } from './domain/slash-command.js';
-export { PHASE_COMMAND_MAP, WILDCARD_COMMANDS, resolveSlashCommand } from './domain/slash-command.js';
+export {
+  PHASE_COMMAND_MAP,
+  ROLE_NONE,
+  WILDCARD_COMMANDS,
+  SLASH_COMMAND_FILE_PREFIX,
+  resolveSlashCommand,
+  slashCommandRef,
+  slashTriggerToRef,
+  phaseSlashRef,
+} from './domain/slash-command.js';
 
 // ─── Domain: Install (Cross-Harness) ───
 

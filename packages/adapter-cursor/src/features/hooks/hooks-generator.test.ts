@@ -41,6 +41,20 @@ describe('generateHooks', () => {
     expect(parsed.hooks['sessionStart']).toBeDefined();
   });
 
+  it('maps canonical Stop (session-closure-reminder) to stop', () => {
+    const result = generateHooks({ profile: 'standard', disabled: [] }, cursorManifest);
+    const parsed = JSON.parse(result.content) as {
+      version: number;
+      hooks: Record<string, Array<{ command: string; event: string; description: string }>>;
+    };
+
+    expect(parsed.hooks['stop']).toBeDefined();
+    const entry = parsed.hooks['stop']?.find((e) => e.command.includes('Stop'));
+    expect(entry).toBeDefined();
+    expect(entry?.event).toBe('stop');
+    expect(entry?.description.toLowerCase()).toMatch(/session/);
+  });
+
   it('excludes hooks not in minimal profile', () => {
     const minimal = generateHooks({ profile: 'minimal', disabled: [] }, cursorManifest);
     const standard = generateHooks({ profile: 'standard', disabled: [] }, cursorManifest);

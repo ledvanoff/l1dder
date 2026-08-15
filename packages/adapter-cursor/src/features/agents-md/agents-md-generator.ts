@@ -35,8 +35,9 @@ export interface AgentsMdResult {
 /**
  * Generate `AGENTS.md` from project data (TC8-TC11).
  *
- * Produces 5 sections: Project Overview, Directory Structure,
- * L1DDER Workflow, Working with This Project, Conventions Quick Reference.
+ * Produces a compact agent entrypoint: overview, directories, position model,
+ * workflow rails, primary next-action guidance, reference commands/skills,
+ * recovery pointers, and conventions.
  */
 export function generateAgentsMd(
   data: AgentsMdData,
@@ -60,6 +61,7 @@ function assembleBody(data: AgentsMdData): string {
 
   sections.push(buildProjectOverview(data));
   sections.push(buildDirectoryStructure(data));
+  sections.push(buildPositionModel());
   sections.push(buildWorkflow(data));
   sections.push(buildWorkingWithProject(data));
   sections.push(buildConventions(data));
@@ -96,17 +98,59 @@ function buildDirectoryStructure(data: AgentsMdData): string {
   ].join('\n');
 }
 
+/**
+ * Canonical progressive-position model — single source of orientation for agents.
+ */
+function buildPositionModel(): string {
+  return [
+    '## Position Model',
+    '',
+    'L1DDER narrows work through this progressive position chain:',
+    '**Stage → Milestone → Profile → Session → Phase → Gate → Primary Action**',
+    '',
+    'Do not invent the next step from the full command list. Resolve the current',
+    'Primary Action first (see Primary Entrypoint below).',
+  ].join('\n');
+}
+
 function buildWorkflow(data: AgentsMdData): string {
   const lines: string[] = [
     '## L1DDER Workflow',
     '',
-    'This project uses L1DDER phase-driven workflow. Each iteration follows:',
-    'SPECIFY → PLAN → TO_BE_KU → TASKS → IMPLEMENT → AS_IS_KU → COMPLETE → IDLE',
+    '### Workflow Profiles',
+    '',
+    '| Profile | Use when |',
+    '|---------|----------|',
+    '| `product_discovery` | IDEA→READY product shaping (To-Be only) |',
+    '| `feature_discovery` | Spec/plan a feature before delivery code |',
+    '| `delivery` | Implement an eligible roadmap session |',
+    '| `hygiene` | Full as-is/to-be sync, drift, and debt audit |',
+    '',
+    '### Roadmap Rails',
+    '',
+    '- A **delivery** Agent Session starts from the next eligible roadmap session.',
+    '- Off-road work goes through **feature_discovery**, or an audited Quick/Fast bypass.',
+    '',
+    '### Registry-First',
+    '',
+    'Before creating a model, enum, class/interface/type/schema, service, port, or',
+    'adapter: look up `knowledge/project-registry.yml` and public exports. Reuse an',
+    'existing entity, or record why a new one is required.',
+    '',
+    '### Primary Entrypoint',
+    '',
+    '**What do I do now?** Run one command:',
+    '',
+    '- CLI: `l1dder now` or `l1dder helpme`',
+    '- IDE slash: `/l1dder-next`',
+    '',
+    'That projection-backed next-action is the only default starting point.',
+    'The tables below are a **reference / advanced** surface — not an equal menu of next steps.',
     '',
   ];
 
   if (data.commands.length > 0) {
-    lines.push('### Commands');
+    lines.push('### Commands (reference / advanced)');
     lines.push('');
     lines.push('| Command | Description | Phases |');
     lines.push('|---------|-------------|--------|');
@@ -117,7 +161,7 @@ function buildWorkflow(data: AgentsMdData): string {
   }
 
   if (data.skills.length > 0) {
-    lines.push('### Skills');
+    lines.push('### Skills (reference)');
     lines.push('');
     lines.push('| Skill | Summary | Trigger |');
     lines.push('|-------|---------|---------|');
@@ -133,11 +177,20 @@ function buildWorkingWithProject(data: AgentsMdData): string {
   const lines: string[] = [
     '## Working with This Project',
     '',
+    '### Recovery / Entrypoints',
+    '',
+    '| Situation | Command |',
+    '|-----------|---------|',
+    '| Lost / unclear next step | `l1dder now` / `l1dder helpme` (IDE: `/l1dder-next`) |',
+    '| Health check / broken-looking state | `l1dder doctor` |',
+    '| Position snapshot | `l1dder status` |',
+    '| Regenerate IDE files | `l1dder sync` |',
+    '',
     'Before making changes:',
     '',
-    '1. Check current project phase with `l1dder status`',
-    '2. Use the appropriate `/l1dder-*` command for the current phase',
-    '3. Follow phase-specific skill guidance',
+    '1. Ask for the Primary Action (`l1dder now` / `/l1dder-next`)',
+    '2. Follow the active workflow profile and phase guidance',
+    '3. Prefer registry-first lookup over inventing new types',
     '',
   ];
 

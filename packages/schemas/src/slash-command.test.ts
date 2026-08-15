@@ -107,6 +107,35 @@ describe('SlashCommandFrontMatterSchema', () => {
     const { name: _, ...noName } = validMinimal;
     expect(() => SlashCommandFrontMatterSchema.parse(noName)).toThrow();
   });
+
+  it('accepts canonical phase update_tobe and any-phase sentinel *', () => {
+    expect(
+      SlashCommandFrontMatterSchema.parse({
+        ...validMinimal,
+        id: 'update-tobe',
+        phase: 'update_tobe',
+      }).phase,
+    ).toBe('update_tobe');
+    expect(
+      SlashCommandFrontMatterSchema.parse({
+        ...validMinimal,
+        id: 'pause',
+        phase: '*',
+      }).phase,
+    ).toBe('*');
+  });
+
+  it('rejects non-canonical historical phase alias to_be_knowledge_update', () => {
+    const result = SlashCommandFrontMatterSchema.safeParse({
+      ...validMinimal,
+      id: 'update-tobe',
+      phase: 'to_be_knowledge_update',
+    });
+    expect(result.success).toBe(false);
+    if (result.success) return;
+    const phaseIssue = result.error.issues.find((i) => i.path.includes('phase'));
+    expect(phaseIssue).toBeDefined();
+  });
 });
 
 describe('ParsedSlashCommandSchema', () => {

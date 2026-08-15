@@ -55,8 +55,72 @@ export const PHASE_COMMAND_MAP: Readonly<Partial<Record<Phase, string>>> & { rea
   complete: 'specify',
 };
 
+/**
+ * Canonical file / human-visible slash-command id prefix (`l1dder-<id>`).
+ *
+ * Shared with harness file names (e.g. `.cursor/commands/l1dder-<id>.md`).
+ * The dotted form `/l1dder.<id>` is obsolete and must never be emitted.
+ */
+export const SLASH_COMMAND_FILE_PREFIX = 'l1dder-';
+
+/** Internal transition-table trigger prefix (`slash:<id>`). Never show to humans. */
+const SLASH_TRIGGER_PREFIX = 'slash:';
+
+/**
+ * Format the canonical human-visible slash command reference.
+ *
+ * @param commandId - command id without prefix (e.g. `"complete"`, `"update-tobe"`)
+ * @returns `/l1dder-<id>` (hyphen form only)
+ */
+export function slashCommandRef(commandId: string): string {
+  return `/${SLASH_COMMAND_FILE_PREFIX}${commandId}`;
+}
+
+/**
+ * Map an internal trigger source `slash:<id>` to a human-visible slash ref.
+ *
+ * @param trigger - e.g. `"slash:complete"` from the transition table
+ * @returns `/l1dder-<id>`, or `null` when the string is not `slash:<non-empty-id>`
+ */
+export function slashTriggerToRef(trigger: string): string | null {
+  if (!trigger.startsWith(SLASH_TRIGGER_PREFIX)) {
+    return null;
+  }
+  const commandId = trigger.slice(SLASH_TRIGGER_PREFIX.length);
+  if (commandId.length === 0) {
+    return null;
+  }
+  return slashCommandRef(commandId);
+}
+
+/**
+ * Resolve the canonical human slash ref for the default command of a phase.
+ *
+ * @param phase - workflow phase
+ * @returns `/l1dder-<id>` via {@link PHASE_COMMAND_MAP}, or `null` when unmapped
+ */
+export function phaseSlashRef(phase: Phase): string | null {
+  const commandId = PHASE_COMMAND_MAP[phase];
+  if (commandId === undefined) {
+    return null;
+  }
+  return slashCommandRef(commandId);
+}
+
+/**
+ * `role` value marking a command that deliberately has no persona.
+ *
+ * Used by dispatcher-style commands, where baking in a domain persona would
+ * push the agent into that role's work before the projection asked for it.
+ */
+export const ROLE_NONE = 'none';
+
 /** Wildcard command that can be invoked from any phase. */
-export const WILDCARD_COMMANDS: readonly string[] = ['pause', 'constitution'];
+export const WILDCARD_COMMANDS: readonly string[] = [
+  'pause',
+  'constitution',
+  'next',
+];
 
 /**
  * Resolve the default slash command for a given phase.

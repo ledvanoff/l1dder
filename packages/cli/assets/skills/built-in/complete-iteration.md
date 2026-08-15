@@ -21,8 +21,8 @@ archive specs, update the roadmap and worklog, transition to IDLE.
 ## When to Use
 
 - The Phase Machine transitioned to COMPLETE (trigger: auto)
-- The user runs `/l1dder.complete` (slash command)
-- After AS_IS_KNOWLEDGE_UPDATE is complete
+- The user runs `/l1dder-complete` (slash command)
+- After `update_asis` (AS_IS_KU) is complete
 
 ## Steps
 

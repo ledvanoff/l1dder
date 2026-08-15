@@ -15,13 +15,14 @@ builtin: true
 
 ## Summary
 
-Run the TO_BE_KNOWLEDGE_UPDATE phase: update the target knowledge documents
-(`knowledge/to-be/*.md`) based on the results of the discovery phases (SPECIFY + PLAN).
+Run the `update_tobe` phase (TO_BE_KU / Knowledge Update): update the target
+knowledge documents (`knowledge/to-be/*.md`) based on the results of the
+discovery phases (SPECIFY + PLAN).
 
 ## When to Use
 
-- The Phase Machine transitioned to TO_BE_KNOWLEDGE_UPDATE (trigger: auto)
-- The user runs `/l1dder.update-tobe` (slash command)
+- The Phase Machine transitioned to `update_tobe` (trigger: auto)
+- The user runs `/l1dder-update-tobe` (slash command)
 - After PLAN is complete with a ready `spec.md` and `plan.md`
 
 ## Steps

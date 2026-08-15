@@ -2,9 +2,11 @@
 
 <!--
   Шаблон: specs/current/tasks.md
-  Фаза Phase Machine: TASKS (создаётся /l1dder.tasks)
-  Используется: l1dder tasks (scaffolding + AI-генерация на основе plan.md)
-  Парсится: extractSummary() — секция ## Summary (dynamic zone, priority 1 — never trim)
+  Фаза Phase Machine: TASKS (создаётся /l1dder-tasks)
+  Используется: /l1dder-tasks (slash-команда; scaffolding + AI-генерация на основе plan.md)
+  Парсится:
+    - extractSummary() — секция ## Summary (dynamic zone, priority 1 — never trim)
+    - parseTasksMarkdown() — таблица ## Task List (колонки: id, Task, depends_on, Status)
   Обновляется: в рамках фаз TASKS и IMPLEMENT (статусы задач обновляются)
   Ownership: Architect (декомпозиция), Developer (исполнение)
   Lifecycle: краткосрочный (per-feature, одна итерация)
@@ -17,19 +19,27 @@
     {{TOTAL_TASKS}}  — общее количество задач
     <!-- TODO: ... -- > — секции, требующие заполнения
 
+  Migration note:
+    Tasks без per-task Test Contract id остаются валидными.
+    При обновлении свяжите Test Contracts каждой задачи с TC-* id из
+    AI Contract в spec.md / Test Contracts в plan.md. Отдельного
+    ai-tasks.md нет. Имена колонок ## Task List остаются English
+    (id / Task / depends_on / Status), чтобы parseTasksMarkdown их читал.
+
   Валидация (l1dder doctor):
     - ## Summary существует и не пуст
     - ## Task List содержит таблицу с колонкой depends_on
     - Каждая задача имеет уникальный id (T-XX формат)
     - depends_on ссылки валидны (нет ссылок на несуществующие id)
     - Нет циклических зависимостей (DAG — directed acyclic graph)
+    - В деталях каждой задачи указаны Test Contract id, если есть тестируемая логика
     - plan.md существует и завершён (prerequisite)
     - Нет незаполненных {{...}} маркеров в финальном документе
 
   State tracking:
     - Task status обновляется через StateManager.task.start() / .complete() / .block()
     - depends_on guard: задача не может перейти в started если зависимости не done
-    - Топологическая сортировка определяет рекомендуемый порядок (l1dder task next)
+    - Топологическая сортировка определяет рекомендуемый порядок (`l1dder task list`)
 -->
 
 > **Фича:** {{FEATURE_NAME}} | **Дата:** {{DATE}} | **Автор:** {{AUTHOR}}
@@ -50,10 +60,11 @@
 <!-- Таблица всех задач с зависимостями -->
 <!-- depends_on — ОБЯЗАТЕЛЬНОЕ поле (архитектурное требование PM12, B3) -->
 <!-- Формат depends_on: id через запятую или "—" если нет зависимостей -->
-<!-- Status: pending | in_progress | done | blocked | skipped -->
+<!-- Status: pending | in_progress | done | skipped -->
 <!-- Complexity: S (< 1h) | M (1-4h) | L (4-8h) | XL (> 8h) -->
+<!-- Имена колонок остаются English (id / Task / depends_on / Status) для parseTasksMarkdown -->
 
-| id | Задача | depends_on | Complexity | Status |
+| id | Task | depends_on | Complexity | Status |
 |----|--------|-----------|------------|--------|
 | T-01 | <!-- TODO --> | — | S / M / L / XL | pending |
 | T-02 | <!-- TODO --> | T-01 | S / M / L / XL | pending |
@@ -79,11 +90,14 @@ T-01 ──→ T-02 ──┐
 ## Task Details
 
 <!-- Детальное описание каждой задачи -->
-<!-- Для каждой: что сделать, acceptance criteria, test contracts, затрагиваемые файлы -->
+<!-- Для каждой: что сделать, acceptance criteria, Test Contract id(s), затрагиваемые файлы -->
+<!-- Test Contracts используют TC-* id из AI Contract в spec.md / plan.md -->
 
 ### T-01: <!-- TODO: название -->
 
 <!-- TODO: Описание задачи -->
+
+**depends_on:** —
 
 **Acceptance Criteria:**
 
@@ -92,10 +106,10 @@ T-01 ──→ T-02 ──┐
 
 **Test Contracts:**
 
-<!-- Опционально: ожидаемые поведенческие тесты (Contract-First, см. standards/conventions.md) -->
-<!-- AI пишет эти тесты вместе с кодом. Формат: "given X → expect Y" -->
-<!-- Удалите секцию, если задача не содержит тестируемой логики (scaffolding, конфиги) -->
-- <!-- TODO: поведенческий тест 1 -->
+<!-- Обязательно, если в задаче есть тестируемая логика. Используйте TC-* id из AI Contract. -->
+<!-- Формат: "`TC-NNN-MM-L` — given X → expect Y" -->
+<!-- Удалите секцию только если тестируемой логики нет (scaffolding, конфиги) -->
+- `TC-001-01-A` — <!-- TODO: given X → expect Y -->
 
 **Files:**
 
@@ -107,6 +121,8 @@ T-01 ──→ T-02 ──┐
 
 <!-- TODO: Описание задачи -->
 
+**depends_on:** T-01
+
 **Acceptance Criteria:**
 
 - [ ] <!-- TODO: критерий 1 -->
@@ -114,10 +130,7 @@ T-01 ──→ T-02 ──┐
 
 **Test Contracts:**
 
-<!-- Опционально: ожидаемые поведенческие тесты (Contract-First, см. standards/conventions.md) -->
-<!-- AI пишет эти тесты вместе с кодом. Формат: "given X → expect Y" -->
-<!-- Удалите секцию, если задача не содержит тестируемой логики (scaffolding, конфиги) -->
-- <!-- TODO: поведенческий тест 1 -->
+- `TC-001-01-A` — <!-- TODO: given X → expect Y -->
 
 **Files:**
 
@@ -129,6 +142,8 @@ T-01 ──→ T-02 ──┐
 
 <!-- TODO: Описание задачи -->
 
+**depends_on:** T-01
+
 **Acceptance Criteria:**
 
 - [ ] <!-- TODO: критерий 1 -->
@@ -136,10 +151,7 @@ T-01 ──→ T-02 ──┐
 
 **Test Contracts:**
 
-<!-- Опционально: ожидаемые поведенческие тесты (Contract-First, см. standards/conventions.md) -->
-<!-- AI пишет эти тесты вместе с кодом. Формат: "given X → expect Y" -->
-<!-- Удалите секцию, если задача не содержит тестируемой логики (scaffolding, конфиги) -->
-- <!-- TODO: поведенческий тест 1 -->
+- `TC-001-01-A` — <!-- TODO: given X → expect Y -->
 
 **Files:**
 
@@ -151,6 +163,8 @@ T-01 ──→ T-02 ──┐
 
 <!-- TODO: Описание задачи -->
 
+**depends_on:** T-02, T-03
+
 **Acceptance Criteria:**
 
 - [ ] <!-- TODO: критерий 1 -->
@@ -158,10 +172,7 @@ T-01 ──→ T-02 ──┐
 
 **Test Contracts:**
 
-<!-- Опционально: ожидаемые поведенческие тесты (Contract-First, см. standards/conventions.md) -->
-<!-- AI пишет эти тесты вместе с кодом. Формат: "given X → expect Y" -->
-<!-- Удалите секцию, если задача не содержит тестируемой логики (scaffolding, конфиги) -->
-- <!-- TODO: поведенческий тест 1 -->
+- `TC-001-01-A` — <!-- TODO: given X → expect Y -->
 
 **Files:**
 

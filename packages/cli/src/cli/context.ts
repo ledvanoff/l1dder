@@ -9,12 +9,17 @@ import type {
 import type { PromptPort } from '@l1dder/core';
 import { ConfigSchema } from '@l1dder/schemas';
 import type { ContextConfig } from '@l1dder/schemas';
-import { StateManager, StateReader } from '@l1dder/state';
+import {
+  StateManager,
+  StateReader,
+  SoloApprover,
+  TaskCompletionGateCondition,
+} from '@l1dder/state';
 import type { StateManagerDeps } from '@l1dder/state';
-import { SoloApprover } from '@l1dder/state';
 import { KnowledgeReader } from '@l1dder/knowledge';
 import { ContextEngine } from '@l1dder/context';
 import { GitDriftChecker } from './adapters/drift-checker.js';
+import { RegistryDeliveryRailIndex } from './adapters/registry-delivery-rail-index.js';
 
 /** `ContextConfig` defaults used when `config.yml` is missing or unreadable. */
 const DEFAULT_CONTEXT_CONFIG: ContextConfig = ConfigSchema.parse({}).context;
@@ -42,6 +47,12 @@ export interface CliContext {
   readonly shell: ShellPort | undefined;
   state(): Promise<StateManager>;
   knowledge(): KnowledgeReader;
+  /**
+   * The delivery-rail index wired into `state()`, shared so commands read
+   * `knowledge/project-registry.yml` once per invocation and see the same
+   * load diagnostic the `StateManager` saw.
+   */
+  deliveryRails(): RegistryDeliveryRailIndex;
   /**
    * Lazily builds the `ContextEngine`, configured from the project's
    * `context:` section in `.l1dder/config.yml` when present (falling back to
@@ -91,6 +102,17 @@ export function buildContext(
 
   let cachedState: StateManager | undefined;
   let cachedKnowledge: KnowledgeReader | undefined;
+  let cachedDeliveryRails: RegistryDeliveryRailIndex | undefined;
+
+  const deliveryRails = (): RegistryDeliveryRailIndex => {
+    if (cachedDeliveryRails) return cachedDeliveryRails;
+    cachedDeliveryRails = new RegistryDeliveryRailIndex({
+      fs,
+      projectRoot: globals.cwd,
+      logger,
+    });
+    return cachedDeliveryRails;
+  };
   let cachedContextEngine: ContextEngine | undefined;
 
   return {
@@ -112,6 +134,8 @@ export function buildContext(
         clock,
         logger,
         approver: new SoloApprover(clock),
+        deliveryRails: deliveryRails(),
+        conditions: new TaskCompletionGateCondition(fs, globals.cwd),
         ...(shell ? { driftChecker: new GitDriftChecker(shell, globals.cwd) } : {}),
       };
 
@@ -120,6 +144,8 @@ export function buildContext(
       cachedState = result.value;
       return cachedState;
     },
+
+    deliveryRails,
 
     knowledge(): KnowledgeReader {
       if (cachedKnowledge) return cachedKnowledge;

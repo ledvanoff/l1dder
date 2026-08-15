@@ -61,6 +61,40 @@ describe('mapErrorToExitCode', () => {
   it('maps non-Error to exit code 1', () => {
     expect(mapErrorToExitCode('string error')).toBe(ExitCode.GENERIC_ERROR);
   });
+
+  it('maps TASKS_* domain codes to TASKS_ERROR (13)', () => {
+    expect(
+      mapErrorToExitCode({
+        code: 'TASKS_PROJECTION_EMPTY',
+        message: 'empty',
+      }),
+    ).toBe(ExitCode.TASKS_ERROR);
+    expect(
+      mapErrorToExitCode(
+        new GateRejectedError(
+          'implementation-gate',
+          'implement',
+          'TASKS_INCOMPLETE',
+          'blocked',
+        ),
+      ),
+    ).toBe(ExitCode.TASKS_ERROR);
+  });
+
+  it('maps SESSION_* domain codes to SESSION_ERROR (14)', () => {
+    expect(
+      mapErrorToExitCode({ code: 'SESSION_OFF_ROAD', message: 'off' }),
+    ).toBe(ExitCode.SESSION_ERROR);
+  });
+
+  it('maps SESSION_FORCE_REASON_REQUIRED to FORCE_REASON_REQUIRED (10)', () => {
+    expect(
+      mapErrorToExitCode({
+        code: 'SESSION_FORCE_REASON_REQUIRED',
+        message: 'need reason',
+      }),
+    ).toBe(ExitCode.FORCE_REASON_REQUIRED);
+  });
 });
 
 describe('errorToCode', () => {
@@ -84,5 +118,11 @@ describe('errorToHint', () => {
 
   it('returns undefined for generic Error', () => {
     expect(errorToHint(new Error('oops'))).toBeUndefined();
+  });
+
+  it('hints TASKS_PROJECTION_EMPTY toward l1dder task sync', () => {
+    expect(
+      errorToHint({ code: 'TASKS_PROJECTION_EMPTY', message: 'empty' }),
+    ).toContain('l1dder task sync');
   });
 });

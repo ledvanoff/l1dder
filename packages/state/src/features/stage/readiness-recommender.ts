@@ -1,10 +1,13 @@
+import { DISCOVERY_MILESTONE_ORDER } from '@l1dder/core';
+import type { DiscoveryMilestoneId } from '@l1dder/schemas';
+
 import type { CriterionResult, DeliveryCriteriaResult } from './delivery-criteria.js';
 
 /** A single discovery milestone in the ordered checklist. */
 export interface DiscoveryMilestone {
   /** Display order (1 = first milestone). */
   readonly order: number;
-  /** Machine identifier: 'idea' | 'roadmap' | 'architecture' | 'data_model' | 'usecases'. */
+  /** Machine identifier from the IDEA→READY order. */
   readonly id: string;
   readonly label: string;
   readonly met: boolean;
@@ -16,7 +19,7 @@ export interface DiscoveryMilestone {
 export interface ReadinessRecommendation {
   /** True when all enabled required criteria are met. */
   readonly ready: boolean;
-  /** Human-readable score, e.g. "3/5". */
+  /** Human-readable score, e.g. "3/7". */
   readonly score: string;
   /** Ordered list of discovery milestones (only enabled ones). */
   readonly milestones: readonly DiscoveryMilestone[];
@@ -29,19 +32,12 @@ export interface ReadinessRecommendation {
 }
 
 /**
- * Ordered set of discovery milestone IDs (canonical order).
+ * Canonical ordered discovery milestone IDs for the readiness checklist.
  *
- * Criteria beyond order 5 (design, no_skeleton_markers) are infrastructure
- * checks, not "milestones" — the Recommender tracks only the five discovery
- * artifacts for the ordered checklist.
+ * Roadmap is intentionally absent — it is the human control plane, not a gate
+ * (DEC-HARD-01).
  */
-const MILESTONE_IDS: readonly string[] = [
-  'idea',
-  'roadmap',
-  'architecture',
-  'data_model',
-  'usecases',
-];
+const MILESTONE_IDS: readonly DiscoveryMilestoneId[] = DISCOVERY_MILESTONE_ORDER;
 
 /**
  * Build an ordered Discovery Checklist and advisory recommendation from the
@@ -49,23 +45,20 @@ const MILESTONE_IDS: readonly string[] = [
  *
  * Pure function — no I/O, no external dependencies.
  *
- * M2 compliance: only criteria present in `result` are included. If a milestone
- * flag was disabled in config (e.g. `require_erd_not_skeleton: false`), the
- * corresponding criterion is absent from `result`, so it won't appear in
- * `milestones` or `gaps`.
+ * Only criteria whose ids are in the IDEA→READY order are included. Extraneous
+ * legacy ids (e.g. `roadmap`, `design`) are ignored so callers cannot
+ * reintroduce a second checklist.
  */
 export function recommend(result: DeliveryCriteriaResult): ReadinessRecommendation {
-  // Build a lookup from criterion id → CriterionResult
   const byId = new Map<string, CriterionResult>();
   for (const c of result) {
     byId.set(c.id, c);
   }
 
-  // Build ordered milestones (only enabled ones, in canonical order)
   const milestones: DiscoveryMilestone[] = [];
   for (const id of MILESTONE_IDS) {
     const c = byId.get(id);
-    if (!c) continue; // milestone disabled in config → skip
+    if (!c) continue;
     milestones.push({
       order: milestones.length + 1,
       id: c.id,
@@ -75,7 +68,7 @@ export function recommend(result: DeliveryCriteriaResult): ReadinessRecommendati
     });
   }
 
-  const allMet = result.every((c) => c.met);
+  const allMet = milestones.length > 0 && milestones.every((m) => m.met);
   const totalEnabled = milestones.length;
   const metCount = milestones.filter((m) => m.met).length;
 
@@ -84,7 +77,7 @@ export function recommend(result: DeliveryCriteriaResult): ReadinessRecommendati
   const nextMilestone = firstUnmet?.id;
 
   const score = `${String(metCount)}/${String(totalEnabled)}`;
-  const message = buildMessage(allMet, milestones, firstUnmet);
+  const message = buildMessage(allMet, firstUnmet);
 
   return {
     ready: allMet,
@@ -98,7 +91,6 @@ export function recommend(result: DeliveryCriteriaResult): ReadinessRecommendati
 
 function buildMessage(
   allMet: boolean,
-  milestones: readonly DiscoveryMilestone[],
   nextMilestone: DiscoveryMilestone | undefined,
 ): string {
   if (allMet) {
@@ -109,31 +101,21 @@ function buildMessage(
     return 'Complete the remaining discovery milestones before transitioning to delivery.';
   }
 
-  // Specific advice based on which milestone is next
   switch (nextMilestone.id) {
     case 'idea':
-      return 'Start by documenting the product idea (knowledge/idea.md) — describe the problem, solution, and target users.';
-
-    case 'roadmap':
-      return (
-        'Work out the roadmap next: define the MVP scope, plan the discovery milestones ' +
-        'with estimated sessions, and document them in knowledge/roadmap.md. ' +
-        'Run the built-in "plan-roadmap" skill to get guided.'
-      );
-
-    case 'architecture': {
-      const erdEnabled = milestones.some((m) => m.id === 'data_model');
-      return erdEnabled
-        ? 'Work out the to-be architecture and data model before transitioning to delivery.'
-        : 'Work out the to-be architecture before transitioning to delivery.';
-    }
-
-    case 'data_model':
-      return 'Add an erDiagram block to knowledge/to-be/erd.md to document the data model.';
-
-    case 'usecases':
-      return 'Document the key use cases in knowledge/to-be/usecases.md before transitioning to delivery.';
-
+      return 'Start by brainstorming the product idea (`l1dder discovery start idea`).';
+    case 'product':
+      return 'Plan and complete the product milestone (use cases / MVP scope) next.';
+    case 'architecture':
+      return 'Work out the to-be architecture before advancing further.';
+    case 'integrations':
+      return 'Close integrations (complete with evidence, or `l1dder discovery skip integrations --reason ...`).';
+    case 'data':
+      return 'Document the data model before continuing.';
+    case 'standards':
+      return 'Close standards (complete, or skip with rationale when inherited).';
+    case 'ready':
+      return 'Close the ready milestone once every prior applicable milestone is done.';
     default:
       return 'Complete the remaining discovery milestones before transitioning to delivery.';
   }

@@ -6,6 +6,23 @@ import { parseFrontMatter } from '@l1dder/yaml';
 
 import { ParseError } from '../errors.js';
 
+/** Minimal Zod-issue shape used to name failing front-matter fields. */
+interface SchemaIssue {
+  readonly path: readonly PropertyKey[];
+  readonly message: string;
+}
+
+/** Format schema issues as `field: message` pairs for typed load errors. */
+function formatFrontMatterIssues(issues: readonly SchemaIssue[]): string {
+  return issues
+    .map((issue) => {
+      const field =
+        issue.path.length > 0 ? issue.path.map(String).join('.') : '(root)';
+      return `${field}: ${issue.message}`;
+    })
+    .join('; ');
+}
+
 /**
  * Section heading → `SlashCommandBody` key mapping.
  *
@@ -66,7 +83,11 @@ export function parseSlashCommand(
   const validation = SlashCommandFrontMatterSchema.safeParse(data);
   if (!validation.success) {
     return err(
-      new ParseError(filePath, validation.error.message, validation.error),
+      new ParseError(
+        filePath,
+        formatFrontMatterIssues(validation.error.issues),
+        validation.error,
+      ),
     );
   }
 

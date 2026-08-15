@@ -1,46 +1,49 @@
 import { describe, expect, it } from 'vitest';
-import { FixedClock, InMemoryFileSystem, NullLogger } from '@l1dder/core/testing';
+import { DISCOVERY_MILESTONE_ORDER } from '@l1dder/core';
+import { FixedClock, NullLogger } from '@l1dder/core/testing';
+import type { State } from '@l1dder/schemas';
 
 import { createTestState, createTestConfig } from '../../testing.js';
+import { DiscoveryOrchestrator } from '../discovery/discovery-orchestrator.js';
 import { StageManager } from './stage-manager.js';
 
 const NOW = '2026-05-11T12:00:00Z';
-const PROJECT_ROOT = '/project';
+const ACTOR = { kind: 'human' as const, id: 'tester' };
 
-/** Minimal mature content that passes skeleton check. */
-const MATURE = `## Summary\n\n${'x'.repeat(250)}\n\n## Details\n\nFull details.`;
-
-function createManager(fs?: InMemoryFileSystem) {
-  return new StageManager(
-    new FixedClock(NOW),
-    new NullLogger(),
-    fs ?? new InMemoryFileSystem(),
-    PROJECT_ROOT,
-  );
+function createManager(): StageManager {
+  const orch = new DiscoveryOrchestrator(new FixedClock(NOW));
+  return new StageManager(new FixedClock(NOW), new NullLogger(), orch);
 }
 
-function discoveryState() {
+function discoveryState(): State {
   return createTestState({ project: { stage: 'discovery' } });
 }
 
-function deliveryState() {
+function deliveryState(): State {
   return createTestState({ project: { stage: 'delivery' } });
 }
 
-function maintenanceState() {
+function maintenanceState(): State {
   return createTestState({ project: { stage: 'maintenance' } });
 }
 
-/** InMemoryFileSystem pre-populated with all mature discovery artifacts. */
-function createMatureFs(): InMemoryFileSystem {
-  const fs = new InMemoryFileSystem();
-  void fs.writeFile(`${PROJECT_ROOT}/knowledge/idea.md`, MATURE);
-  void fs.writeFile(`${PROJECT_ROOT}/knowledge/roadmap.md`, MATURE);
-  void fs.writeFile(`${PROJECT_ROOT}/knowledge/to-be/architecture.md`, MATURE);
-  void fs.writeFile(`${PROJECT_ROOT}/knowledge/to-be/erd.md`, 'erDiagram\n  User { string id }');
-  void fs.writeFile(`${PROJECT_ROOT}/knowledge/to-be/usecases.md`, MATURE);
-  void fs.writeFile(`${PROJECT_ROOT}/design/project-stage.md`, '# Stage spec');
-  return fs;
+/** Close every discovery milestone via waive (test setup). */
+function allMilestonesClosed(): State {
+  const orch = new DiscoveryOrchestrator(new FixedClock(NOW));
+  const state = orch.initialize(discoveryState());
+  expect(state.ok).toBe(true);
+  if (!state.ok) throw new Error('init failed');
+  let current = state.value;
+  for (const id of DISCOVERY_MILESTONE_ORDER) {
+    const waived = orch.waive(current, id, {
+      reason: `close ${id}`,
+      actor: ACTOR,
+    });
+    expect(waived.ok).toBe(true);
+    if (!waived.ok) throw new Error(`waive ${id} failed`);
+    current = waived.value;
+  }
+  return current;
 }
 
 describe('StageManager', () => {
@@ -53,9 +56,9 @@ describe('StageManager', () => {
   });
 
   describe('advanceStage', () => {
-    it('advances discovery→delivery when criteria met', async () => {
-      const manager = createManager(createMatureFs());
-      const state = discoveryState();
+    it('advances discovery→delivery when all milestones are closed', async () => {
+      const manager = createManager();
+      const state = allMilestonesClosed();
       const config = createTestConfig();
 
       const result = await manager.advanceStage(state, config);
@@ -65,17 +68,15 @@ describe('StageManager', () => {
       expect(result.value.project.stage).toBe('delivery');
       expect(result.value.project.stage_history).toHaveLength(1);
       const entry = result.value.project.stage_history[0];
-      expect(entry).toBeDefined();
-      if (!entry) return;
-      expect(entry.from).toBe('discovery');
-      expect(entry.to).toBe('delivery');
+      expect(entry?.from).toBe('discovery');
+      expect(entry?.to).toBe('delivery');
     });
 
-    it('rejects discovery→delivery when criteria not met and enforcement is enforced', async () => {
-      const manager = createManager(new InMemoryFileSystem());
+    it('rejects discovery→delivery when milestones are incomplete (hard gate)', async () => {
+      const manager = createManager();
       const state = discoveryState();
       const config = createTestConfig({
-        stage: { enforcement: { require_criteria: 'enforced' } },
+        stage: { enforcement: { restrict_phases: 'advisory' } },
       });
 
       const result = await manager.advanceStage(state, config);
@@ -84,18 +85,6 @@ describe('StageManager', () => {
       if (!result.ok) {
         expect(result.error.code).toBe('INVALID_STAGE_TRANSITION');
       }
-    });
-
-    it('allows discovery→delivery with warning when advisory and criteria not met', async () => {
-      const manager = createManager(new InMemoryFileSystem());
-      const state = discoveryState();
-      const config = createTestConfig({
-        stage: { enforcement: { require_criteria: 'advisory' } },
-      });
-
-      const result = await manager.advanceStage(state, config);
-
-      expect(result.ok).toBe(true);
     });
 
     it('advances delivery→maintenance', async () => {
@@ -125,6 +114,26 @@ describe('StageManager', () => {
     });
   });
 
+  describe('requiresForceWaiver', () => {
+    it('returns true when leaving discovery with incomplete milestones', () => {
+      const manager = createManager();
+      expect(manager.requiresForceWaiver(discoveryState(), 'delivery')).toBe(true);
+      expect(manager.requiresForceWaiver(discoveryState(), 'maintenance')).toBe(true);
+    });
+
+    it('returns false when discovery milestones are closed', () => {
+      const manager = createManager();
+      expect(manager.requiresForceWaiver(allMilestonesClosed(), 'delivery')).toBe(false);
+    });
+
+    it('returns false for delivery→maintenance and for backward/same-stage', () => {
+      const manager = createManager();
+      expect(manager.requiresForceWaiver(deliveryState(), 'maintenance')).toBe(false);
+      expect(manager.requiresForceWaiver(deliveryState(), 'discovery')).toBe(false);
+      expect(manager.requiresForceWaiver(discoveryState(), 'discovery')).toBe(false);
+    });
+  });
+
   describe('setStage', () => {
     it('force-sets stage with reason', () => {
       const manager = createManager();
@@ -136,9 +145,7 @@ describe('StageManager', () => {
       if (!result.ok) return;
       expect(result.value.project.stage).toBe('delivery');
       const entry = result.value.project.stage_history[0];
-      expect(entry).toBeDefined();
-      if (!entry) return;
-      expect(entry.reason).toBe('Forced by admin');
+      expect(entry?.reason).toBe('Forced by admin');
     });
 
     it('rejects setting same stage', () => {
@@ -179,24 +186,25 @@ describe('StageManager', () => {
   });
 
   describe('canAdvance', () => {
-    it('returns next stage and criteria status (discovery with empty fs → criteria not met)', async () => {
-      const manager = createManager(new InMemoryFileSystem());
+    it('returns the ordered 7-milestone checklist without roadmap', async () => {
+      const manager = createManager();
       const state = discoveryState();
       const config = createTestConfig();
 
       const result = await manager.canAdvance(state, config);
 
       expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.value.nextStage).toBe('delivery');
-        expect(result.value.criteria).toBeDefined();
-        expect(Array.isArray(result.value.criteria)).toBe(true);
-      }
+      if (!result.ok) return;
+      expect(result.value.nextStage).toBe('delivery');
+      const ids = result.value.criteria.map((c) => c.id);
+      expect(ids).toEqual([...DISCOVERY_MILESTONE_ORDER]);
+      expect(ids).not.toContain('roadmap');
+      expect(result.value.criteria.every((c) => !c.met)).toBe(true);
     });
 
-    it('returns criteria all met for mature project', async () => {
-      const manager = createManager(createMatureFs());
-      const state = discoveryState();
+    it('returns all criteria met when milestones are closed', async () => {
+      const manager = createManager();
+      const state = allMilestonesClosed();
       const config = createTestConfig();
 
       const result = await manager.canAdvance(state, config);

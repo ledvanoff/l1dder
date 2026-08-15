@@ -2,9 +2,11 @@
 
 <!--
   Template: specs/current/spec.md
-  Phase Machine phase: SPECIFY (created by /l1dder.specify)
-  Used by: l1dder specify (scaffolding + AI generation)
-  Parsed by: extractSummary() — the ## Summary section (dynamic zone, priority 1 — never trim)
+  Phase Machine phase: SPECIFY (created by /l1dder-specify)
+  Used by: /l1dder-specify (slash command; scaffolding + AI generation)
+  Parsed by:
+    - extractSummary() — the ## Summary section (dynamic zone, priority 1 — never trim)
+    - parseSpecContract() — the ## AI Contract fenced yaml block (machine-readable)
   Updated: within the SPECIFY phase of the current iteration
   Ownership: Product Owner / Analyst / Designer (the SPECIFY phase roles)
   Lifecycle: short-term (per-feature, one iteration)
@@ -15,14 +17,27 @@
     {{AUTHOR}}       — the author (role or name)
     <!-- TODO: ... -- > — sections that need filling in
 
+  Structure (one spec bundle — there is NO separate ai-spec.md):
+    1) Human Summary — prose sections below (## Summary … ## Open Questions)
+    2) AI Contract   — machine-readable ## AI Contract yaml block (English keys)
+
+  Migration note (legacy specs written before this contract):
+    Specs without ## AI Contract remain valid. Doctor emits a warning with a
+    migration hint, not an error. To migrate: append ## AI Contract with the
+    yaml keys shown below (feature, usecases, decisions, models, test_contracts).
+    Do not create a second file.
+
   Validation (l1dder doctor):
     - ## Summary exists and is non-empty
     - ## Implementation Preferences exists (an architectural requirement)
+    - ## AI Contract yaml validates when present (warn if missing / fail if broken)
     - No unfilled {{...}} markers in the final document
     - No <!-- TODO --> without an owner after SPECIFY is complete
 -->
 
 > **Feature:** {{FEATURE_NAME}} | **Date:** {{DATE}} | **Author:** {{AUTHOR}}
+
+<!-- ========== Human Summary (prose for human reviewers) ========== -->
 
 ## Summary
 
@@ -105,3 +120,27 @@
 | # | Question | Status | Resolution |
 |---|--------|--------|---------|
 | 1 | <!-- TODO --> | blocking / deferred | — |
+
+<!-- ========== AI Contract (machine-readable; keys stay English) ========== -->
+
+## AI Contract
+
+<!--
+  MACHINE-READABLE block. Heading and YAML keys are English in every locale.
+  Replace placeholder IDs with real registry ids. models/decisions may stay [].
+  usecases must be non-empty. test_contracts key must be present (list may be []).
+
+  A single-feature spec uses `feature: FEAT-NNN` (as below). An iteration spec
+  covering several features writes `iteration: <ID>` plus a `features:
+  [FEAT-NNN, ...]` list instead. Both shapes are valid.
+-->
+
+```yaml
+feature: FEAT-001
+usecases:
+  - UC-001-01
+decisions: []
+models: []
+test_contracts:
+  - TC-001-01-A
+```

@@ -68,7 +68,7 @@ These rules govern LLM behavior in every phase and role. They are advisory ("Mac
 | `INIT` | Helps the PO populate the first `usecases.md`, identifies external integrations for `integrations.md` |
 | `SPECIFY` | Drives `## Problem`, `## Solution` (the scenarios part), details `## Implementation Preferences` in the data flow and integration aspects; formulates acceptance criteria for each scenario |
 
-Not active in: `PLAN`, `TO_BE_KNOWLEDGE_UPDATE`, `TASKS`, `IMPLEMENT`, `AS_IS_KNOWLEDGE_UPDATE`, `COMPLETE`, `QUICK_*`, `FAST_*`, `IDLE` — there Architect, Developer, QA, Knowledge Updater, PO take over.
+Not active in: `PLAN`, `update_tobe`, `TASKS`, `IMPLEMENT`, `update_asis`, `COMPLETE`, `QUICK_*`, `FAST_*`, `IDLE` — there Architect, Developer, QA, Knowledge Updater, PO take over.
 
 ## Knowledge Ownership
 
@@ -114,7 +114,7 @@ The Analyst does **NOT** do the following. Otherwise — a signal to switch pers
 - Does not approve UI states and visual decisions (Designer)
 - Does not skip "obvious" scenarios — if an edge case seems trivial, records it explicitly anyway (rule: an explicit note beats a silent gap)
 - Does not turn the Summary of `usecases.md` into a table — the Summary is textual and self-sufficient (CE7 / extractSummary)
-- Does not edit `as-is/*` knowledge directly — only via `AS_IS_KNOWLEDGE_UPDATE` and the Knowledge Updater
+- Does not edit `as-is/*` knowledge directly — only via `update_asis` and the Knowledge Updater
 
 ## Discovery Discipline (Plan-Mode)
 

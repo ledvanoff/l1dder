@@ -3,11 +3,15 @@ import type { StageGuardError, GateRejectedError } from '@l1dder/core';
 import {
   ForbiddenTransitionError,
   PhaseStatus,
+  ProfileRouteError,
   TransitionKind,
   ok,
   err,
   findTransitionRule,
+  isOffRouteIdleEscape,
+  isTransitionAllowedInProfile,
   listAvailableTransitions,
+  listProfileTransitions,
 } from '@l1dder/core';
 import type {
   Config,
@@ -56,6 +60,7 @@ export interface TransitionOutcome {
 export type TransitionPipelineError =
   | ForbiddenTransitionError
   | StageGuardError
+  | ProfileRouteError
   | GateRejectedError;
 
 /**
@@ -78,9 +83,12 @@ export interface TransitionPipelineDeps {
  * 1. Idempotency check → no-op if current === target
  * 2. Find transition rule in whitelist → ForbiddenTransitionError if not found
  * 3. Stage guard → StageGuardError if hard-blocked
- * 4. Gate evaluation → GateRejectedError if rejected (skipped when `force: true`)
- * 5. Apply: update phase, status, history
- * 6. Return TransitionOutcome
+ * 4. Profile route guard → ProfileRouteError if off the selected workflow profile
+ *    (`force` does **not** bypass this — profiles are structural, not a gate).
+ *    Exception: an off-route current phase may return to IDLE (audited `skip`).
+ * 5. Gate evaluation → GateRejectedError if rejected (skipped when `force: true`)
+ * 6. Apply: update phase, status, history
+ * 7. Return TransitionOutcome
  *
  * Handles both forward and rollback transitions via the unified transition table.
  */
@@ -93,6 +101,12 @@ export class TransitionPipeline {
 
   /**
    * Execute a phase transition.
+   *
+   * Profile route enforcement (when `workflow.profile !== null`) runs after the
+   * stage guard and before gate evaluation. Unlike gates, `force: true` does
+   * **not** bypass the profile route — profiles are structural constraints.
+   * An off-route current phase may still return to IDLE (see
+   * {@link isOffRouteIdleEscape}); that is a return onto the route, not a bypass.
    *
    * @param state - Current mutable state (will be modified in-place for the caller).
    * @param config - Project configuration (gates, stages).
@@ -125,9 +139,13 @@ export class TransitionPipeline {
       });
     }
 
-    // 2. Find transition rule in whitelist
+    // 2. Find transition rule in whitelist (or the off-route → IDLE escape)
     const rule = findTransitionRule(currentPhase, targetPhase, mode);
     if (!rule) {
+      const escape = this.executeOffRouteIdleEscape(state, config, request);
+      if (escape !== null) {
+        return escape;
+      }
       return err(
         new ForbiddenTransitionError(
           currentPhase,
@@ -149,7 +167,13 @@ export class TransitionPipeline {
       return err(stageResult.error);
     }
 
-    // 5. Gate evaluation (skip if force)
+    // 5. Profile route guard (force does NOT bypass)
+    const profileResult = this.checkProfileRoute(state, currentPhase, targetPhase);
+    if (!profileResult.ok) {
+      return err(profileResult.error);
+    }
+
+    // 6. Gate evaluation (skip if force)
     let gateOutcome: { approved: boolean; approver: string } | undefined;
     if (!request.force && rule.gates.length > 0) {
       const approvalContext: ApprovalContext = {
@@ -189,7 +213,7 @@ export class TransitionPipeline {
       });
     }
 
-    // 6. Dry run — validate only, don't apply
+    // 7. Dry run — validate only, don't apply
     if (request.dryRun) {
       const outcome: TransitionOutcome = {
         previousPhase: currentPhase,
@@ -201,7 +225,7 @@ export class TransitionPipeline {
       return ok({ outcome, state });
     }
 
-    // 7. Apply transition
+    // 8. Apply transition
     const newState = this.applyForward(
       state,
       rule,
@@ -239,6 +263,12 @@ export class TransitionPipeline {
     const stageResult = this.deps.stageGuard.check(state, config, request.to);
     if (!stageResult.ok) {
       return err(stageResult.error);
+    }
+
+    // Profile route applies to rollback targets too (force does not bypass)
+    const profileResult = this.checkProfileRoute(state, currentPhase, request.to);
+    if (!profileResult.ok) {
+      return err(profileResult.error);
     }
 
     const validateResult = this.deps.rollback.validate(state, request.to);
@@ -280,6 +310,112 @@ export class TransitionPipeline {
       },
       state: newState,
     });
+  }
+
+  /**
+   * Return to IDLE when the current phase sits off the selected profile route.
+   *
+   * Used only when the transition table has no matching row. `force` is not
+   * required: this is recovery onto the route, not a silent walk off it.
+   * Returns `null` when the pair is not an off-route escape.
+   */
+  private executeOffRouteIdleEscape(
+    state: State,
+    config: Config,
+    request: TransitionRequest,
+  ): Result<{ outcome: TransitionOutcome; state: State }, TransitionPipelineError> | null {
+    const currentPhase = state.workflow.current_phase;
+    const targetPhase = request.to;
+    if (!isOffRouteIdleEscape(state.workflow.profile, currentPhase, targetPhase)) {
+      return null;
+    }
+
+    const stageResult = this.deps.stageGuard.check(state, config, targetPhase);
+    if (!stageResult.ok) {
+      return err(stageResult.error);
+    }
+
+    if (request.dryRun) {
+      return ok({
+        outcome: {
+          previousPhase: currentPhase,
+          newPhase: targetPhase,
+          kind: TransitionKind.SKIP,
+          noop: false,
+        },
+        state,
+      });
+    }
+
+    const now = this.deps.clock.now();
+    const historyEntry = {
+      phase: targetPhase,
+      status: PhaseStatus.IN_PROGRESS,
+      started_at: now,
+      actor: request.actor,
+      trigger: request.trigger,
+      transition_kind: TransitionKind.SKIP,
+      metadata: {
+        off_route_escape: true,
+        escaped_from: currentPhase,
+        profile: state.workflow.profile,
+      },
+    };
+
+    const newState: State = {
+      ...state,
+      workflow: {
+        ...state.workflow,
+        current_phase: targetPhase,
+        current_status: PhaseStatus.IN_PROGRESS,
+        phase_history: [...state.workflow.phase_history, historyEntry],
+      },
+    };
+
+    this.deps.logger.info('Off-route idle escape completed', {
+      from: currentPhase,
+      to: targetPhase,
+      profile: state.workflow.profile,
+    });
+
+    return ok({
+      outcome: {
+        previousPhase: currentPhase,
+        newPhase: targetPhase,
+        kind: TransitionKind.SKIP,
+        noop: false,
+      },
+      state: newState,
+    });
+  }
+
+  /**
+   * Reject transitions that leave the selected workflow profile route.
+   *
+   * When `workflow.profile` is `null`, enforcement is off. Quick/fast endpoints
+   * are never restricted by {@link isTransitionAllowedInProfile}.
+   * Off-route → IDLE is allowed via {@link isOffRouteIdleEscape}.
+   */
+  private checkProfileRoute(
+    state: State,
+    from: Phase,
+    to: Phase,
+  ): Result<void, ProfileRouteError> {
+    const profile = state.workflow.profile;
+    if (profile === null) {
+      return ok(undefined);
+    }
+    if (isTransitionAllowedInProfile(profile, from, to)) {
+      return ok(undefined);
+    }
+    return err(
+      new ProfileRouteError(
+        profile,
+        from,
+        to,
+        listProfileTransitions(profile, from),
+      ),
+    );
   }
 
   /**

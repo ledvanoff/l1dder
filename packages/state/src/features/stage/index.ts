@@ -4,7 +4,7 @@
  * @packageDocumentation
  */
 
-export { StageManager } from './stage-manager.js';
+export { StageManager, STAGE_FORCE_DECISION_PREFIX } from './stage-manager.js';
 export type { StageManagerError, AdvanceInfo } from './stage-manager.js';
 export { DeliveryCriteriaChecker, isSkeletonFile } from './delivery-criteria.js';
 export type { DeliveryCriteriaResult, CriterionResult } from './delivery-criteria.js';

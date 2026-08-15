@@ -169,4 +169,21 @@ Bad command.
     const result = await loader.loadBuiltIn();
     expect(result.ok).toBe(false);
   });
+
+  it('returns validation error naming field phase for non-canonical phase', async () => {
+    const loader = createLoader({
+      '/project/commands/built-in/update-tobe.md': makeCommandFile(
+        'update-tobe',
+        'to_be_knowledge_update',
+        { role: 'knowledge-updater', skill: 'update-knowledge-tobe' },
+      ),
+    });
+
+    const result = await loader.loadBuiltIn();
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe('LOAD_ERROR');
+    expect(result.error.path).toBe('commands/built-in/update-tobe.md');
+    expect(result.error.details).toMatch(/phase/);
+  });
 });

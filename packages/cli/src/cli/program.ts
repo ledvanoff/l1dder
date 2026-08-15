@@ -21,9 +21,14 @@ import type { CliContext, CliContextOverrides } from './context.js';
 import { checkCrashRecovery } from './middleware/crash-recovery.js';
 import { NodeShell } from './adapters/shell.js';
 import { createNodeFs } from './adapters/node-fs.js';
+import { attachGlobalOptionsHelp } from './help/global-options.js';
+import {
+  classifyHelpTopic,
+  formatUnknownHelpTopic,
+} from './help/unknown-topic.js';
 
-/** Commands that skip crash recovery check. */
-const SKIP_RECOVERY_COMMANDS = new Set(['init', 'help']);
+/** Commands that skip crash recovery check (doctor stays read-only by default — DF-018). */
+const SKIP_RECOVERY_COMMANDS = new Set(['init', 'help', 'doctor']);
 
 /**
  * Commander collector for repeatable `--ai` flags (also splits comma-separated values).
@@ -42,7 +47,7 @@ function collectAiAdapter(value: string, previous: string[]): string[] {
  *
  * Exported for testing — `runCli()` is the main entry point.
  */
-function createProgram(
+export function createProgram(
   globals: Globals,
   output: OutputFormatter,
   colors: ColorPalette,
@@ -70,6 +75,12 @@ function createProgram(
   registerHelpmeCommand(program, ctx);
   registerContextCommand(program, ctx);
   registerStageCommand(program, ctx);
+  registerDiscoveryCommand(program, ctx);
+  registerRegistryCommand(program, ctx);
+  registerTaskCommand(program, ctx);
+  registerSessionCommand(program, ctx);
+  registerProfileCommand(program, ctx);
+  registerHandoffCommand(program, ctx);
   registerTransitionCommand(program, ctx);
   registerCheckCommand(program, ctx);
   registerDoctorCommand(program, ctx);
@@ -77,6 +88,9 @@ function createProgram(
   registerFastCommand(program, ctx);
   registerSyncCommand(program, ctx);
   registerHookCommand(program, ctx);
+  registerCustomHelpCommand(program);
+
+  attachGlobalOptionsHelp(program);
 
   program.hook('preAction', async (thisCommand) => {
     const commandName = thisCommand.args[0] ?? thisCommand.name();
@@ -85,7 +99,53 @@ function createProgram(
     }
   });
 
+  // Capture Commander help/error exits into `_capturedExitCode` instead of
+  // calling `process.exit` (needed for custom help topics + e2e/unit runners).
+  program.exitOverride((err) => {
+    _capturedExitCode =
+      typeof err.exitCode === 'number'
+        ? (err.exitCode as ExitCode)
+        : ExitCode.GENERIC_ERROR;
+    throw err;
+  });
+
   return program;
+}
+
+/**
+ * Replace the default help command so unknown topics (phases / slash ids)
+ * get a clear explanation instead of generic top-level help (DF-011).
+ */
+function registerCustomHelpCommand(program: Command): void {
+  // Disable Commander's implicit help command, then register our own so we
+  // control unknown-topic messaging and the USAGE_ERROR exit code.
+  program.helpCommand(false);
+  program
+    .command('help')
+    .description('display help for a command')
+    .argument('[command]', 'command name, workflow phase, or slash-command id')
+    .action((commandName: string | undefined) => {
+      if (!commandName) {
+        program.outputHelp();
+        return;
+      }
+
+      const registered = program.commands.find(
+        (c) => c.name() === commandName || c.aliases().includes(commandName),
+      );
+      if (registered) {
+        registered.outputHelp();
+        return;
+      }
+
+      const available = program.commands
+        .map((c) => c.name())
+        .filter((name) => name !== 'help');
+      const topic = classifyHelpTopic(commandName);
+      const message = formatUnknownHelpTopic(topic, available);
+      process.stderr.write(`${message}\n`);
+      _capturedExitCode = ExitCode.USAGE_ERROR;
+    });
 }
 
 function registerInitCommand(program: Command, ctx: CliContext): void {
@@ -137,11 +197,16 @@ function registerHelpmeCommand(program: Command, ctx: CliContext): void {
 function registerStageCommand(program: Command, ctx: CliContext): void {
   program
     .command('stage [subcommand]')
-    .description('Manage project stage (discovery → delivery → maintenance)')
+    .description(
+      'Manage project stage (discovery → delivery → maintenance). ' +
+        'For advance: --dry-run predicts success/failure without writing state ' +
+        '(same exit code as a real run; compatible with --force --reason).',
+    )
     .option('--to <stage>', 'Target stage for advance/set')
     .option('--force', 'Force advance bypassing readiness checks')
     .option('--reason <reason>', 'Reason for stage change')
     .option('--yes', 'Non-interactive confirmation')
+    .option('--dry-run', 'Predict advance without writing state')
     .action(async (subcommand: string | undefined, opts: Record<string, unknown>) => {
       const { executeStage } = await import('./commands/stage/stage.js');
       const result = await executeStage(ctx, subcommand, {
@@ -149,8 +214,138 @@ function registerStageCommand(program: Command, ctx: CliContext): void {
         force: opts['force'] as boolean | undefined,
         reason: opts['reason'] as string | undefined,
         yes: opts['yes'] as boolean | undefined,
+        dryRun: opts['dryRun'] as boolean | undefined,
       });
       renderResult(ctx, 'stage', result);
+    });
+}
+
+function collectRepeatable(value: string, previous: string[]): string[] {
+  return previous.concat(value);
+}
+
+function registerDiscoveryCommand(program: Command, ctx: CliContext): void {
+  program
+    .command('discovery [subcommand] [milestone]')
+    .description('Manage product-discovery milestones (IDEA→READY checklist)')
+    .option('--summary <text>', 'Brainstorm summary for plan')
+    .option('--session <id>', 'Planned session id (repeatable)', collectRepeatable, [])
+    .option('--evidence <path>', 'Evidence path for complete (repeatable)', collectRepeatable, [])
+    .option('--reason <text>', 'Reason for waive / reopen / skip')
+    .option('--detailed', 'Show full evidence, brainstorm summary, and session ids')
+    .action(async (
+      subcommand: string | undefined,
+      milestone: string | undefined,
+      opts: Record<string, unknown>,
+    ) => {
+      const { executeDiscovery } = await import('./commands/discovery/discovery.js');
+      const result = await executeDiscovery(ctx, subcommand, milestone, {
+        summary: opts['summary'] as string | undefined,
+        session: opts['session'] as string[] | undefined,
+        evidence: opts['evidence'] as string[] | undefined,
+        reason: opts['reason'] as string | undefined,
+        detailed: opts['detailed'] as boolean | undefined,
+      });
+      renderResult(ctx, 'discovery', result);
+    });
+}
+
+function registerRegistryCommand(program: Command, ctx: CliContext): void {
+  program
+    .command('registry [subcommand]')
+    .description('Validate, sync, and inspect the project registry')
+    .option('--init', 'create a draft knowledge/project-registry.yml (sync only)')
+    .option('--filter <query>', 'filter show results by id/title/name')
+    .action(async (subcommand: string | undefined, opts: Record<string, unknown>) => {
+      const { executeRegistry } = await import('./commands/registry/registry.js');
+      const result = await executeRegistry(ctx, subcommand, {
+        init: opts['init'] as boolean | undefined,
+        filter: opts['filter'] as string | undefined,
+      });
+      renderResult(ctx, 'registry', result);
+    });
+}
+
+function registerTaskCommand(program: Command, ctx: CliContext): void {
+  program
+    .command('task [subcommand] [arg]')
+    .description('List, sync, and complete delivery tasks from tasks.md')
+    .option('--file <path>', 'override tasks.md path (default: specs/current/tasks.md)')
+    .action(async (
+      subcommand: string | undefined,
+      arg: string | undefined,
+      opts: Record<string, unknown>,
+    ) => {
+      const { executeTask } = await import('./commands/task/task.js');
+      const result = await executeTask(ctx, subcommand, arg, {
+        file: opts['file'] as string | undefined,
+      });
+      renderResult(ctx, 'task', result);
+    });
+}
+
+function registerSessionCommand(program: Command, ctx: CliContext): void {
+  program
+    .command('session [subcommand] [sessionId]')
+    .description('Inspect, start, and end Agent Sessions on the delivery rails')
+    .option(
+      '--profile <profile>',
+      'workflow profile (required when rails are unknown)',
+    )
+    .option('--force', 'bypass rail guard with an audited waiver')
+    .option('--reason <text>', 'reason for --force')
+    .option(
+      '--outcome <outcome>',
+      'session end outcome (completed | interrupted | handed_off)',
+    )
+    .option(
+      '--evidence <text>',
+      'evidence for session end (repeatable)',
+      collectRepeatable,
+      [],
+    )
+    .option('--next <text>', 'next action recorded at session end')
+    .action(async (
+      subcommand: string | undefined,
+      sessionId: string | undefined,
+      opts: Record<string, unknown>,
+    ) => {
+      const { executeSession } = await import('./commands/session/session.js');
+      const result = await executeSession(ctx, subcommand, sessionId, {
+        profile: opts['profile'] as string | undefined,
+        force: opts['force'] as boolean | undefined,
+        reason: opts['reason'] as string | undefined,
+        outcome: opts['outcome'] as string | undefined,
+        evidence: opts['evidence'] as string[] | undefined,
+        next: opts['next'] as string | undefined,
+      });
+      renderResult(ctx, 'session', result);
+    });
+}
+
+function registerProfileCommand(program: Command, ctx: CliContext): void {
+  program
+    .command('profile [subcommand] [profile]')
+    .description('Inspect, select, and clear the workflow profile')
+    .action(async (
+      subcommand: string | undefined,
+      profile: string | undefined,
+    ) => {
+      const { executeProfile } = await import('./commands/profile/profile.js');
+      const result = await executeProfile(ctx, subcommand, profile);
+      renderResult(ctx, 'profile', result);
+    });
+}
+
+function registerHandoffCommand(program: Command, ctx: CliContext): void {
+  program
+    .command('handoff')
+    .description('Generate or refresh .l1dder/handoff.md for session continuity')
+    .option('--force', 'overwrite an existing handoff without confirmation')
+    .action(async (opts: { force?: boolean }) => {
+      const { executeHandoff } = await import('./commands/handoff/handoff.js');
+      const result = await executeHandoff(ctx, { force: opts.force });
+      renderResult(ctx, 'handoff', result);
     });
 }
 
@@ -303,7 +498,13 @@ let _capturedExitCode: ExitCode = ExitCode.SUCCESS;
 function renderResult(
   ctx: CliContext,
   command: string,
-  result: { exitCode: number; data?: unknown; humanText?: string; error?: { code: string; message: string; hint?: string } },
+  result: {
+    exitCode: number;
+    data?: unknown;
+    humanText?: string;
+    quietSummary?: string;
+    error?: { code: string; message: string; hint?: string };
+  },
 ): void {
   _capturedExitCode = result.exitCode as ExitCode;
 
@@ -328,6 +529,9 @@ function renderResult(
   const cmdResult: CommandResult = { command, data: result.data };
   if (result.humanText) {
     (cmdResult as { humanText: string }).humanText = result.humanText;
+  }
+  if (result.quietSummary) {
+    (cmdResult as { quietSummary: string }).quietSummary = result.quietSummary;
   }
   ctx.output.render(cmdResult);
 }
@@ -408,7 +612,10 @@ export async function runCli(
   const colorEnabled = shouldEnableColor({ noColor: !globals.color, json: globals.json });
   const colors = createColorPalette(colorEnabled);
   const mode = globals.json ? 'json' as const : 'human' as const;
-  const output = createFormatter(mode, colors);
+  // `--json` wins over `--quiet` for machine output; quiet only affects HumanFormatter.
+  const output = createFormatter(mode, colors, {
+    quiet: globals.quiet && !globals.json,
+  });
 
   _capturedExitCode = ExitCode.SUCCESS;
 
@@ -418,6 +625,26 @@ export async function runCli(
     await program.parseAsync(argv);
     return _capturedExitCode;
   } catch (e) {
+    // Commander help/version paths throw via exitOverride after writing output.
+    // Prefer the captured code; avoid double-rendering the error envelope.
+    if (e instanceof Error && 'code' in e) {
+      const commanderCode = (e as { code?: string }).code;
+      if (
+        commanderCode === 'commander.helpDisplayed' ||
+        commanderCode === 'commander.version' ||
+        commanderCode === 'commander.help'
+      ) {
+        return _capturedExitCode;
+      }
+    }
+    if (
+      e instanceof Error &&
+      'exitCode' in e &&
+      typeof (e as { exitCode?: unknown }).exitCode === 'number'
+    ) {
+      return _capturedExitCode;
+    }
+
     const exitCode = e instanceof UsageError ? ExitCode.USAGE_ERROR : mapErrorToExitCode(e);
     const code = e instanceof UsageError ? 'USAGE_ERROR' : errorToCode(e);
     const message = e instanceof Error ? e.message : 'Unknown error';

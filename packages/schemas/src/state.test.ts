@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   ActorSchema,
+  CURRENT_SCHEMA_VERSION,
   PhaseSchema,
   PhaseStatusSchema,
   SkillRunSchema,
@@ -162,7 +163,7 @@ describe('StateSchema', () => {
 
   it('parses minimal state with defaults', () => {
     const result = StateSchema.parse(minimalState);
-    expect(result.schema_version).toBe(1);
+    expect(result.schema_version).toBe(CURRENT_SCHEMA_VERSION);
     expect(result.workflow.current_phase).toBe('idle');
     expect(result.workflow.current_status).toBe('in_progress');
     expect(result.workflow.mode).toBe('main');

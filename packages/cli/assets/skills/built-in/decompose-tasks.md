@@ -21,8 +21,8 @@ with dependencies (`depends_on`), acceptance criteria, and effort estimates.
 ## When to Use
 
 - The Phase Machine transitioned to TASKS (trigger: auto)
-- The user runs `/l1dder.tasks` (slash command)
-- After TO_BE_KNOWLEDGE_UPDATE is complete (or PLAN, if KU was skipped)
+- The user runs `/l1dder-tasks` (slash command)
+- After `update_tobe` (TO_BE_KU) is complete (or PLAN, if KU was skipped)
 
 ## Steps
 

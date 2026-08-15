@@ -4,68 +4,105 @@
   Template: knowledge/roadmap.md
   Used by: l1dder init (scaffolding)
   Parsed by: extractSummary() — the ## Summary section
-  Updated: after every session where tasks are completed or added
+  Updated: after every Agent Session that changes plan, status, or pools
   Ownership: Product Owner / project author
 
-  Placeholder markers:
-    {{PROJECT_NAME}} — the project name
-    {{DATE}}         — the creation date
-    {{AUTHOR}}       — the author (role or name)
-    <!-- TODO: ... -- > — sections that need filling in
+  Placeholders replaced by 'l1dder init': PROJECT_NAME, DATE, AUTHOR.
 
-  Note: roadmap.md is a shared file, NOT split into as-is/to-be.
-  It is a work plan, not a description of the system state.
+  Note: roadmap.md is the human control plane. It is NOT split into as-is/to-be.
+  Machine state lives separately; this file is not parsed as free prose.
 -->
 
 > **Date:** {{DATE}} | **Author:** {{AUTHOR}}
 
+<!--
+  How to use this file
+  - You own this control plane; keep it short and scannable.
+  - The CLI stores machine state separately and never parses free prose here.
+  - Milestone order is fixed: IDEA → PRODUCT → ARCH → INTEGRATIONS → DATA → STANDARDS → READY.
+  - Bypass a gate only with an explicit written reason (Decision / waiver).
+-->
+
 ## Summary
 
-<!-- 8-12 lines: the current project phase, key progress, the nearest goal -->
-<!-- extractSummary() reads ONLY this section in SUMMARY mode -->
-<!-- The Summary must be self-sufficient: the LLM understands the project status at 80% -->
+<!-- Product goal and MVP boundary. extractSummary() reads ONLY this section. -->
+<!-- TODO: One short paragraph — what success looks like for the first shippable product -->
 
-<!-- TODO: Describe the current project status -->
-<!-- Recommended format: -->
-<!-- Line 1: the current project phase/stage -->
-<!-- Lines 2-4: what is already done (key milestones) -->
-<!-- Lines 5-7: what we are working on now -->
-<!-- Lines 8-10: the nearest goal / next milestone -->
+{{PROJECT_NAME}} — <!-- product goal in 2–4 sentences -->.
 
-## Current Phase
+### In MVP
 
-<!-- TODO: The name and description of the current phase -->
+- <!-- TODO: must-ship capability -->
 
-### What's Done
+### Not in MVP
 
-<!-- TODO: A checklist of completed tasks -->
-<!-- Format: - [x] Task / milestone description -->
+- <!-- TODO: explicitly deferred (with short why) -->
 
-- [x] <!-- TODO: The first completed task -->
+## Discovery Control Plane
 
-### Next Steps
+<!-- Statuses: pending | brainstorming | planned | in_progress | in_review | complete | not_applicable -->
+<!-- Only INTEGRATIONS and STANDARDS may be not_applicable — and only with a written rationale. -->
+<!-- Keep exactly one current open milestone; finish or waive before advancing. -->
 
-<!-- TODO: A checklist of upcoming tasks -->
-<!-- Format: - [ ] Task description -->
-<!-- Note dependencies: (depends on #X) -->
-<!-- Group by blocks/priorities as needed -->
+| Milestone | Status | Brainstorm summary | Planned Agent Sessions | Evidence |
+|-----------|--------|--------------------|------------------------|----------|
+| IDEA | pending | <!-- TODO: problem, audience, alternatives --> | <!-- e.g. AS-IDEA-1 --> | <!-- link or note --> |
+| PRODUCT | pending | — | — | — |
+| ARCH | pending | — | — | — |
+| INTEGRATIONS | pending | — | — | — |
+| DATA | pending | — | — | — |
+| STANDARDS | pending | — | — | — |
+| READY | pending | — | — | — |
 
-- [ ] <!-- TODO: The next task -->
+## MVP Feature Map
 
-## Implementation Priorities
+<!-- IDs: FEAT-NNN, UC-NNN-MM (first number must match parent FEAT). Replace example rows. -->
 
-<!-- TODO: A priorities table -->
+| Feature | Use cases | Status | Notes |
+|---------|-----------|--------|-------|
+| FEAT-001 — Example core capability <!-- example — replace --> | UC-001-01, UC-001-02 | planned | <!-- example — replace --> |
+| FEAT-002 — Example supporting capability <!-- example — replace --> | UC-002-01 | planned | <!-- example — replace --> |
 
-| Priority | Components |
-|-----------|-----------|
-| **P0** (MVP) | <!-- TODO --> |
-| **P1** | <!-- TODO --> |
-| **P2** | <!-- TODO --> |
-| **P3** (future) | <!-- TODO --> |
+## Delivery Plan
 
-## What NOT to Do Now
+<!-- Stable iteration/session IDs. depends_on lists prior IDs. Replace the example row. -->
 
-<!-- TODO: An explicit list of decisions deferred to the future -->
-<!-- Helps the LLM avoid proposing premature solutions -->
+| ID | Scope | depends_on | Covers (FEAT/UC) | Status |
+|----|-------|------------|------------------|--------|
+| ITER-001 / AS-001 <!-- example — replace --> | <!-- example scope --> | — | FEAT-001 / UC-001-01 | pending |
 
-- <!-- TODO: Functionality deliberately deferred (with justification) -->
+## Risks & Decisions
+
+| Risk / Decision | Impact | Mitigation / link |
+|-----------------|--------|-------------------|
+| <!-- TODO or DEC-001 --> | <!-- high / medium / low --> | <!-- link or note --> |
+
+## Technical Debt
+
+<!-- Parking lot for non-blocking defects and conscious shortcuts. IDs: DEBT-NNN. -->
+<!-- Lifecycle: open → nominated → scheduled → done | wontfix. Never auto-schedule. -->
+<!-- Severity: low | medium | high. Blocker/critical work does not belong here. -->
+
+### DEBT-001 — Example deferred cleanup <!-- example — replace -->
+
+- **severity:** medium
+- **status:** open
+- **What:** <!-- short description of the debt -->
+- **Why deferred:** <!-- why it was parked -->
+- **How to pick up:** <!-- Hygiene / Delivery / Quick after nomination -->
+
+## Long-term Backlog
+
+<!-- Deferred feature / scope / research / infra. IDs: BL-NNN. -->
+<!-- Lifecycle: open → nominated → scheduled → done | wontfix. Never auto-schedule. -->
+<!-- A BL-* becomes a FEAT-* only through a Feature Discovery session. -->
+<!-- priority: P1 | P2 | P3 · kind: feature | scope | research | infra -->
+
+### BL-001 — Example future initiative <!-- example — replace -->
+
+- **priority:** P2
+- **kind:** feature
+- **status:** open
+- **What:** <!-- short description -->
+- **Why deferred:** <!-- why not in MVP -->
+- **How to pick up:** <!-- Feature Discovery → FEAT-* → Delivery Plan -->

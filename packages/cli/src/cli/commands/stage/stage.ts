@@ -10,6 +10,8 @@ export interface StageOptions {
   force?: boolean | undefined;
   reason?: string | undefined;
   yes?: boolean | undefined;
+  /** Validate advance without mutating state (DF-012). */
+  dryRun?: boolean | undefined;
 }
 
 /** Result returned by stage command handlers. */
@@ -17,6 +19,7 @@ export interface StageResult {
   exitCode: number;
   data?: unknown;
   humanText?: string;
+  quietSummary?: string;
   error?: { code: string; message: string; hint?: string };
 }
 

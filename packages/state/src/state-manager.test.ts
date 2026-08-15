@@ -4,7 +4,8 @@ import {
   InMemoryFileSystem,
   NullLogger,
 } from '@l1dder/core/testing';
-import { stringifyYaml } from '@l1dder/yaml';
+import { CURRENT_SCHEMA_VERSION } from '@l1dder/schemas';
+import { parseDocument, stringifyYaml } from '@l1dder/yaml';
 
 import { SoloApprover } from './adapters/solo-approver.js';
 import { StateManager } from './state-manager.js';
@@ -83,6 +84,55 @@ describe('StateManager', () => {
       });
 
       expect(result.ok).toBe(false);
+    });
+
+    it('migrates legacy v1 state.yml on create', async () => {
+      const deps = createDeps();
+      const v1Yaml = `schema_version: 1
+project:
+  name: legacy-project
+  stage: delivery
+  stage_history: []
+  created_at: "${NOW}"
+  updated_at: "${NOW}"
+workflow:
+  current_phase: idle
+  current_status: in_progress
+  mode: main
+  iteration: 0
+  phase_history: []
+  gate_history: []
+tasks:
+  items: []
+quick_tasks: []
+knowledge_updates: []
+`;
+      await deps.fs.mkdir('/project/.l1dder');
+      await deps.fs.writeFile('/project/.l1dder/state.yml', v1Yaml);
+      await deps.fs.writeFile(
+        '/project/.l1dder/config.yml',
+        stringifyYaml(createTestConfig()),
+      );
+
+      const result = await StateManager.create(deps, {
+        projectDir: '/project',
+      });
+
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+
+      const snap = result.value.stateSnapshot();
+      expect(snap.schema_version).toBe(CURRENT_SCHEMA_VERSION);
+      expect(snap.discovery).toEqual({
+        milestones: [],
+        current: null,
+        waivers: [],
+      });
+      expect(snap.workflow.profile).toBeNull();
+
+      const onDisk = await deps.fs.readFile('/project/.l1dder/state.yml');
+      const parsed = parseDocument(onDisk).toJS();
+      expect(parsed['schema_version']).toBe(CURRENT_SCHEMA_VERSION);
     });
   });
 
@@ -250,6 +300,60 @@ describe('StateManager', () => {
       }
     });
 
+    it('leaves state.yml byte-identical when the transition is rejected', async () => {
+      // A clock that moves on every read: if anything persisted state during the
+      // rejected transition, `project.updated_at` would differ.
+      let tick = 0;
+      const clock = {
+        now: (): string => {
+          tick += 1;
+          return `2026-05-11T12:00:${String(tick).padStart(2, '0')}Z`;
+        },
+      };
+      const fs = new InMemoryFileSystem();
+      await setupProject(fs, { workflow: { current_phase: 'specify' } });
+      const created = await StateManager.create(
+        {
+          fs,
+          clock,
+          logger: new NullLogger(),
+          approver: new SoloApprover(clock),
+        },
+        { projectDir: '/project' },
+      );
+      expect(created.ok).toBe(true);
+      if (!created.ok) return;
+
+      const statePath = '/project/.l1dder/state.yml';
+      const before = await fs.readFile(statePath);
+
+      const result = await created.value.transition.execute({
+        to: 'implement',
+        trigger: { kind: 'cli', command: 'transition' },
+        actor: { kind: 'human', id: 'dev' },
+      });
+
+      expect(result.ok).toBe(false);
+      expect(await fs.readFile(statePath)).toBe(before);
+      expect(created.value.stateSnapshot()._in_flight_transition).toBeUndefined();
+    });
+
+    it('does not touch state when a dry run is rejected or accepted', async () => {
+      const manager = await createTestStateManager();
+      const before = JSON.stringify(manager.stateSnapshot());
+
+      const accepted = await manager.transition.execute({
+        to: 'specify',
+        trigger: { kind: 'cli', command: 'transition' },
+        actor: { kind: 'human', id: 'dev' },
+        dryRun: true,
+      });
+
+      expect(accepted.ok).toBe(true);
+      expect(JSON.stringify(manager.stateSnapshot())).toBe(before);
+      expect(manager.currentPosition().phase).toBe('idle');
+    });
+
     it('chains multiple transitions idle→specify→plan', async () => {
       const manager = await createTestStateManager();
 
@@ -309,7 +413,7 @@ describe('SoloApprover', () => {
 describe('testing utilities', () => {
   it('createTestState returns valid parseable state', () => {
     const state = createTestState();
-    expect(state.schema_version).toBe(1);
+    expect(state.schema_version).toBe(CURRENT_SCHEMA_VERSION);
     expect(state.workflow.current_phase).toBe('idle');
     expect(state.project.name).toBe('test-project');
   });

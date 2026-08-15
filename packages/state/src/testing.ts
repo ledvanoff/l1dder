@@ -7,7 +7,11 @@
  */
 
 import type { State, Config } from '@l1dder/schemas';
-import { StateSchema, ConfigSchema } from '@l1dder/schemas';
+import {
+  CURRENT_SCHEMA_VERSION,
+  StateSchema,
+  ConfigSchema,
+} from '@l1dder/schemas';
 import {
   FixedClock,
   InMemoryFileSystem,
@@ -27,7 +31,7 @@ const DEFAULT_TIMESTAMP = '2026-01-01T00:00:00Z';
  */
 export function createTestState(overrides?: Record<string, unknown>): State {
   const base = {
-    schema_version: 1,
+    schema_version: CURRENT_SCHEMA_VERSION,
     project: {
       name: 'test-project',
       stage: 'discovery',
@@ -39,6 +43,9 @@ export function createTestState(overrides?: Record<string, unknown>): State {
       current_phase: 'idle',
       current_status: 'in_progress',
       mode: 'main',
+      profile: null,
+      session: null,
+      session_history: [],
       iteration: 0,
       phase_history: [],
       gate_history: [],

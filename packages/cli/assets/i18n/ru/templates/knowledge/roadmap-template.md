@@ -4,68 +4,105 @@
   Шаблон: knowledge/roadmap.md
   Используется: l1dder init (scaffolding)
   Парсится: extractSummary() — секция ## Summary
-  Обновляется: после каждой сессии, где задачи завершены или добавлены
+  Обновляется: после каждой Agent Session, которая меняет план, статусы или пулы
   Ownership: Product Owner / автор проекта
 
-  Placeholder-маркеры:
-    {{PROJECT_NAME}} — название проекта
-    {{DATE}}         — дата создания
-    {{AUTHOR}}       — автор (роль или имя)
-    <!-- TODO: ... -- > — секции, требующие заполнения
+  Плейсхолдеры, которые подставляет 'l1dder init': PROJECT_NAME, DATE, AUTHOR.
 
-  Примечание: roadmap.md — общий файл, НЕ делится на as-is/to-be.
-  Это план работ, а не описание состояния системы.
+  Примечание: roadmap.md — человекочитаемый control plane. НЕ делится на as-is/to-be.
+  Machine state живёт отдельно; произвольный prose этого файла не парсится.
 -->
 
 > **Дата:** {{DATE}} | **Автор:** {{AUTHOR}}
 
+<!--
+  Как пользоваться этим файлом
+  - Это ваш control plane: держите его коротким и удобным для быстрого сканирования.
+  - CLI хранит machine state отдельно и не парсит свободный prose здесь.
+  - Порядок вех фиксирован: IDEA → PRODUCT → ARCH → INTEGRATIONS → DATA → STANDARDS → READY.
+  - Обход gate — только с явной письменной причиной (Decision / waiver).
+-->
+
 ## Summary
 
-<!-- 8-12 строк: текущая фаза проекта, ключевой прогресс, ближайшая цель -->
-<!-- extractSummary() читает ТОЛЬКО эту секцию в SUMMARY mode -->
-<!-- Summary должен быть самодостаточным: LLM понимает статус проекта на 80% -->
+<!-- Цель продукта и граница MVP. extractSummary() читает ТОЛЬКО эту секцию. -->
+<!-- TODO: Один короткий абзац — как выглядит успех первого shippable продукта -->
 
-<!-- TODO: Опишите текущий статус проекта -->
-<!-- Рекомендуемый формат: -->
-<!-- Строка 1: текущая фаза/стадия проекта -->
-<!-- Строки 2-4: что уже сделано (ключевые вехи) -->
-<!-- Строки 5-7: над чем работаем сейчас -->
-<!-- Строки 8-10: ближайшая цель / следующая веха -->
+{{PROJECT_NAME}} — <!-- цель продукта в 2–4 предложениях -->.
 
-## Текущая фаза
+### В MVP
 
-<!-- TODO: Название и описание текущей фазы -->
+- <!-- TODO: обязательная возможность первого релиза -->
 
-### Что сделано
+### Не в MVP
 
-<!-- TODO: Чек-лист завершённых задач -->
-<!-- Формат: - [x] Описание задачи / вехи -->
+- <!-- TODO: явно отложено (с кратким «почему») -->
 
-- [x] <!-- TODO: Первая завершённая задача -->
+## Discovery Control Plane
 
-### Следующие шаги
+<!-- Statuses: pending | brainstorming | planned | in_progress | in_review | complete | not_applicable -->
+<!-- not_applicable допустим только для INTEGRATIONS и STANDARDS — и только с письменным rationale. -->
+<!-- Держите ровно одну текущую открытую веху; закройте или waive перед переходом дальше. -->
 
-<!-- TODO: Чек-лист предстоящих задач -->
-<!-- Формат: - [ ] Описание задачи -->
-<!-- Указывайте зависимости: (зависит от #X) -->
-<!-- Группируйте по блокам/приоритетам при необходимости -->
+| Milestone | Status | Brainstorm summary | Planned Agent Sessions | Evidence |
+|-----------|--------|--------------------|------------------------|----------|
+| IDEA | pending | <!-- TODO: проблема, аудитория, альтернативы --> | <!-- напр. AS-IDEA-1 --> | <!-- ссылка или заметка --> |
+| PRODUCT | pending | — | — | — |
+| ARCH | pending | — | — | — |
+| INTEGRATIONS | pending | — | — | — |
+| DATA | pending | — | — | — |
+| STANDARDS | pending | — | — | — |
+| READY | pending | — | — | — |
 
-- [ ] <!-- TODO: Следующая задача -->
+## MVP Feature Map
 
-## Приоритеты реализации
+<!-- IDs: FEAT-NNN, UC-NNN-MM (первая часть номера должна совпадать с родительским FEAT). Замените примеры. -->
 
-<!-- TODO: Таблица приоритетов -->
+| Feature | Use cases | Status | Notes |
+|---------|-----------|--------|-------|
+| FEAT-001 — Example core capability <!-- example — replace --> | UC-001-01, UC-001-02 | planned | <!-- example — replace --> |
+| FEAT-002 — Example supporting capability <!-- example — replace --> | UC-002-01 | planned | <!-- example — replace --> |
 
-| Приоритет | Компоненты |
-|-----------|-----------|
-| **P0** (MVP) | <!-- TODO --> |
-| **P1** | <!-- TODO --> |
-| **P2** | <!-- TODO --> |
-| **P3** (future) | <!-- TODO --> |
+## Delivery Plan
 
-## Что НЕ нужно делать сейчас
+<!-- Стабильные ID итераций/сессий. depends_on — список предыдущих ID. Замените примерную строку. -->
 
-<!-- TODO: Явный список решений, отложенных на будущее -->
-<!-- Помогает LLM не предлагать преждевременные решения -->
+| ID | Scope | depends_on | Covers (FEAT/UC) | Status |
+|----|-------|------------|------------------|--------|
+| ITER-001 / AS-001 <!-- example — replace --> | <!-- example scope --> | — | FEAT-001 / UC-001-01 | pending |
 
-- <!-- TODO: Функциональность, отложенная осознанно (с обоснованием) -->
+## Риски и решения
+
+| Risk / Decision | Impact | Mitigation / link |
+|-----------------|--------|-------------------|
+| <!-- TODO или DEC-001 --> | <!-- high / medium / low --> | <!-- ссылка или заметка --> |
+
+## Technical Debt
+
+<!-- Parking lot для неблокирующих дефектов и осознанных shortcuts. IDs: DEBT-NNN. -->
+<!-- Lifecycle: open → nominated → scheduled → done | wontfix. Auto-schedule запрещён. -->
+<!-- Severity: low | medium | high. Blocker/critical сюда не кладём. -->
+
+### DEBT-001 — Example deferred cleanup <!-- example — replace -->
+
+- **severity:** medium
+- **status:** open
+- **What:** <!-- краткое описание долга -->
+- **Why deferred:** <!-- почему отложили -->
+- **How to pick up:** <!-- Hygiene / Delivery / Quick после nomination -->
+
+## Long-term Backlog
+
+<!-- Отложенные feature / scope / research / infra. IDs: BL-NNN. -->
+<!-- Lifecycle: open → nominated → scheduled → done | wontfix. Auto-schedule запрещён. -->
+<!-- BL-* становится FEAT-* только через сессию Feature Discovery. -->
+<!-- priority: P1 | P2 | P3 · kind: feature | scope | research | infra -->
+
+### BL-001 — Example future initiative <!-- example — replace -->
+
+- **priority:** P2
+- **kind:** feature
+- **status:** open
+- **What:** <!-- краткое описание -->
+- **Why deferred:** <!-- почему не в MVP -->
+- **How to pick up:** <!-- Feature Discovery → FEAT-* → Delivery Plan -->

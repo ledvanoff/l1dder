@@ -5,31 +5,33 @@ import {
   errorToCode,
   errorToHint,
 } from '../output/exit-codes.js';
-import {
-  Phase,
-  listAvailableTransitions,
-} from '@l1dder/core';
-import type { WorkflowMode } from '@l1dder/core';
+import { buildHumanOutput } from '../output/human-output.js';
 import type { StatusOutput } from '@l1dder/schemas';
 import type { State } from '@l1dder/schemas';
+import type { WorkflowProjection } from '@l1dder/state';
 import { evaluateDiscoveryReadiness } from './shared/discovery-readiness.js';
+import {
+  formatQuietSummary,
+  toBlockerBriefs,
+  toPrimaryActionBrief,
+} from './shared/projection-brief.js';
 
 /** Result of status execution. */
 interface StatusResult {
   exitCode: number;
   data?: StatusOutput;
   humanText?: string;
+  quietSummary?: string;
   error?: { code: string; message: string; hint?: string };
 }
 
 /**
  * Execute `l1dder status` — compact single-screen output of project state.
  *
- * Shows: project info, workflow position, task progress, next steps.
+ * All next-step / task-count facts come from {@link StateManager.projection};
+ * human output follows progressive disclosure (one Primary Action by default).
  */
-export async function executeStatus(
-  ctx: CliContext,
-): Promise<StatusResult> {
+export async function executeStatus(ctx: CliContext): Promise<StatusResult> {
   let sm;
   try {
     sm = await ctx.state();
@@ -48,31 +50,39 @@ export async function executeStatus(
 
   const state = sm.stateSnapshot();
   const pos = sm.currentPosition();
+  const projection = await sm.projection.project();
+  const primaryAction = toPrimaryActionBrief(projection);
+  const blockers = toBlockerBriefs(projection);
+  const progress = projection.progress;
 
-  const taskCounts = computeTaskCounts(state);
-  const nextAvailable = resolveNextAvailable(sm, state);
-  const nextSteps = computeNextSteps(pos.phase, pos.status, pos.mode, taskCounts, nextAvailable);
+  const nextSteps = buildNextStepsFromProjection(projection);
 
-  const config = sm.configSnapshot();
   let discoveryBrief: StatusOutput['discovery'];
 
   if (state.project.stage === 'discovery') {
-    const rec = await evaluateDiscoveryReadiness(ctx, config);
+    const view = await evaluateDiscoveryReadiness(sm);
     discoveryBrief = {
-      score: rec.score,
-      ready: rec.ready,
-      next_milestone: rec.nextMilestone ?? null,
-      milestones: rec.milestones.map((m) => ({
+      score: view.score,
+      ready: view.ready,
+      next_milestone: view.next_milestone,
+      milestones: view.milestones.map((m) => ({
         order: m.order,
         id: m.id,
         label: m.label,
+        status: m.status,
         met: m.met,
+        required: m.required,
+        evidence_count: m.evidence_count,
+        planned_session_count: m.planned_session_count,
+        current: m.current,
       })),
-      message: rec.message,
+      message: view.message,
+      primary_action: view.primary_action,
+      blockers: view.blockers.map((b) => ({ ...b })),
     };
   }
 
-  const data: StatusOutput = {
+  const data = {
     project: {
       name: state.project.name,
       stage: state.project.stage,
@@ -85,182 +95,72 @@ export async function executeStatus(
       iteration: pos.iteration > 0 ? String(pos.iteration) : null,
     },
     tasks: {
-      total: taskCounts.total,
-      done: taskCounts.done,
-      in_progress: taskCounts.inProgress,
-      pending: taskCounts.pending,
-      blocked: taskCounts.blocked,
-      skipped: taskCounts.skipped,
-      next_available: nextAvailable,
+      total: progress.tasksTotal,
+      done: progress.tasksDone,
+      in_progress: progress.tasksInProgress,
+      pending: progress.tasksPending,
+      blocked: progress.tasksBlocked,
+      skipped: progress.tasksSkipped,
+      next_available: progress.nextAvailable,
     },
     next_steps: nextSteps,
     ...(discoveryBrief ? { discovery: discoveryBrief } : {}),
+    primary_action: primaryAction,
+    blockers: [...blockers],
   };
 
-  const humanText = formatHuman(ctx, state, pos, taskCounts, nextAvailable, nextSteps, discoveryBrief);
+  const compactBody = formatCompactBody(ctx, state, pos, discoveryBrief);
+  const verboseExtra = formatVerboseExtra(ctx, state, projection);
 
-  return { exitCode: ExitCode.SUCCESS, data, humanText };
+  const { humanText, quietSummary } = buildHumanOutput({
+    globals: ctx.globals,
+    colors: ctx.colors,
+    phase: pos.phase,
+    primaryAction,
+    blockers,
+    compactBody,
+    verboseExtra,
+  });
+
+  return {
+    exitCode: ExitCode.SUCCESS,
+    data,
+    humanText,
+    quietSummary: quietSummary || formatQuietSummary(pos.phase, primaryAction),
+  };
 }
 
-// ─── Task counting ───
+// ─── Projection → next_steps (JSON / verbose machine picture) ───
 
-interface TaskCounts {
-  total: number;
-  done: number;
-  inProgress: number;
-  pending: number;
-  blocked: number;
-  skipped: number;
-}
+function buildNextStepsFromProjection(
+  projection: WorkflowProjection,
+): StatusOutput['next_steps'] {
+  const steps: StatusOutput['next_steps'] = [
+    {
+      label: projection.primaryAction.reason,
+      command: projection.primaryAction.command || null,
+      blocking: projection.blockers.length > 0,
+    },
+  ];
 
-function computeTaskCounts(state: Readonly<State>): TaskCounts {
-  const items = state.tasks.items;
-  const doneIds = new Set(
-    items.filter((t) => t.status === 'done' || t.status === 'skipped').map((t) => t.id),
-  );
-
-  let done = 0;
-  let inProgress = 0;
-  let pending = 0;
-  let blocked = 0;
-  let skipped = 0;
-
-  for (const task of items) {
-    switch (task.status) {
-      case 'done':
-        done++;
-        break;
-      case 'in_progress':
-        inProgress++;
-        break;
-      case 'skipped':
-        skipped++;
-        break;
-      case 'pending': {
-        const isBlocked = task.depends_on.length > 0 &&
-          task.depends_on.some((dep) => !doneIds.has(dep));
-        if (isBlocked) {
-          blocked++;
-        } else {
-          pending++;
-        }
-        break;
-      }
-    }
-  }
-
-  return { total: items.length, done, inProgress, pending, blocked, skipped };
-}
-
-// ─── Next available task ───
-
-function resolveNextAvailable(
-  sm: { task: { nextTask(state: State): { ok: boolean; value?: string | null } } },
-  state: Readonly<State>,
-): string | null {
-  const result = sm.task.nextTask(state);
-  if (result.ok && result.value) {
-    return result.value;
-  }
-  return null;
-}
-
-// ─── Next steps algorithm ───
-
-interface NextStep {
-  label: string;
-  command: string | null;
-  blocking: boolean;
-}
-
-function computeNextSteps(
-  phase: string,
-  status: string,
-  mode: WorkflowMode,
-  counts: TaskCounts,
-  nextAvailable: string | null,
-): NextStep[] {
-  const steps: NextStep[] = [];
-
-  if (phase === Phase.IDLE) {
-    steps.push({ label: 'Start a new iteration', command: '/l1dder.specify', blocking: false });
-    steps.push({ label: 'Quick task', command: 'l1dder quick', blocking: false });
-    return steps;
-  }
-
-  if (phase === Phase.COMPLETE) {
-    steps.push({ label: 'Iteration will close', command: null, blocking: false });
-    return steps;
-  }
-
-  // Current in-progress tasks
-  if (counts.inProgress > 0 && phase === Phase.IMPLEMENT) {
-    const inProgressTask = nextAvailable ?? undefined;
+  for (const alt of projection.phase.alternatives) {
+    if (projection.primaryAction.to === alt) continue;
     steps.push({
-      label: inProgressTask
-        ? `Complete current task (${inProgressTask})`
-        : 'Complete current task',
-      command: null,
-      blocking: true,
-    });
-  }
-
-  // Pending tasks with deps met
-  if (counts.pending > 0 && nextAvailable && counts.inProgress === 0) {
-    steps.push({
-      label: `Start next task (${nextAvailable})`,
-      command: null,
+      label: `Alternative transition: ${alt}`,
+      command: `l1dder transition --to ${alt}`,
       blocking: false,
     });
-  }
-
-  // Available transitions from current phase
-  const pos = { phase, status } as { phase: Phase; status: string };
-  const transitions = listAvailableTransitions(
-    pos.phase,
-    mode,
-  );
-
-  for (const tr of transitions) {
-    if (tr.to === phase) continue;
-    const transitionLabel = phaseLabel(tr.to);
-    steps.push({
-      label: `Then: ${transitionLabel}`,
-      command: tr.trigger.includes('slash:')
-        ? `/l1dder.${tr.trigger.replace('slash:', '')}`
-        : null,
-      blocking: false,
-    });
-    break;
   }
 
   return steps;
 }
 
-function phaseLabel(phase: string): string {
-  const labels: Record<string, string> = {
-    [Phase.IDLE]: 'idle',
-    [Phase.SPECIFY]: 'specify',
-    [Phase.PLAN]: 'plan',
-    [Phase.UPDATE_TOBE]: 'update_tobe',
-    [Phase.TASKS]: 'tasks',
-    [Phase.IMPLEMENT]: 'implement',
-    [Phase.UPDATE_ASIS]: 'update_asis',
-    [Phase.COMPLETE]: 'complete',
-    [Phase.REVIEW]: 'review',
-  };
-  return labels[phase] ?? phase;
-}
-
 // ─── Human output ───
 
-function formatHuman(
+function formatCompactBody(
   ctx: CliContext,
   state: Readonly<State>,
   pos: { phase: string; status: string; mode: string; iteration: number; stage: string },
-  counts: TaskCounts,
-  nextAvailable: string | null,
-  nextSteps: NextStep[],
   discovery?: StatusOutput['discovery'],
 ): string {
   const { colors } = ctx;
@@ -271,7 +171,9 @@ function formatHuman(
   lines.push('');
 
   lines.push(`  Project:   ${colors.bold(state.project.name)}`);
-  lines.push(`  Stage:     ${pos.stage} (${pos.stage === 'discovery' ? 'advisory' : 'standard'} enforcement)`);
+  lines.push(
+    `  Stage:     ${pos.stage} (${pos.stage === 'discovery' ? 'advisory' : 'standard'} enforcement)`,
+  );
   lines.push(`  Created:   ${formatDate(state.project.created_at)}`);
   lines.push('');
 
@@ -292,36 +194,70 @@ function formatHuman(
       const glyph = m.met ? colors.glyph.pass : colors.glyph.fail;
       lines.push(`  ${glyph} ${m.label}`);
     }
-    lines.push(`  Score: ${discovery.score} — ${discovery.ready ? colors.success('READY') : colors.warning('NOT READY')}`);
+    lines.push(
+      `  Score: ${discovery.score} — ${discovery.ready ? colors.success('READY') : colors.warning('NOT READY')}`,
+    );
     lines.push('');
   }
 
-  if (counts.total > 0) {
-    lines.push(`  Tasks (${String(counts.total)} total)`);
+  return lines.join('\n');
+}
+
+function formatVerboseExtra(
+  ctx: CliContext,
+  state: Readonly<State>,
+  projection: WorkflowProjection,
+): string {
+  const { colors } = ctx;
+  const lines: string[] = [];
+  const p = projection.progress;
+
+  if (p.tasksTotal > 0) {
+    lines.push(`  Tasks (${String(p.tasksTotal)} total)`);
     for (const task of state.tasks.items) {
       const glyph = taskGlyph(task.status, colors);
       lines.push(`  ${glyph} ${task.id}: ${task.title}  ${colors.dim(task.status)}`);
     }
     lines.push('');
-
     const progressParts: string[] = [];
-    if (counts.done > 0) progressParts.push(`${String(counts.done)}/${String(counts.total)} done`);
-    if (counts.inProgress > 0) progressParts.push(`${String(counts.inProgress)} in progress`);
-    if (counts.blocked > 0) progressParts.push(`${String(counts.blocked)} blocked`);
-    if (counts.skipped > 0) progressParts.push(`${String(counts.skipped)} skipped`);
+    if (p.tasksDone > 0) {
+      progressParts.push(`${String(p.tasksDone)}/${String(p.tasksTotal)} done`);
+    }
+    if (p.tasksInProgress > 0) {
+      progressParts.push(`${String(p.tasksInProgress)} in progress`);
+    }
+    if (p.tasksPending > 0) {
+      progressParts.push(`${String(p.tasksPending)} pending`);
+    }
+    if (p.tasksBlocked > 0) {
+      progressParts.push(`${String(p.tasksBlocked)} blocked`);
+    }
+    if (p.tasksSkipped > 0) {
+      progressParts.push(`${String(p.tasksSkipped)} skipped`);
+    }
+    if (p.nextAvailable) {
+      progressParts.push(`next: ${p.nextAvailable}`);
+    }
     lines.push(`  Progress: ${progressParts.join(' · ')}`);
     lines.push('');
   }
 
-  if (nextSteps.length > 0) {
-    lines.push('  Next Steps');
-    for (const step of nextSteps) {
-      const cmd = step.command ? ` (${step.command})` : '';
-      lines.push(`  ${colors.glyph.arrow} ${step.label}${cmd}`);
+  if (projection.phase.alternatives.length > 0) {
+    lines.push('  Alternative transitions');
+    for (const alt of projection.phase.alternatives) {
+      lines.push(`  ${colors.glyph.arrow} l1dder transition --to ${alt}`);
     }
+    lines.push('');
   }
 
-  lines.push('');
+  if (projection.readiness.gaps.length > 0) {
+    lines.push('  Readiness evidence gaps');
+    for (const gap of projection.readiness.gaps) {
+      lines.push(`  ${colors.glyph.warn} [${gap.code}] ${gap.message}`);
+    }
+    lines.push('');
+  }
+
   return lines.join('\n');
 }
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ShellPort, ShellResult } from '@l1dder/core';
-import type { State } from '@l1dder/schemas';
+import { CURRENT_SCHEMA_VERSION, type State } from '@l1dder/schemas';
 
 import { checkDrift } from './drift.js';
 
@@ -12,13 +12,14 @@ function shellStub(stdout: string, exitCode = 0): ShellPort {
 
 function baseState(overrides: Partial<State> = {}): State {
   return {
-    schema_version: 1,
+    schema_version: CURRENT_SCHEMA_VERSION,
     project: { name: 'test', stage: 'delivery', stage_history: [], created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' },
-    workflow: { current_phase: 'idle', current_status: 'in_progress', mode: 'main', iteration: 0, phase_history: [], gate_history: [] },
+    workflow: { current_phase: 'idle', current_status: 'in_progress', mode: 'main', profile: null, session: null, session_history: [], iteration: 0, phase_history: [], gate_history: [] },
     tasks: { items: [] },
     quick_tasks: [],
     knowledge_updates: [],
     decisions: [],
+    discovery: { milestones: [], current: null, waivers: [] },
     skillRuns: [],
     skillVersions: [],
     ...overrides,

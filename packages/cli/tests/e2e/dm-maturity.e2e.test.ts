@@ -1,11 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, rmSync, existsSync } from 'node:fs';
+import { mkdtempSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 import { runCli } from '../../src/index.js';
 import type { CliContextOverrides } from '../../src/cli/context.js';
 import { generateRule, cursorManifest } from '@l1dder/adapter-cursor';
+import { ExitCode } from '../../src/cli/output/exit-codes.js';
 
 let testDir: string;
 
@@ -34,13 +35,11 @@ describe('E2E: DM-2 discovery maturity deliverables', () => {
     rmSync(testDir, { recursive: true, force: true });
   });
 
-  it('greenfield init Next steps mentions roadmap planning', async () => {
+  it('greenfield init helpme shows ordered discovery checklist (no roadmap gate)', async () => {
     const overrides = createOverrides();
     const code = await capturedRunCli(['init', '--name', 'dm2-init'], overrides);
     expect(code).toBe(0);
 
-    // Capture init output via status/helpme instead — init human text not easily captured.
-    // Verify helpme works on fresh discovery project.
     const helpmeCode = await capturedRunCli(['helpme'], overrides);
     expect(helpmeCode).toBe(0);
   });
@@ -49,7 +48,6 @@ describe('E2E: DM-2 discovery maturity deliverables', () => {
     const overrides = createOverrides();
     await capturedRunCli(['init', '--name', 'dm2-helpme'], overrides);
 
-    // Re-run with output capture via subprocess is heavy; use sync file check + exit code.
     const code = await capturedRunCli(['helpme'], overrides);
     expect(code).toBe(0);
   });
@@ -60,6 +58,39 @@ describe('E2E: DM-2 discovery maturity deliverables', () => {
 
     const code = await capturedRunCli(['stage', 'status'], overrides);
     expect(code).toBe(0);
+  });
+
+  it('stage advance on immature discovery is a hard gate (non-zero, no mutation)', async () => {
+    const overrides = createOverrides();
+    await capturedRunCli(['init', '--name', 'dm2-hard-gate'], overrides);
+
+    const before = readFileSync(join(testDir, '.l1dder', 'state.yml'), 'utf8');
+    const code = await capturedRunCli(['stage', 'advance', '--yes'], overrides);
+    expect(code).toBe(ExitCode.DISCOVERY_NOT_READY);
+
+    const after = readFileSync(join(testDir, '.l1dder', 'state.yml'), 'utf8');
+    expect(after).toBe(before);
+    expect(after).toContain('stage: discovery');
+  });
+
+  it('stage advance --force without --reason fails; with reason succeeds', async () => {
+    const overrides = createOverrides();
+    await capturedRunCli(['init', '--name', 'dm2-force'], overrides);
+
+    const missing = await capturedRunCli(['stage', 'advance', '--force'], overrides);
+    expect(missing).toBe(ExitCode.FORCE_REASON_REQUIRED);
+    expect(readFileSync(join(testDir, '.l1dder', 'state.yml'), 'utf8')).toContain(
+      'stage: discovery',
+    );
+
+    const forced = await capturedRunCli(
+      ['stage', 'advance', '--force', '--reason', 'E2E hard-gate bypass'],
+      overrides,
+    );
+    expect(forced).toBe(0);
+    const yaml = readFileSync(join(testDir, '.l1dder', 'state.yml'), 'utf8');
+    expect(yaml).toContain('stage: delivery');
+    expect(yaml).toContain('E2E hard-gate bypass');
   });
 
   it('quick on discovery project exits successfully (advisory non-blocking)', async () => {
@@ -74,12 +105,11 @@ describe('E2E: DM-2 discovery maturity deliverables', () => {
     const overrides = createOverrides();
     await capturedRunCli(['init', '--name', 'dm2-sync', '--ai', 'cursor'], overrides);
 
-    // dry-run generates rule in memory (avoids sandbox .cursor write issues)
     const syncCode = await capturedRunCli(['sync', '--dry-run'], overrides);
     expect(syncCode).toBe(0);
   });
 
-  it('rule generator emits plan-mode when workflow flags set', () => {
+  it('built-in discovery skills are present', () => {
     const researchPath = join(
       process.cwd(),
       'packages/cli/assets/skills/built-in/research-first.md',

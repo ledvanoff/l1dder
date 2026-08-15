@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@l1dder/core": "workspace:*",
-    "@l1dder/schemas": "workspace:*"
+    "@l1dder/schemas": "workspace:*",
+    "@l1dder/yaml": "workspace:*"
   }
 }

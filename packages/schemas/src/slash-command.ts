@@ -1,5 +1,7 @@
 import { z } from 'zod/v4';
 
+import { PhaseSchema } from './state.js';
+
 // ─── Enums ───
 
 /** Trigger kind for slash commands: whether the command triggers a phase transition. */
@@ -15,6 +17,14 @@ export const SlashOverrideStrategySchema = z.enum([
   'append_steps',
   'patch',
 ]);
+
+/**
+ * Slash-command front-matter `phase`: canonical {@link PhaseSchema} or `"*"`
+ * for any-phase commands (e.g. pause / handoff).
+ *
+ * Reuses {@link PhaseSchema} — does not define a second phase enum.
+ */
+export const SlashCommandPhaseSchema = z.union([PhaseSchema, z.literal('*')]);
 
 // ─── Front-matter schema ───
 
@@ -34,7 +44,7 @@ export const SlashCommandFrontMatterSchema = z.object({
   format_version: z.literal(1),
 
   /** Phase Machine phase this command operates in. Use "*" for any-phase commands. */
-  phase: z.string(),
+  phase: SlashCommandPhaseSchema,
 
   /** Whether the command triggers a phase transition. */
   trigger_kind: SlashTriggerKindSchema.default('transition'),
@@ -102,6 +112,8 @@ export const ParsedSlashCommandSchema = z.object({
 export type SlashTriggerKind = z.infer<typeof SlashTriggerKindSchema>;
 /** Slash command override strategy. */
 export type SlashOverrideStrategy = z.infer<typeof SlashOverrideStrategySchema>;
+/** Slash-command front-matter phase (`Phase` or `"*"`). */
+export type SlashCommandPhase = z.infer<typeof SlashCommandPhaseSchema>;
 /** Slash command front-matter type. */
 export type SlashCommandFrontMatter = z.infer<typeof SlashCommandFrontMatterSchema>;
 /** Slash command body sections type. */

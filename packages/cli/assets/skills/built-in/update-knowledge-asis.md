@@ -15,13 +15,13 @@ builtin: true
 
 ## Summary
 
-Run the AS_IS_KNOWLEDGE_UPDATE phase: promote implemented decisions
+Run the `update_asis` phase (AS_IS_KU / Knowledge Update): promote implemented decisions
 from `to-be/*.md` into `as-is/*.md` (As-Is Promotion) after delivery is complete.
 
 ## When to Use
 
-- The Phase Machine transitioned to AS_IS_KNOWLEDGE_UPDATE (trigger: auto)
-- The user runs `/l1dder.update-asis` (slash command)
+- The Phase Machine transitioned to `update_asis` (trigger: auto)
+- The user runs `/l1dder-update-asis` (slash command)
 - After IMPLEMENT is complete with implemented code
 
 ## Steps

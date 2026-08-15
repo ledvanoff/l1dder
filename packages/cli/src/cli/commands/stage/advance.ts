@@ -7,12 +7,18 @@ import {
   errorToCode,
   errorToHint,
 } from '../../output/exit-codes.js';
-import type { CriterionResult } from '@l1dder/state';
+import {
+  discoveryNotReadyResult,
+  forceReasonRequiredResult,
+  persistForcedStageChange,
+} from './forced-transition.js';
 
 /**
  * Execute `l1dder stage advance` — advance to the next project stage.
  *
- * Shows readiness wizard when criteria are not met, unless `--force --reason` is given.
+ * Discovery→delivery is a hard gate: unmet checklist criteria block with a
+ * non-zero exit and no state mutation. The only bypass is `--force --reason`.
+ * `--dry-run` predicts the same outcome (including exit code) without writing.
  */
 export async function executeStageAdvance(
   ctx: CliContext,
@@ -63,61 +69,79 @@ export async function executeStageAdvance(
     };
   }
 
-  const metCount = criteria.filter((c) => c.met).length;
   const allMet = criteria.every((c) => c.met);
 
+  if (opts.force && !(opts.reason?.trim())) {
+    return forceReasonRequiredResult();
+  }
+
   if (!allMet && !opts.force) {
-    const readinessText = formatReadinessBlock(ctx, criteria, metCount);
+    return discoveryNotReadyResult(ctx, sm, nextStage, opts.dryRun === true);
+  }
 
-    const confirmed = opts.yes
-      ? true
-      : await ctx.prompt.confirm(`Advance to '${nextStage}' despite unmet criteria?`);
+  const reason = opts.reason?.trim() || (allMet ? 'All criteria met' : 'Forced advancement');
+  const fromStage = state.project.stage;
+  const forced = Boolean(opts.force && !allMet);
 
-    if (!confirmed) {
+  if (opts.dryRun) {
+    const { colors } = ctx;
+    const dryLines = [
+      '',
+      colors.dim('───────── Stage Advance (dry run) ─────────'),
+      '',
+      `  ${colors.glyph.pass} Dry run: ${fromStage} → ${colors.success(nextStage)} would succeed`,
+      `  Reason: ${reason}`,
+      forced ? `  ${colors.warning('(would record Decision — forced)')}` : '',
+      `  ${colors.dim('No state was written.')}`,
+      '',
+    ].filter(Boolean);
+    return {
+      exitCode: ExitCode.SUCCESS,
+      data: {
+        from: fromStage,
+        to: nextStage,
+        reason,
+        forced,
+        dry_run: true,
+      },
+      humanText: dryLines.join('\n'),
+    };
+  }
+
+  if (forced) {
+    const persistError = await persistForcedStageChange(sm, ctx.clock.now(), {
+      from: fromStage,
+      to: nextStage,
+      reason,
+    });
+    if (persistError) {
+      return persistError;
+    }
+  } else {
+    const advResult = await sm.stage.advanceStage(sm.stateSnapshot(), config);
+    if (!advResult.ok) {
+      const error = advResult.error;
       return {
-        exitCode: ExitCode.SUCCESS,
-        humanText: readinessText + `\n  ${ctx.colors.dim('Advance cancelled.')}\n`,
+        exitCode: mapErrorToExitCode(error),
+        error: {
+          code: errorToCode(error),
+          message: error.message,
+        },
+      };
+    }
+
+    const saveResult = await sm.applyAndSave(() => advResult.value);
+    if (!saveResult.ok) {
+      return {
+        exitCode: ExitCode.CORRUPTED_STATE,
+        error: {
+          code: 'CORRUPTED_STATE',
+          message: saveResult.error.message,
+        },
       };
     }
   }
 
-  if (opts.force && !opts.reason) {
-    return {
-      exitCode: ExitCode.USAGE_ERROR,
-      error: {
-        code: 'USAGE_ERROR',
-        message: '--force requires --reason',
-        hint: 'Provide a reason: --force --reason "..."',
-      },
-    };
-  }
-
-  const reason = opts.reason ?? (allMet ? 'All criteria met' : 'Forced advancement');
-
-  const advResult = await sm.stage.advanceStage(state, config);
-  if (!advResult.ok) {
-    const error = advResult.error;
-    return {
-      exitCode: ExitCode.GENERIC_ERROR,
-      error: {
-        code: errorToCode(error),
-        message: error.message,
-      },
-    };
-  }
-
-  const saveResult = await sm.applyAndSave(() => advResult.value);
-  if (!saveResult.ok) {
-    return {
-      exitCode: ExitCode.CORRUPTED_STATE,
-      error: {
-        code: 'CORRUPTED_STATE',
-        message: saveResult.error.message,
-      },
-    };
-  }
-
-  const fromStage = state.project.stage;
   const { colors } = ctx;
 
   return {
@@ -126,7 +150,7 @@ export async function executeStageAdvance(
       from: fromStage,
       to: nextStage,
       reason,
-      forced: opts.force ?? false,
+      forced,
     },
     humanText: [
       '',
@@ -134,33 +158,8 @@ export async function executeStageAdvance(
       '',
       `  ${fromStage} ${colors.glyph.arrow} ${colors.success(nextStage)}`,
       `  Reason: ${reason}`,
-      opts.force ? `  ${colors.warning('(forced)')}` : '',
+      forced ? `  ${colors.warning('(forced)')}` : '',
       '',
     ].filter(Boolean).join('\n'),
   };
-}
-
-function formatReadinessBlock(
-  ctx: CliContext,
-  criteria: readonly CriterionResult[],
-  metCount: number,
-): string {
-  const { colors } = ctx;
-  const lines: string[] = [];
-  lines.push('');
-  lines.push(colors.dim('───────── Discovery Readiness ─────────'));
-  lines.push('');
-
-  for (const c of criteria) {
-    const glyph = c.met ? colors.glyph.pass : colors.glyph.fail;
-    const labelText = c.met ? colors.success(c.label) : c.label;
-    const detailText = c.detail ? ` — ${colors.dim(c.detail)}` : '';
-    lines.push(`  ${glyph} ${labelText}${detailText}`);
-  }
-
-  lines.push('');
-  lines.push(`  Score: ${String(metCount)}/${String(criteria.length)} — ${colors.warning('NOT READY')}`);
-  lines.push('');
-
-  return lines.join('\n');
 }

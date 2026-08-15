@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { InMemoryFileSystem, NullLogger } from '@l1dder/core/testing';
 import type { AdapterContext, ParsedPersona, ParsedSkill, ParsedSlashCommand } from '@l1dder/core';
-import type { Config } from '@l1dder/schemas';
+import type { Config, SlashCommandPhase } from '@l1dder/schemas';
 import type { MergedStandards } from '@l1dder/knowledge';
 import { CursorAdapter } from '../src/cursor-adapter.js';
 
@@ -27,7 +27,7 @@ function createSkill(id: string, name: string): ParsedSkill {
   };
 }
 
-function createCommand(id: string, phase: string, role: string, skill: string | null): ParsedSlashCommand {
+function createCommand(id: string, phase: SlashCommandPhase, role: string, skill: string | null): ParsedSlashCommand {
   return {
     frontMatter: {
       id,
@@ -85,7 +85,7 @@ function createContext(
     language: { docs: 'en', chat: 'en' },
     gates: { default: { enabled: true, skip_allowed: false, min_approvers: 1, custom_gates: [] }, overrides: {} },
     stage: {
-      enforcement: { restrict_phases: 'advisory', require_criteria: 'advisory' },
+      enforcement: { restrict_phases: 'advisory' },
       delivery_criteria: {
         require_idea_not_skeleton: true,
         require_roadmap: true,
@@ -243,6 +243,35 @@ describe('CursorAdapter integration', () => {
     const content = await fs.readFile('/project/.cursor/rules/l1dder.mdc');
     expect(content).toMatch(/^---\nalwaysApply: true\n---/);
     expect(content).toContain('<!-- L1DDER:MANAGED hash:');
+  });
+
+  it('uses canonical projectName in AGENTS.md instead of directory basename', async () => {
+    const fs = new InMemoryFileSystem();
+    const adapter = new CursorAdapter({ fs, logger: new NullLogger() });
+    const ctx = createContext(fs, {
+      projectRoot: '/e2e-h-hard/fix-gate',
+      projectName: 'shop-bot',
+    });
+
+    await adapter.generate(ctx);
+
+    const content = await fs.readFile('/e2e-h-hard/fix-gate/AGENTS.md');
+    expect(content).toContain('# shop-bot');
+    expect(content).toContain('| Name | shop-bot |');
+    expect(content).not.toContain('# fix-gate');
+    expect(content).not.toContain('| Name | fix-gate |');
+  });
+
+  it('falls back to directory basename when projectName is absent', async () => {
+    const fs = new InMemoryFileSystem();
+    const adapter = new CursorAdapter({ fs, logger: new NullLogger() });
+    const ctx = createContext(fs, { projectRoot: '/e2e-h-hard/dir-only' });
+
+    await adapter.generate(ctx);
+
+    const content = await fs.readFile('/e2e-h-hard/dir-only/AGENTS.md');
+    expect(content).toContain('# dir-only');
+    expect(content).toContain('| Name | dir-only |');
   });
 
   it('generated AGENTS.md has 5 sections', async () => {

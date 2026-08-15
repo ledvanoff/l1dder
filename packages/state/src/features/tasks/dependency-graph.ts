@@ -6,6 +6,91 @@ interface GraphNode {
   readonly depends_on: readonly string[];
 }
 
+/** Task row shape needed to enforce depends_on before completion. */
+export interface CompletableTaskNode extends GraphNode {
+  readonly status: string;
+}
+
+/**
+ * Ids whose status satisfies a depends_on edge (`done` or `skipped`).
+ *
+ * @param tasks - Task rows with status
+ */
+export function satisfiedDependencyIds(
+  tasks: ReadonlyArray<{ readonly id: string; readonly status: string }>,
+): ReadonlySet<string> {
+  return new Set(
+    tasks
+      .filter((task) => task.status === 'done' || task.status === 'skipped')
+      .map((task) => task.id),
+  );
+}
+
+/**
+ * Ensure every `depends_on` entry of `taskId` is `done` or `skipped`.
+ *
+ * Domain guard for markdown-first `task complete` (and any caller that must
+ * enforce the same rule without going through {@link TaskManager.startTask}).
+ * Unknown `taskId` is treated as having no unmet deps — callers handle
+ * not-found separately.
+ *
+ * @param tasks - Task rows (id, depends_on, status)
+ * @param taskId - Task being completed
+ */
+export function ensureDependenciesMetForComplete(
+  tasks: ReadonlyArray<CompletableTaskNode>,
+  taskId: string,
+): Result<void, DependenciesNotMetError> {
+  const task = tasks.find((entry) => entry.id === taskId);
+  if (task === undefined) {
+    return ok(undefined);
+  }
+
+  const completedIds = satisfiedDependencyIds(tasks);
+  const graph = new DependencyGraph(tasks);
+  if (graph.canStart(taskId, completedIds)) {
+    return ok(undefined);
+  }
+
+  const unmet = task.depends_on.filter((dep) => !completedIds.has(dep));
+  return err(new DependenciesNotMetError(taskId, unmet));
+}
+
+/**
+ * First pending task in topological order whose `depends_on` are all satisfied.
+ *
+ * Single source for "what can be started next", shared by `TaskManager` and the
+ * workflow projection so both cannot drift apart.
+ *
+ * @param tasks - Task rows (id, depends_on, status)
+ * @returns task id, or `null` when the list is empty or nothing is startable
+ */
+export function resolveNextAvailableTaskId(
+  tasks: ReadonlyArray<CompletableTaskNode>,
+): Result<string | null, DependenciesNotMetError> {
+  if (tasks.length === 0) {
+    return ok(null);
+  }
+
+  const graph = new DependencyGraph(tasks);
+  const sorted = graph.topologicalSort();
+  if (!sorted.ok) {
+    return err(sorted.error);
+  }
+
+  const completedIds = satisfiedDependencyIds(tasks);
+  const byId = new Map(tasks.map((task) => [task.id, task]));
+
+  for (const id of sorted.value) {
+    const task = byId.get(id);
+    if (task?.status === 'pending' && graph.canStart(id, completedIds)) {
+      return ok(id);
+    }
+  }
+
+  return ok(null);
+}
+
 /**
  * Dependency graph for tasks with topological sort and cycle detection (Kahn's algorithm).
  */

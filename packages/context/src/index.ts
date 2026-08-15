@@ -55,6 +55,18 @@ export { resolveProfile } from './features/resolve/resolve.js';
 export { allocate } from './features/allocate/allocate.js';
 export { renderContext } from './features/render/renderer.js';
 export { buildBrief } from './features/brief/brief-builder.js';
+export type { BuildBriefOptions } from './features/brief/brief-builder.js';
 export { detectHandoff, validateHandoff } from './features/handoff/handoff-detector.js';
 export { generateHandoff } from './features/handoff/handoff-generator.js';
 export type { GenerateHandoffOptions, GenerateHandoffResult } from './features/handoff/handoff-generator.js';
+export {
+  HANDOFF_ALL_SECTIONS,
+  HANDOFF_CORE_SECTIONS,
+  HANDOFF_RELATIVE_PATH,
+  HANDOFF_RICH_SECTIONS,
+  coreSectionById,
+  preferredHeading,
+  preferredRuHeading,
+  richSectionById,
+} from './features/handoff/handoff-contract.js';
+export type { HandoffSectionDef } from './features/handoff/handoff-contract.js';

@@ -1,4 +1,5 @@
 import { ProjectStageSchema } from '@l1dder/schemas';
+import type { ProjectStage } from '@l1dder/schemas';
 import {
   AlreadyAtStageError,
   InvalidStageTransitionError,
@@ -11,14 +12,20 @@ import {
   errorToCode,
   errorToHint,
 } from '../../output/exit-codes.js';
+import {
+  discoveryNotReadyResult,
+  forceReasonRequiredResult,
+  persistForcedStageChange,
+} from './forced-transition.js';
 
 const VALID_STAGES = ProjectStageSchema.options;
 
 /**
- * Execute `l1dder stage set <stage>` — force-set stage directly.
+ * Execute `l1dder stage set --to <stage>` — set stage to a specific forward target.
  *
- * Unlike advance, allows non-sequential changes (but only forward in
- * the current implementation of StageManager).
+ * Shares the discovery→delivery hard gate with `stage advance`: unmet
+ * checklist criteria refuse unless `--force --reason` records an audited
+ * waiver (Decision + forced). Backward transitions stay forbidden.
  */
 export async function executeStageSet(
   ctx: CliContext,
@@ -64,59 +71,80 @@ export async function executeStageSet(
   }
 
   const state = sm.stateSnapshot();
-  const reason = opts.reason ?? `Set to ${targetStage} via CLI`;
-
-  const setResult = sm.stage.setStage(
-    state,
-    targetStage as typeof VALID_STAGES[number],
-    reason,
-  );
-
-  if (!setResult.ok) {
-    const error = setResult.error;
-    const exitCode = error instanceof AlreadyAtStageError
-      ? ExitCode.GENERIC_ERROR
-      : error instanceof InvalidStageTransitionError
-        ? ExitCode.USAGE_ERROR
-        : mapErrorToExitCode(error);
-
-    return {
-      exitCode,
-      error: {
-        code: errorToCode(error),
-        message: error.message,
-      },
-    };
-  }
-
-  const saveResult = await sm.applyAndSave(() => setResult.value);
-  if (!saveResult.ok) {
-    return {
-      exitCode: ExitCode.CORRUPTED_STATE,
-      error: {
-        code: 'CORRUPTED_STATE',
-        message: saveResult.error.message,
-      },
-    };
-  }
-
+  const target = targetStage as ProjectStage;
   const fromStage = state.project.stage;
+
+  if (opts.force && !(opts.reason?.trim())) {
+    return forceReasonRequiredResult();
+  }
+
+  const needsWaiver = sm.stage.requiresForceWaiver(state, target);
+  if (needsWaiver && !opts.force) {
+    return discoveryNotReadyResult(ctx, sm, target, false);
+  }
+
+  const forced = Boolean(opts.force && needsWaiver);
+  const reason = opts.reason?.trim() || (forced ? 'Forced advancement' : `Set to ${target} via CLI`);
+
+  if (forced) {
+    const persistError = await persistForcedStageChange(sm, ctx.clock.now(), {
+      from: fromStage,
+      to: target,
+      reason,
+    });
+    if (persistError) {
+      return persistError;
+    }
+  } else {
+    const setResult = sm.stage.setStage(state, target, reason);
+
+    if (!setResult.ok) {
+      const error = setResult.error;
+      const exitCode = error instanceof AlreadyAtStageError
+        ? ExitCode.GENERIC_ERROR
+        : error instanceof InvalidStageTransitionError
+          ? ExitCode.USAGE_ERROR
+          : mapErrorToExitCode(error);
+
+      return {
+        exitCode,
+        error: {
+          code: errorToCode(error),
+          message: error.message,
+        },
+      };
+    }
+
+    const saveResult = await sm.applyAndSave(() => setResult.value);
+    if (!saveResult.ok) {
+      return {
+        exitCode: ExitCode.CORRUPTED_STATE,
+        error: {
+          code: 'CORRUPTED_STATE',
+          message: saveResult.error.message,
+        },
+      };
+    }
+  }
+
   const { colors } = ctx;
 
   return {
     exitCode: ExitCode.SUCCESS,
     data: {
       from: fromStage,
-      to: targetStage,
+      to: target,
       reason,
+      forced,
     },
     humanText: [
       '',
       colors.dim('───────── Stage Set ─────────'),
       '',
-      `  ${fromStage} ${colors.glyph.arrow} ${colors.success(targetStage)}`,
+      `  ${fromStage} ${colors.glyph.arrow} ${colors.success(target)}`,
       `  Reason: ${reason}`,
+      forced ? `  ${colors.warning('(forced)')}` : '',
       '',
-    ].join('\n'),
+    ].filter(Boolean).join('\n'),
   };
 }

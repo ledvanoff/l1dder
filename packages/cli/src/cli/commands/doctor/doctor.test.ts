@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { ConfigSchema } from '@l1dder/schemas';
+import { ConfigSchema, CURRENT_SCHEMA_VERSION } from '@l1dder/schemas';
 
 import { executeDoctor } from './doctor.js';
 import type { CliContext } from '../../context.js';
@@ -22,7 +22,14 @@ function createDoctorCtx(options: {
       }
       return Promise.reject(new Error(`File not found: ${path}`));
     },
-    writeFile: () => Promise.resolve(),
+    writeFile: (path: string, content: string): Promise<void> => {
+      const normalized = path.replace(/\\/g, '/');
+      const key =
+        Object.keys(files).find((k) => normalized.endsWith(k)) ??
+        normalized.replace(/^\/project\//, '');
+      files[key] = content;
+      return Promise.resolve();
+    },
     rename: () => Promise.resolve(),
     exists: (path: string) => {
       const normalized = path.replace(/\\/g, '/');
@@ -49,7 +56,7 @@ function createDoctorCtx(options: {
   };
 
   const defaultState = {
-    schema_version: 1,
+    schema_version: CURRENT_SCHEMA_VERSION,
     project: { name: 'test', stage: 'delivery', stage_history: [], created_at: '2026-01-01', updated_at: '2026-01-01' },
     workflow: { current_phase: 'idle', current_status: 'in_progress', mode: 'main', iteration: 0 },
     tasks: { items: [] },
@@ -57,6 +64,7 @@ function createDoctorCtx(options: {
     phase_history: [],
     stage_history: [],
     knowledge_updates: [],
+    decisions: [],
     _in_flight_transition: null,
     sessions: [],
     skillRuns: [],
@@ -108,17 +116,17 @@ describe('executeDoctor', () => {
   const BASE_FILES = {
     'standards/.base/conventions.base.yml': 'meta:\n  format_version: 1\nlanguage:\n  primary: ts\n',
     'standards/.base/workflow.base.yml': 'meta:\n  format_version: 1\nlanguage_policy:\n  code: en\n',
-    '.l1dder/state.yml': 'schema_version: 1\n',
+    '.l1dder/state.yml': `schema_version: ${String(CURRENT_SCHEMA_VERSION)}\n`,
     '.l1dder/config.yml': 'schema_version: 1\n',
     'knowledge/idea.md': '# Idea\n',
     'knowledge/roadmap.md': '# Roadmap\n',
   };
 
-  it('runs all 6 sections', async () => {
+  it('runs all 8 default sections including registry and spec-contract', async () => {
     const ctx = createDoctorCtx({ files: BASE_FILES });
     const result = await executeDoctor(ctx, {});
 
-    expect(result.data?.sections).toHaveLength(6);
+    expect(result.data?.sections).toHaveLength(8);
     const sectionIds = result.data?.sections.map((s) => s.id);
     expect(sectionIds).toContain('knowledge');
     expect(sectionIds).toContain('state');
@@ -126,6 +134,8 @@ describe('executeDoctor', () => {
     expect(sectionIds).toContain('standards');
     expect(sectionIds).toContain('workflow');
     expect(sectionIds).toContain('drift');
+    expect(sectionIds).toContain('registry');
+    expect(sectionIds).toContain('spec-contract');
   });
 
   it('--section state runs only state checks', async () => {
@@ -138,7 +148,7 @@ describe('executeDoctor', () => {
 
   it('detects stale in-progress task', async () => {
     const staleState = {
-      schema_version: 1,
+      schema_version: CURRENT_SCHEMA_VERSION,
       project: { name: 'test', stage: 'delivery', created_at: '2026-01-01', updated_at: '2026-01-01' },
       workflow: { current_phase: 'implement', current_status: 'in_progress', mode: 'main', iteration: 1 },
       tasks: {
@@ -164,7 +174,7 @@ describe('executeDoctor', () => {
 
   it('detects knowledge drift from quick tasks', async () => {
     const driftState = {
-      schema_version: 1,
+      schema_version: CURRENT_SCHEMA_VERSION,
       project: { name: 'test', stage: 'delivery', created_at: '2026-01-01', updated_at: '2026-01-01' },
       workflow: { current_phase: 'idle', current_status: 'in_progress', mode: 'main', iteration: 0 },
       tasks: { items: [] },
@@ -199,7 +209,7 @@ describe('executeDoctor', () => {
 
   it('exit 1 on any fail', async () => {
     const corruptState = {
-      schema_version: 1,
+      schema_version: CURRENT_SCHEMA_VERSION,
       project: { name: 'test', stage: 'delivery', created_at: '2026-01-01', updated_at: '2026-01-01' },
       workflow: { current_phase: 'idle', current_status: 'in_progress', mode: 'quick', iteration: 0 },
       tasks: { items: [] },
@@ -217,66 +227,115 @@ describe('executeDoctor', () => {
     expect(result.exitCode).toBe(ExitCode.GENERIC_ERROR);
   });
 
-  it('--fix clears in-flight marker from state.yml', async () => {
-    const stateYml = [
-      'schema_version: 1',
-      'project:',
-      '  name: test',
-      '  stage: delivery',
-      '  created_at: "2026-01-01"',
-      '  updated_at: "2026-01-01"',
-      'workflow:',
-      '  current_phase: idle',
-      '  current_status: in_progress',
-      '  mode: main',
-      '  iteration: 0',
-      '_in_flight_transition:',
-      '  from: idle',
-      '  to: specify',
-      '  started_at: "2026-05-24T10:00:00Z"',
-      '  actor: user',
-      '  trigger:',
-      '    kind: cli',
-      'tasks:',
-      '  items: []',
-      'quick_tasks: []',
-      'phase_history: []',
-      'stage_history: []',
-      'knowledge_updates: []',
-      'sessions: []',
-    ].join('\n');
+  it('--fix clears in-flight marker, re-checks, and exits 0', async () => {
+    const { stringifyYaml } = await import('@l1dder/yaml');
+    const { createTestState } = await import('@l1dder/state/testing');
+    const { ConfigSchema } = await import('@l1dder/schemas');
 
-    const stateWithMarker = {
-      schema_version: 1,
-      project: { name: 'test', stage: 'delivery', created_at: '2026-01-01', updated_at: '2026-01-01' },
-      workflow: { current_phase: 'idle', current_status: 'in_progress', mode: 'main', iteration: 0 },
-      tasks: { items: [] },
-      quick_tasks: [],
-      phase_history: [],
-      stage_history: [],
-      knowledge_updates: [],
-      _in_flight_transition: { from: 'idle', to: 'specify', started_at: '2026-05-24T10:00:00Z', actor: 'user', trigger: { kind: 'cli' } },
-      sessions: [],
-    };
+    const stateWithMarker = createTestState({
+      project: { stage: 'delivery' },
+      _in_flight_transition: {
+        from: 'idle',
+        to: 'specify',
+        started_at: '2026-05-24T10:00:00Z',
+        actor: { kind: 'human', id: 'user' },
+        trigger: { kind: 'cli', command: 'transition' },
+      },
+    });
+    const stateYml = stringifyYaml(stateWithMarker);
+    const configYml = stringifyYaml(ConfigSchema.parse({}));
 
-    const writtenFiles: Record<string, string> = {};
     const files = {
       ...BASE_FILES,
       '.l1dder/state.yml': stateYml,
+      '.l1dder/config.yml': configYml,
     };
 
     const ctx = createDoctorCtx({ files, stateSnapshot: stateWithMarker });
-    (ctx.fs as { writeFile: (p: string, c: string) => Promise<void> }).writeFile = (p: string, c: string) => {
-      writtenFiles[p] = c;
-      return Promise.resolve();
-    };
 
     const result = await executeDoctor(ctx, { fix: true, section: 'state' });
 
+    expect(files['.l1dder/state.yml']).toBeDefined();
+    expect(files['.l1dder/state.yml']).not.toContain('_in_flight_transition');
+    const inFlight = result.data?.sections[0]?.checks.find((c) => c.id === 'state-in-flight');
+    expect(inFlight?.level).toBe('pass');
+    expect(result.exitCode).toBe(ExitCode.SUCCESS);
+  });
+
+  // @tc TC-010-01-A
+  it('reports FAIL for in-flight marker without mutating (read-only default)', async () => {
+    const { createTestState } = await import('@l1dder/state/testing');
+    const stateWithMarker = createTestState({
+      _in_flight_transition: {
+        from: 'idle',
+        to: 'specify',
+        started_at: '2026-05-24T10:00:00Z',
+        actor: { kind: 'human', id: 'user' },
+        trigger: { kind: 'cli', command: 'transition' },
+      },
+    });
+
+    const files = { ...BASE_FILES };
+    const ctx = createDoctorCtx({ files, stateSnapshot: stateWithMarker });
+    const writeSpy = vi.spyOn(ctx.fs, 'writeFile');
+
+    const result = await executeDoctor(ctx, { section: 'state' });
+
+    const inFlight = result.data?.sections[0]?.checks.find((c) => c.id === 'state-in-flight');
+    expect(inFlight?.level).toBe('fail');
+    expect(inFlight?.hint).toContain('doctor --fix');
+    expect(inFlight?.hint).not.toContain('--no-recover');
     expect(result.exitCode).toBe(ExitCode.GENERIC_ERROR);
-    const written = Object.values(writtenFiles).find((v) => v.includes('schema_version'));
-    expect(written).toBeDefined();
-    expect(written).not.toContain('_in_flight_transition');
+    expect(writeSpy).not.toHaveBeenCalled();
+  });
+
+  it('hint omits --no-recover when the flag is already supplied (DF-033)', async () => {
+    const { createTestState } = await import('@l1dder/state/testing');
+    const stateWithMarker = createTestState({
+      _in_flight_transition: {
+        from: 'idle',
+        to: 'specify',
+        started_at: '2026-05-24T10:00:00Z',
+        actor: { kind: 'human', id: 'user' },
+        trigger: { kind: 'cli', command: 'transition' },
+      },
+    });
+
+    const ctx = createDoctorCtx({ files: BASE_FILES, stateSnapshot: stateWithMarker });
+    (ctx.globals as { noRecover: boolean }).noRecover = true;
+
+    const result = await executeDoctor(ctx, { section: 'state' });
+    const inFlight = result.data?.sections[0]?.checks.find((c) => c.id === 'state-in-flight');
+    expect(inFlight?.hint).toContain('doctor --fix');
+    expect(inFlight?.hint).not.toContain('use --no-recover');
+  });
+
+  it('surfaces Zod path+message when state schema is invalid (DF-002)', async () => {
+    const { SchemaValidationError } = await import('@l1dder/core');
+    const schemaError = new SchemaValidationError('.l1dder/state.yml', [
+      {
+        path: ['workflow', 'current_phase'],
+        message: 'Invalid option: expected one of "idle"|"specify"|…',
+        code: 'invalid_value',
+      },
+    ]);
+
+    const ctx = createDoctorCtx({ files: BASE_FILES, stateThrows: true });
+    ctx.state = () => Promise.reject(schemaError);
+
+    const result = await executeDoctor(ctx, { section: 'state' });
+    const loadCheck = result.data?.sections[0]?.checks.find((c) => c.id === 'state-load');
+    expect(loadCheck?.level).toBe('fail');
+    expect(loadCheck?.message).toContain('workflow.current_phase');
+    const details = (loadCheck as { details?: readonly unknown[] } | undefined)?.details;
+    expect(details).toEqual([
+      {
+        path: 'workflow.current_phase',
+        message: 'Invalid option: expected one of "idle"|"specify"|…',
+        code: 'invalid_value',
+      },
+    ]);
+    expect(result.exitCode).toBe(ExitCode.SCHEMA_VALIDATION);
   });
 
   it('--fix adds missing front-matter to skill files', async () => {
@@ -394,19 +453,24 @@ describe('executeDoctor', () => {
       const ctx = createDoctorCtx({ files: BASE_FILES });
       const result = await executeDoctor(ctx, { deep: true });
 
-      expect(result.data?.sections).toHaveLength(8);
+      expect(result.data?.sections).toHaveLength(10);
       const sectionIds = result.data?.sections.map((s) => s.id);
       expect(sectionIds).toContain('skills');
       expect(sectionIds).toContain('ide');
+      expect(sectionIds).toContain('registry');
+      expect(sectionIds).toContain('spec-contract');
     });
 
-    it('without --deep, the default sweep still runs only the original 6 sections', async () => {
+    it('without --deep, the default sweep still excludes skills/ide but includes registry', async () => {
       const ctx = createDoctorCtx({ files: BASE_FILES });
       const result = await executeDoctor(ctx, {});
 
       const sectionIds = result.data?.sections.map((s) => s.id);
       expect(sectionIds).not.toContain('skills');
       expect(sectionIds).not.toContain('ide');
+      expect(sectionIds).toContain('registry');
+      expect(sectionIds).toContain('spec-contract');
+      expect(sectionIds).toHaveLength(8);
     });
 
     it('--section skills is reachable without --deep', async () => {
