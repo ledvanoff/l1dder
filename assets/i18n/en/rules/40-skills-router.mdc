@@ -1,0 +1,69 @@
+---
+description: L1DDER Skills Router — control workflow skills (/l1-*), bundled core engineering disciplines (ponytail + mattpocock/skills), and project stack skills managed via l1dder/skills.json. Read before starting every Task.
+alwaysApply: true
+---
+
+# Skills Router & Manifest (`l1dder/skills.json`)
+
+Before starting work, check the tables below and read the relevant `SKILL.md` files using the `Read` tool.
+All project skills are managed declaratively via **`l1dder/skills.json`** (like `package.json` for AI Agent Skills).
+
+---
+
+## 0. Control Workflow Skills (Section `"l1dder"` in `skills.json`)
+
+| When to Use | Slash Command | Path in `l1dder/skills/` |
+|-------------|---------------|--------------------------|
+| Start a project (`from-scratch` or `existing-code`), configure `30-tech-stack.mdc` & `l1dder/skills.json`, and create initial `docs/` | `/l1-onboard` | `l1dder/skills/l1-onboard/SKILL.md` |
+| Brainstorm & refine a new idea (`grilling`) and save to the Idea Bank (`docs/ideas.md`) | `/l1-idea` | `l1dder/skills/l1-idea/SKILL.md` |
+| Write a feature spec (`docs/specs/FEAT-NNN/`) from an idea and slice steps `FEAT-NNN.01..99` into `docs/backlog.md` | `/l1-feature` | `l1dder/skills/l1-feature/SKILL.md` |
+| Schedule or reorder the Roadmap (`docs/roadmap.md`), assign `SPRINT-NN` and `TASK-NN.01..99` | `/l1-planning` | `l1dder/skills/l1-planning/SKILL.md` |
+| Execute the next task `TASK-NN.MM` from the Roadmap or the final `TASK-NN.99` (`Doctor Checklist`) | `/l1-task` | `l1dder/skills/l1-task/SKILL.md` |
+| Fix an urgent bug bypassing the Roadmap (`RED-first gate`) and log `HOTFIX-NNN` in `docs/backlog.md` | `/l1-hotfix` | `l1dder/skills/l1-hotfix/SKILL.md` |
+| Evolve the `L1DDER` methodology itself, log in `WORKLOG-CHANGELOG.md`, or update `HANDOFF.md` | `/l1-evo` | `l1dder/skills/l1-evo/SKILL.md` |
+
+---
+
+## 1. Core Engineering Disciplines (Section `"core"` in `skills.json` — BUNDLED OUT OF THE BOX!)
+
+> These 13 skills from `DietrichGebert/ponytail` and `mattpocock/skills` (including companion files `DEEPENING.md`, `DESIGN-IT-TWICE.md`, `tests.md`, `mocking.md`, `LOGIC.md`, `UI.md`, `GLOSSARY-FORMAT.md`, `ADR-FORMAT.md`) ship bundled inside `l1dder` and are installed into all configured AI agents on `npx l1dder init`. Run `npx l1dder skills update` anytime to pull the latest upstream versions from GitHub.
+
+| Work Type / Stage | Skill | Upstream Repo | Local Path (Always Present) |
+|-------------------|-------|---------------|-----------------------------|
+| Writing, fixing, refactoring code, choosing dependencies (6-Step Decision Ladder, `shortcut:`, 2-line `Skipped / Risk` footer) | `ponytail` | `DietrichGebert/ponytail` | `l1dder/skills/ponytail/SKILL.md` |
+| Diff quality review before `⛔ STOP #2` in `/l1-task` | `ponytail-review` | `DietrichGebert/ponytail` | `l1dder/skills/ponytail-review/SKILL.md` |
+| Whole-repo scan for over-engineering and bloat (during `TASK-NN.99` Doctor Checklist) | `ponytail-audit` | `DietrichGebert/ponytail` | `l1dder/skills/ponytail-audit/SKILL.md` |
+| Harvesting `// shortcut:` and `// ponytail:` markers into a debt ledger (during `TASK-NN.99`) | `ponytail-debt` | `DietrichGebert/ponytail` | `l1dder/skills/ponytail-debt/SKILL.md` |
+| Decision-tree frontier interviewing (`❓ Q1 ➡️ Recommendation` in `/l1-idea` and `/l1-feature`) | `grilling` | `mattpocock/skills` | `l1dder/skills/grilling/SKILL.md` |
+| Active Ubiquitous Language modeling (`GLOSSARY.md`) and ADR authoring (`GLOSSARY-FORMAT.md`, `ADR-FORMAT.md`) | `domain-modeling` | `mattpocock/skills` | `l1dder/skills/domain-modeling/SKILL.md` |
+| Deep Modules, Seams, and the Deletion Test (`DEEPENING.md`, `DESIGN-IT-TWICE.md`) | `codebase-design` | `mattpocock/skills` | `l1dder/skills/codebase-design/SKILL.md` |
+| Vertical Red-Green TDD slices at Pre-agreed Test Seams (`tests.md`, `mocking.md`) | `tdd` | `mattpocock/skills` | `l1dder/skills/tdd/SKILL.md` |
+| 6-phase bug diagnosis with mandatory `RED Reproduction Gate` (`/l1-hotfix` & `/l1-task`) | `diagnosing-bugs` | `mattpocock/skills` | `l1dder/skills/diagnosing-bugs/SKILL.md` |
+| Two-axis diff review (`Standards + Fowler Smells` vs `Spec` in `TASK-NN.99` Doctor Checklist) | `code-review` | `mattpocock/skills` | `l1dder/skills/code-review/SKILL.md` |
+| Agent environment retrospective at sprint end (`TASK-NN.99`) | `retro` | `mattpocock/skills` | `l1dder/skills/retro/SKILL.md` |
+| Throwaway interactive logic or UI prototypes (`LOGIC.md`, `UI.md`) | `prototype` | `mattpocock/skills` | `l1dder/skills/prototype/SKILL.md` |
+| Authoring agent rules, skills, and `AGENTS.md` / `CLAUDE.md` (`/l1-evo` & `retro`) | `writing-for-agents` | `mattpocock/skills` | `l1dder/skills/writing-for-agents/SKILL.md` |
+
+---
+
+## 2. Project Stack Skills (Section `"stack"` in `l1dder/skills.json`)
+
+> During `/l1-onboard`, the agent adds stack-specific skills to `l1dder/skills.json` and installs them into all configured agents:
+
+```bash
+# Add stack skills to l1dder/skills.json, download into l1dder/skills/, and sync to all agents:
+npx l1dder skills add anthropics/skills --skill frontend-design,webapp-testing
+npx l1dder skills add vercel-labs/agent-skills --skill vercel-react-best-practices,vercel-composition-patterns
+
+# Install all stack skills declared in l1dder/skills.json:
+npx l1dder skills install
+
+# List all skills and their status:
+npx l1dder skills list
+```
+
+| Work Type | Skill | Upstream Repo (`skills.json`) | Path After `npx l1dder skills install` |
+|-----------|-------|-------------------------------|----------------------------------------|
+| Frontend & UI Design | `frontend-design` | `anthropics/skills` | `l1dder/skills/frontend-design/SKILL.md` |
+| Webapp & E2E Testing | `webapp-testing` | `anthropics/skills` | `l1dder/skills/webapp-testing/SKILL.md` |
+| React / Next.js Best Practices | `vercel-react-best-practices` | `vercel-labs/agent-skills` | `l1dder/skills/vercel-react-best-practices/SKILL.md` |

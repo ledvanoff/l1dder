@@ -1,0 +1,18 @@
+node_modules/
+dist/
+coverage/
+playground/sandboxes/
+site/.vitepress/cache/
+site/.vitepress/dist/
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+
+<!-- l1dder:begin -->
+.env
+.env.local
+.env.*.local
+.DS_Store
+<!-- l1dder:end -->

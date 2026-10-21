@@ -1,0 +1,44 @@
+# Дополнения к .gitignore для проектов на L1DDER
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+credentials.json
+service-account.json
+*-secret.json
+*-credentials.json
+
+# Node / TypeScript / Web
+node_modules/
+dist/
+build/
+.output/
+.cache/
+.vite/
+*.tsbuildinfo
+coverage/
+playwright-report/
+test-results/
+
+# Python (если применимо)
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

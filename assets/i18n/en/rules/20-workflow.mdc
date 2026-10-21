@@ -1,0 +1,48 @@
+---
+description: Step-by-step instructions for all L1DDER workflows (/l1-onboard, /l1-idea, /l1-feature, /l1-planning, /l1-task, /l1-hotfix), ID traceability matrix, and status transitions.
+alwaysApply: true
+---
+
+# L1DDER Step-by-Step Workflow
+
+> **MODEL INSTRUCTION:** Do not skip steps. Always verify IDs along the chain `IDEA-NNN → FEAT-NNN → FEAT-NNN.MM → SPRINT-NN → TASK-NN.MM`. Never create or edit files before receiving an explicit `"ok"` from the user at `⛔ STOP` checkpoints.
+
+---
+
+## 1. Core Guardrails
+
+1. **`Roadmap Gate` (`docs/roadmap.md` is law):**
+   - Never start `/l1-task` for any feature or sprint that is NOT at position `1 (CURRENT)` in the `Delivery Queue` of `docs/roadmap.md`.
+   - If the user asks to build something else, reply: *"Let's update `docs/roadmap.md` via `/l1-planning` first, then run `/l1-task`."*
+   - The only exception for urgent bug fixes is `/l1-hotfix`.
+2. **End-to-End ID Traceability:**
+   - Every `FEAT-NNN` links to its parent `IDEA-NNN`.
+   - Spec steps before sprint planning are numbered `FEAT-NNN.01 .. FEAT-NNN.99`.
+   - During `/l1-planning`, the sprint gets `SPRINT-NN` and steps get paired task IDs `TASK-NN.01 .. TASK-NN.99`.
+3. **Mandatory Final Sprint Task (`TASK-NN.99`):**
+   - Every sprint **always** ends with `TASK-NN.99` (`tasks/TASK-01.99-doctor/`) — Sprint Hygiene, `Doctor Checklist`, Agent E2E, Living Docs Sync (`docs/concept/`, `docs/specs/`, `l1dder/rules/`), and Human UAT.
+
+---
+
+## 2. Exact Status & Priority Reference (Copy Character-for-Character)
+
+**Priorities:** `P0` | `P1` | `P2` | `P3`
+
+| Entity | Allowed Status Values (Copy Exact String) |
+|--------|-------------------------------------------|
+| **`IDEA-NNN`** (`docs/ideas.md`) | `📋 unrealized` → `🚧 in-progress` → `✅ realized` \| `❌ rejected` |
+| **`FEAT-NNN`** (`docs/backlog.md`) | `📝 drafting` → `📋 in-backlog` → `🗓 scheduled` → `🚧 in-progress` → `✅ realized` \| `❌ rejected` |
+| **`SPRINT-NN`** (`backlog.md`, `roadmap.md`) | `📋 planned` → `🚧 in-progress` → `✅ realized` \| `⏸ paused` |
+| **`TASK-NN.MM`** (`backlog.md`, `SPRINT README`) | `📋 planned` → `🚧 in-progress` → `✅ realized` \| `⏸ paused` |
+| **`HOTFIX-NNN`** (`docs/backlog.md`) | `🚧 in-progress` → `✅ realized` |
+
+---
+
+## 3. Workflow Summaries
+
+- **Flow 0 (`/l1-onboard`):** Detect mode (`from-scratch` / `existing-code`) → configure `30-tech-stack.mdc`, `40-skills-router.mdc`, `Makefile` (`⛔ STOP #1`) → create `docs/concept/*` (`⛔ STOP #2`) → initialize `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md`, `docs/README.md` (`⛔ STOP #3`).
+- **Flow 1 (`/l1-idea`):** Read `docs/ideas.md` → compute next `IDEA-NNN` → brainstorm with `grilling` (`❓ Q1 ➡️ Recommendation`) & show draft card (`⛔ STOP`) → write to `docs/ideas.md` after `"ok"`.
+- **Flow 2 (`/l1-feature`):** Read `docs/ideas.md` & `docs/backlog.md` → compute next `FEAT-NNN` → design Deep Modules, Pre-agreed Test Seams & steps `FEAT-NNN.01..99` (`⛔ STOP`) → write `docs/specs/FEAT-NNN-<slug>/{requirements,design,tasks}.md`, update `docs/backlog.md` (`📋 in-backlog`) & `docs/ideas.md` (`🚧 in-progress`).
+- **Flow 3 (`/l1-planning`):** Propose `Delivery Queue` (`SPRINT-NN`, `TASK-NN.01..99`) & `Discovery Queue` (`⛔ STOP`) → update `docs/roadmap.md`, `docs/backlog.md` (`🗓 scheduled`), `docs/specs/FEAT-NNN-<slug>/tasks.md`, and create `docs/sprints/SPRINT-NN-<slug>/README.md`.
+- **Flow 4 (`/l1-task`):** Verify `Roadmap Gate` (`1 CURRENT` in `docs/roadmap.md`) → for regular tasks: `plan.md` (`⛔ STOP #1`) → `Implement` → `Self-check` (`⛔ STOP #2` + 2-line `Ponytail skipped / Risk` footer) → `summary.md` & update 4 files. For `TASK-NN.99`: run all 4 `Doctor Checklist` blocks (`Code & Repo Doctor`, `Agent E2E`, `Living Docs Sync + retro`, `Human UAT`) → after human `"ok"`, cascade `✅ realized` across all 6 files.
+- **Flow 5 (`/l1-hotfix`):** Reproduce bug first (`RED Gate`) → show brief chat plan (`⛔ STOP`) → minimal fix (`GREEN` + `make ci`) → log `HOTFIX-NNN` in `docs/backlog.md`.

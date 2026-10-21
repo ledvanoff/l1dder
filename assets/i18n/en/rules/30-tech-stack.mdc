@@ -1,0 +1,50 @@
+---
+description: Project Technology Stack (Stack Rules) — language, frameworks, layer architecture, and Makefile commands. Configured during project onboarding via /l1-onboard.
+alwaysApply: true
+---
+
+# Project Technology Stack (Stack Rules)
+
+> **This file belongs to the `Stack` layer** and is customized for your project during `/l1-onboard`. Running `npx l1dder sync` preserves your changes to this file.
+
+---
+
+## 1. Tech Stack Matrix
+
+| Layer | Selection (Configured during `/l1-onboard`) | Purpose & Key Constraints |
+|-------|---------------------------------------------|---------------------------|
+| **Language & Runtime** | `[e.g., TypeScript 5.x (Node 22) / Python 3.12 / Go 1.24]` | Strict typing, compile-time / CI typechecking. |
+| **Frontend / UI** | `[e.g., React 19 + Tailwind CSS v4 + Vite / Next.js / —]` | Component UI isolated from core domain logic. |
+| **Backend / Core** | `[e.g., Fastify / Hono / FastAPI / Go stdlib / —]` | Deep domain modules (`Deep Modules`) with clean public seams. |
+| **Data & Validation** | `[e.g., PostgreSQL + Drizzle / SQLite / Zod / Pydantic]` | Schema validation at trust boundaries (`Fail fast`). |
+| **Package Manager** | `[e.g., pnpm / uv / go mod / cargo]` | Single lockfile committed to the repository. |
+| **Quality & Testing** | `[e.g., ESLint + Prettier + Vitest + Playwright / Ruff + Pytest]` | Seam unit tests and E2E user scenario tests. |
+
+---
+
+## 2. Layer Architecture
+
+```
+src/
+├── app/                # Entry point, configuration, routing
+├── core/               # Domain & business logic (Deep Modules with public Seams)
+├── ui/ (or api/)       # Presentation (UI components / HTTP handlers / CLI commands)
+├── data/ (or store/)   # Persistence, schema validation, external integrations
+└── shared/             # Shared types, constants, utilities
+tests/                  # Integration and E2E tests
+```
+
+---
+
+## 3. Project Makefile & `Edit → Sanitize → Verify` Loop
+
+```makefile
+make dev            # start local dev environment
+make build          # build production artifact
+make lint           # run linter
+make format         # auto-format code
+make typecheck      # run type checker
+make test           # run unit / integration tests
+make test-e2e       # run E2E tests (if applicable)
+make ci             # lint + typecheck + test + build
+```

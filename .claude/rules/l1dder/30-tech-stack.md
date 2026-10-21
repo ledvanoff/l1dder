@@ -1,0 +1,63 @@
+# Технологический стек проекта L1DDER (Stack Rules — Dogfooding)
+
+> Этот файл определяет стек самого репозитория `L1DDER`. Шаблон для внешних проектов хранится в `assets/i18n/{ru,en}/rules/30-tech-stack.mdc`. При вызове `npx l1dder update` / `sync` этот файл защищён от перезаписи (`STACK_PROTECTED_FILES`) и автоматически синхронизируется в `.cursor/rules/l1dder/` и `.claude/rules/l1dder/`.
+
+---
+
+## 1. Сводная матрица стека
+
+| Слой | Выбор | Назначение и ключевые ограничения |
+|------|-------|-----------------------------------|
+| **Язык и рантайм** | `TypeScript 5.7+` (`strict: true`), `Node.js >= 20` (`.nvmrc = 22`) | Строгая типизация (`noImplicitAny`, `strictNullChecks`, `noUncheckedIndexedAccess`). 0 внешних runtime-зависимостей в CLI. |
+| **Сборщик CLI** | `tsup` (ESM bundle → `dist/cli.js`) | Единый исполняемый бандл без внешних пакетов (`node:fs`, `node:path`, `node:readline/promises`). |
+| **Ассеты методологии** | `assets/i18n/{ru,en}/` + `assets/releases.json` | Двуязычный каталог правил (`rules/`), 20 скиллов (`skills/`), шаблонов (`templates/`), гайдов (`user-guide/`) и реестр релизов (`releases.json`). |
+| **Сайт документации** | `VitePress` + `vitepress-plugin-mermaid` (`site/`) | Двуязычный (`/` RU и `/en/` EN) статический сайт для GitHub Pages с рендером диаграмм Mermaid. |
+| **Тестирование и полигон** | `Vitest` (`tests/*.test.ts`) + `playground/` | Unit/Integration-тесты CLI и полигон `playground/` для автоматического прогона сценариев на реальных моделях ИИ (`Composer`, `Grok`). |
+
+---
+
+## 2. Архитектура репозитория `L1DDER`
+
+```
+L!DDER-REBORN/
+├── src/                        # Исходный код тонкого CLI (Deep Modules):
+│   ├── types.ts                # Типы конфигурации, манифеста скиллов и отчётов
+│   ├── assets.ts               # Загрузка двуязычных ассетов из assets/i18n/{ru,en}/ и защита Stack-файлов
+│   ├── agents.ts               # Генерация и маркерное слияние файлов для 7 ИИ-агентов (Cursor, Claude, Codex, Windsurf, Copilot, OpenCode, Cline)
+│   ├── skills-manager.ts       # Управление манифестом l1dder/skills.json и скачивание стек-скиллов
+│   ├── changelog.ts            # Проверка версий semver, вывод чейнджлога и защита от BREAKING CHANGES
+│   ├── installer.ts            # Операции init, update/sync (включая skills-only) и doctor
+│   └── cli.ts                  # Парсер аргументов и точка входа CLI
+├── assets/
+│   ├── releases.json           # Машиночитаемый реестр релизов и BREAKING CHANGES (RU + EN)
+│   └── i18n/{ru,en}/           # Эталонные шаблоны, правила, 20 скиллов и документация
+├── l1dder/                     # Догфудинг-инстанс методологии самого проекта L1DDER
+├── docs/                       # Догфудинг-документация самого проекта L1DDER (concept/, ideas.md, backlog.md, roadmap.md, specs/, sprints/)
+├── playground/                 # Изолированный полигон для автотестирования методологии на моделях (Composer, Grok)
+├── site/                       # Исходники сайта документации VitePress (RU + EN)
+└── tests/                      # Автотесты CLI, мульти-агентной генерации, skills.json и BREAKING CHANGES
+```
+
+---
+
+## 3. Makefile проекта и цикл `Edit → Sanitize → Verify`
+
+```makefile
+make dev            # npm run docs:dev (локальный сервер сайта документации)
+make build          # npm run build (сборка dist/cli.js + синхронизация l1dder/ и site/)
+make lint           # npm run typecheck (проверка типов tsc --noEmit)
+make typecheck      # npm run typecheck
+make test           # npm test (vitest run)
+make test-e2e       # npm run docs:build (полная сборка сайта VitePress)
+make doctor         # node dist/cli.js doctor (проверка целостности l1dder/ и docs/)
+make ci             # typecheck + build + test + test-e2e + doctor
+```
+
+---
+
+## 4. Git-флоу репозитория (`dev` → `main`)
+
+- **`dev` (рабочий транк):** вся ежедневная разработка и догфудинг спринтов ведутся в ветке `dev` (на каждый пуш запускается `.github/workflows/ci.yml`).
+- **`main` (релизная ветка):** отражает текущую опубликованную версию пакета. При слиянии `dev → main` и пуше тега `vX.Y.Z`:
+  - `.github/workflows/docs.yml` автоматически деплоит сайт документации на GitHub Pages (`https://ledvanoff.github.io/l1dder/`);
+  - `.github/workflows/publish.yml` автоматически публикует `l1dder` в npm через OIDC Trusted Publishing.

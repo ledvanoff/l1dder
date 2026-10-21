@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "language": "ru",
+  "rootDir": "l1dder",
+  "agents": [
+    "cursor",
+    "claude",
+    "codex"
+  ]
+}

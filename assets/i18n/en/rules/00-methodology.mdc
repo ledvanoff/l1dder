@@ -1,0 +1,53 @@
+---
+description: L1DDER — methodology entry point. Defines the strict end-to-end ID standard, directory structure, and step-by-step skill routing for all AI models and agents.
+alwaysApply: true
+---
+# L1DDER — Entry Point & ID Standard
+
+This repository uses the **L1DDER** methodology (Spec-Driven & Roadmap-Gated AI Development).
+Rules are written as explicit step-by-step instructions. **Do not skip steps, do not invent custom ID formats, and never modify files before receiving an explicit `"ok"` from the user.**
+
+---
+
+## 1. End-to-End ID Standard (`ID = Folder Name / Anchor`)
+
+Every entity has a strict ID format. **Every child document must store all parent IDs up to `IDEA-NNN` in its "Entity ID Passport" table at the top of the file:**
+
+| Entity | Exact ID Format | Where It Lives (Path / Anchor) | Required Parent IDs Inside |
+|--------|-----------------|--------------------------------|----------------------------|
+| **Idea** | `IDEA-001` | `docs/ideas.md` (anchor `#idea-001`) | Lists linked `FEAT-NNN` |
+| **Feature & Spec** | `FEAT-001` | `docs/backlog.md` (`#feat-001`) + `docs/specs/FEAT-001-<slug>/` | `IDEA-001` |
+| **Spec Step (pre-sprint)** | `FEAT-001.01`, ..., `FEAT-001.99` | `docs/specs/FEAT-001-<slug>/tasks.md` & `docs/backlog.md` | `FEAT-001`, `IDEA-001` |
+| **Sprint** | `SPRINT-01` | `docs/roadmap.md` + `docs/sprints/SPRINT-01-<slug>/README.md` | `FEAT-001`, `IDEA-001` |
+| **Sprint Task** | `TASK-01.01` | `docs/sprints/SPRINT-01-<slug>/tasks/TASK-01.01-<slug>/{plan,summary}.md` | `FEAT-001.01`, `SPRINT-01`, `FEAT-001`, `IDEA-001` |
+| **Sprint Hygiene (Doctor)** | `TASK-01.99` | `docs/sprints/SPRINT-01-<slug>/tasks/TASK-01.99-doctor/{plan,summary}.md` | `FEAT-001.99`, `SPRINT-01`, `FEAT-001`, `IDEA-001` |
+| **Hotfix** | `HOTFIX-001` | `docs/backlog.md` (Section 3, `#hotfix-001`) | Optional: `FEAT-NNN` / `TASK-NN.MM` |
+| **Arch Decision (ADR)** | `ADR-0001` | `docs/adrs/ADR-0001-<slug>.md` | `IDEA-NNN`, `FEAT-NNN` |
+
+---
+
+## 2. Control Slash Commands (`/l1-*`)
+
+When the user invokes any command below, **immediately read the corresponding `SKILL.md` in `l1dder/skills/<name>/SKILL.md` and execute it step by step**:
+
+| Command | Skill File | What the Flow Does |
+|---------|------------|--------------------|
+| **`/l1-onboard`** | `l1dder/skills/l1-onboard/SKILL.md` | Configures `30-tech-stack.mdc`, `40-skills-router.mdc`, `Makefile` and initializes `docs/concept/`, `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md` |
+| **`/l1-idea`** | `l1dder/skills/l1-idea/SKILL.md` | Refines an idea → assigns `IDEA-NNN` → records in `docs/ideas.md` |
+| **`/l1-feature`** | `l1dder/skills/l1-feature/SKILL.md` | Takes `IDEA-NNN` → creates `docs/specs/FEAT-NNN-<slug>/` → slices `FEAT-NNN.01 .. FEAT-NNN.99` → updates `docs/backlog.md` |
+| **`/l1-planning`** | `l1dder/skills/l1-planning/SKILL.md` | Schedules `docs/roadmap.md` → assigns `SPRINT-NN` & `TASK-NN.01 .. TASK-NN.99` → creates `docs/sprints/SPRINT-NN-<slug>/README.md` |
+| **`/l1-task`** | `l1dder/skills/l1-task/SKILL.md` | Executes the active task `TASK-NN.MM` from `docs/roadmap.md` (and mandatory `TASK-NN.99` Doctor Checklist at sprint end) |
+| **`/l1-hotfix`** | `l1dder/skills/l1-hotfix/SKILL.md` | Fixes an urgent bug bypassing `docs/roadmap.md` (`RED → GREEN`) → logs `HOTFIX-NNN` in `docs/backlog.md` |
+| **`/l1-evo`** | `l1dder/skills/l1-evo/SKILL.md` | Evolves `L1DDER` itself following `l1dder/evolution/METHODOLOGY-RULES.md`, logs `WORKLOG-CHANGELOG.md`, updates `HANDOFF.md` |
+
+---
+
+## 3. Rules Architecture (`l1dder/rules/` — Core vs Stack)
+
+| File | Layer | Purpose |
+|------|-------|---------|
+| `00-methodology.mdc` | Core | End-to-end ID standard, `/l1-*` entry points, `docs/` layout |
+| `10-conventions.mdc` | Core | Universal engineering discipline (`ponytail`, `codebase-design`, KISS/YAGNI), secrets, Make contract, TDD, Git |
+| `20-workflow.mdc` | Core | Step-by-step instructions for all flows, status transitions, and `Roadmap Gate` |
+| `30-tech-stack.mdc` | **Stack** | Project-specific tech stack, directory layout, and `Makefile` commands |
+| `40-skills-router.mdc` | **Stack** | Skill routing table |

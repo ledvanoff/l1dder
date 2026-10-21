@@ -1,0 +1,84 @@
+---
+description: Universal Project Conventions (Core) — code philosophy (ponytail + codebase-design), domain glossary, secrets, Make contract, logging, error handling, vertical TDD at seams, Edit → Sanitize → Verify loop, Git. Language-agnostic.
+alwaysApply: true
+---
+
+# Universal Project Conventions (Core)
+
+> Specific tech stack, libraries, linters, and build commands live in `30-tech-stack.mdc`.
+
+## 1. Code Philosophy: `ponytail` (4 Mandatory Mechanics) + `codebase-design` (Deep Modules)
+
+- **Ponytail (Lazy Senior Dev Mode — active by default at `full` level):** the best code is the code never written:
+  1. **The 6-Step Decision Ladder:** take the first option that works:
+     - *(1) Does it need to exist?* Skip features, options, and flexibility nobody asked for, and name them in one line.
+     - *(2) Already in this codebase?* Reuse existing helpers/components/patterns.
+     - *(3) Standard library or platform feature?* Use the platform.
+     - *(4) Installed dependency?* Use it. Never add a dependency for a few lines.
+     - *(5) Fits in 1 readable line?* Write 1 line.
+     - *(6) Otherwise:* minimum working code. **Deletion beats addition.**
+  2. **Deliberate shortcut marker (`shortcut:`):** mark deliberate simplifications with a ceiling/trigger:
+     `// shortcut: <what we simplified>, <ceiling / trigger when to upgrade>`
+  3. **Mandatory 2-line footer (`Skipped & Risk Footer`):** end implementation/review reports with:
+     - **Ponytail skipped:** `[1 line]`
+     - **Risk:** `[1 line]`
+  4. **Never cut:** validation at trust boundaries, error handling against data loss, security, memory cleanup, and explicit user requirements.
+- **Deep Modules (`codebase-design`):** maximize useful behavior behind a small, simple public interface (`Interface`) at a clean `Seam`. Apply the **Deletion Test** (delete pass-through wrappers; 1 adapter = speculative seam, 2 adapters = real seam).
+- **Ubiquitous Language (`domain-modeling`):** use identical domain terms across `l1dder/GLOSSARY.md`, `docs/concept/`, specs, modules, and tests.
+
+---
+
+## 2. Configuration & Secrets
+
+- Pass secrets only via environment variables (`.env`).
+- **Never commit `.env`**. Commit only `.env.example` with placeholders.
+- Validate configuration at startup (`Fail fast`).
+
+---
+
+## 3. Make — Single Entry Point
+
+All project commands run via `make`:
+
+```makefile
+make dev            # start local dev environment
+make build          # build production artifact
+make lint           # run linter
+make format         # auto-format code
+make typecheck      # run type checker
+make test           # run unit / integration tests
+make ci             # lint + typecheck + test + build
+```
+
+---
+
+## 4. Error Handling & Debugging (`diagnosing-bugs`)
+
+- Never swallow errors silently (no empty `catch {}` blocks).
+- **RED Reproduction Gate (`diagnosing-bugs`):** when fixing any bug, never guess or edit application code before running a test or command that **reliably fails (`RED`) on that bug**.
+
+---
+
+## 5. Testing & Vertical TDD at Seams (`tdd`)
+
+- **Test at Pre-agreed Seams:** test observable behavior through public module interfaces, never private internals.
+- **No Tautological Assertions:** expected values must come from independent examples in the spec.
+- **Vertical Tracer-Bullet Slices:** `1 public seam → 1 failing test (RED) → minimal implementation (GREEN) → repeat`.
+- **Every bug fix requires a regression test.**
+
+---
+
+## 6. Edit → Sanitize → Verify Loop
+
+For every modified file:
+1. **Edit** — minimal complete change (`ponytail`).
+2. **Sanitize** — run linter, formatter, and typecheck.
+3. **Verify** — run tests (`make test`).
+
+---
+
+## 7. Git Conventions
+
+- Branches: `<type>/<scope>-TASK-NN.MM-<short-description>` (`feat`, `fix`, `chore`, `docs`, `refactor`).
+- Commits: `<type>(<scope>): <imperative description>`.
+- PRs include the full ID Passport (`IDEA-NNN → FEAT-NNN → SPRINT-NN → TASK-NN.MM`).

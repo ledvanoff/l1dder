@@ -1,0 +1,67 @@
+{
+  "name": "l1dder",
+  "version": "1.0.0",
+  "description": "L1DDER — Spec-Driven & Roadmap-Gated AI Development Framework (Zero Hidden State, 6 Slash Commands, Multi-Agent Installer for Cursor, Claude Code, Codex, Windsurf, Copilot, OpenCode, Cline).",
+  "keywords": [
+    "ai",
+    "aidd",
+    "spec-driven",
+    "l1dder",
+    "l1-method",
+    "cursor",
+    "claude-code",
+    "codex",
+    "windsurf",
+    "copilot",
+    "opencode",
+    "cline",
+    "workflow",
+    "developer-tools"
+  ],
+  "license": "MIT",
+  "author": "Oleg Ledvanov",
+  "homepage": "https://ledvanoff.github.io/l1dder/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ledvanoff/l1dder.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ledvanoff/l1dder/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "bin": {
+    "l1dder": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "assets",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup && node scripts/sync-root-l1dder.mjs && node scripts/sync-site-docs.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "playground:prepare": "node playground/prepare.mjs",
+    "playground:verify": "node playground/verify.mjs",
+    "docs:dev": "node scripts/sync-site-docs.mjs && vitepress dev site",
+    "docs:build": "node scripts/sync-site-docs.mjs && vitepress build site",
+    "docs:preview": "vitepress preview site"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "mermaid": "^11.4.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitepress": "^1.5.0",
+    "vitepress-plugin-mermaid": "^2.0.17",
+    "vitest": "^3.0.0"
+  }
+}

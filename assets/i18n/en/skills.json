@@ -1,0 +1,40 @@
+{
+  "description": "L1DDER Skills Manifest (package.json for AI Agent Skills). Skills in `l1dder` and `core` ship bundled out of the box; `stack` skills are configured per project during /l1-onboard and installed via `npx l1dder skills install`.",
+  "l1dder": [
+    "l1-onboard",
+    "l1-idea",
+    "l1-feature",
+    "l1-planning",
+    "l1-task",
+    "l1-hotfix",
+    "l1-evo"
+  ],
+  "core": [
+    {
+      "repo": "DietrichGebert/ponytail",
+      "bundled": true,
+      "skills": [
+        "ponytail",
+        "ponytail-review",
+        "ponytail-audit",
+        "ponytail-debt"
+      ]
+    },
+    {
+      "repo": "mattpocock/skills",
+      "bundled": true,
+      "skills": [
+        "grilling",
+        "domain-modeling",
+        "codebase-design",
+        "tdd",
+        "diagnosing-bugs",
+        "code-review",
+        "retro",
+        "prototype",
+        "writing-for-agents"
+      ]
+    }
+  ],
+  "stack": []
+}

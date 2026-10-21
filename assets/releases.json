@@ -1,0 +1,38 @@
+{
+  "releases": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-21",
+      "summary": {
+        "ru": "Полный переход на архитектуру Zero Hidden State (без state.yml и блокирующих git-хуков), 6 слэш-команд /l1-*, манифест скиллов l1dder/skills.json (20 скиллов в коробке) и поддержка 7 ИИ-агентов (Cursor, Claude Code, Codex, Windsurf, Copilot, OpenCode, Cline).",
+        "en": "Complete transition to Zero Hidden State architecture (no state.yml or blocking git hooks), 6 /l1-* slash commands, l1dder/skills.json manifest (20 bundled skills), and support for 7 AI agents (Cursor, Claude Code, Codex, Windsurf, Copilot, OpenCode, Cline)."
+      },
+      "changes": {
+        "ru": [
+          "Добавлены 7 управляющих скиллов: /l1-onboard, /l1-idea, /l1-feature, /l1-planning, /l1-task, /l1-hotfix, /l1-evo.",
+          "В коробку вшиты 13 инженерных скиллов из DietrichGebert/ponytail и mattpocock/skills (управляются через l1dder/skills.json).",
+          "Добавлена поддержка установки и обновления для Cursor, Claude Code, OpenAI Codex, Windsurf, GitHub Copilot, OpenCode и Cline.",
+          "Добавлены команды npx l1dder update, npx l1dder update --skills и npx l1dder skills [list|add|install|update]."
+        ],
+        "en": [
+          "Added 7 workflow control skills: /l1-onboard, /l1-idea, /l1-feature, /l1-planning, /l1-task, /l1-hotfix, /l1-evo.",
+          "Bundled 13 core engineering skills from DietrichGebert/ponytail and mattpocock/skills (managed via l1dder/skills.json).",
+          "Added multi-agent installer & updater for Cursor, Claude Code, OpenAI Codex, Windsurf, GitHub Copilot, OpenCode, and Cline.",
+          "Added npx l1dder update, npx l1dder update --skills, and npx l1dder skills [list|add|install|update]."
+        ]
+      },
+      "breaking": {
+        "ru": [
+          "Удалена скрытая стейт-машина l1dder/.framework/state.yml и блокирующий git-хук commit-msg. Единственный источник истины теперь — Markdown-файлы в docs/ (docs/ideas.md, docs/backlog.md, docs/roadmap.md).",
+          "Старые слэш-команды /l1dder-* заменены на единую линейку /l1-onboard, /l1-idea, /l1-feature, /l1-planning, /l1-task, /l1-hotfix, /l1-evo.",
+          "Артефакты проекта (концепт, идеи, бэклог, роадмап, спеки и спринты) теперь хранятся в папке docs/, а сам фреймворк, правила и скиллы — в папке l1dder/."
+        ],
+        "en": [
+          "Removed hidden state machine l1dder/.framework/state.yml and blocking commit-msg git hook. Markdown files in docs/ (docs/ideas.md, docs/backlog.md, docs/roadmap.md) are now the single source of truth.",
+          "Replaced legacy /l1dder-* slash commands with /l1-onboard, /l1-idea, /l1-feature, /l1-planning, /l1-task, /l1-hotfix, /l1-evo.",
+          "Project artifacts (concept, ideas, backlog, roadmap, specs, sprints) now live in docs/, while framework rules, templates, and skills live in l1dder/."
+        ]
+      }
+    }
+  ]
+}
