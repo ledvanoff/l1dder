@@ -4,6 +4,15 @@
 
 ---
 
+## [1.0.1] — 2026-10-21
+
+### Fixed (Хотфиксы `HOTFIX-001` и `HOTFIX-002`)
+
+- **`HOTFIX-002` (Дедупликация скиллов и команд во всех ИИ-агентах):** Устранено дублирование слэш-команд в меню `/` при совместной установке `Cursor`, `Claude Code`, `Codex` и `OpenCode` (`resolveCanonicalSkillsDir` всегда выбирает ровно одну каноническую папку скиллов без дублей в `.claude/commands/` и `.opencode/commands/`). Добавлено автоматическое удаление устаревших команд `l1dder-*` от версий `0.2.x` при вызове `npx l1dder update` / `sync`.
+- **`HOTFIX-001` (Документация и витрина сайта):** Очищены формулировки на главной странице и в путеводителе, добавлены прямые ссылки на [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) и [mattpocock/skills](https://github.com/mattpocock/skills).
+
+---
+
 ## [1.0.0] — 2026-10-21
 
 ### ⚠️ BREAKING CHANGES (Ломающие изменения относительно 0.2.x)

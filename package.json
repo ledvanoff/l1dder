@@ -1,6 +1,6 @@
 {
   "name": "l1dder",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "L1DDER — Spec-Driven & Roadmap-Gated AI Development Framework (Zero Hidden State, 6 Slash Commands, Multi-Agent Installer for Cursor, Claude Code, Codex, Windsurf, Copilot, OpenCode, Cline).",
   "keywords": [
     "ai",

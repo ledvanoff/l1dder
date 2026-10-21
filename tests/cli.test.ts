@@ -59,58 +59,65 @@ describe("L1DDER CLI — Cursor, Claude Code & OpenAI Codex Installation", () =>
       updateGitignore: true,
     });
 
-    // Render all files for Cursor + Claude Code + Codex
+    // 1. Cursor standalone verification
+    const cursorOnly = renderAgentFilesMap({
+      projectDir: dir,
+      rootDir: "l1dder",
+      language: "ru",
+      agents: ["cursor"],
+    });
+    expect(cursorOnly.has("AGENTS.md")).toBe(true);
+    expect(cursorOnly.has(".cursor/rules/l1dder/00-methodology.mdc")).toBe(true);
+    expect(cursorOnly.has(".cursor/rules/l1dder/10-conventions.mdc")).toBe(true);
+    expect(cursorOnly.has(".cursor/rules/l1dder/20-workflow.mdc")).toBe(true);
+    expect(cursorOnly.has(".cursor/rules/l1dder/30-tech-stack.mdc")).toBe(true);
+    expect(cursorOnly.has(".cursor/rules/l1dder/40-skills-router.mdc")).toBe(true);
+    expect(cursorOnly.get(".cursor/rules/l1dder/00-methodology.mdc")).toContain("alwaysApply: true");
+    expect(cursorOnly.has(".cursor/skills/l1-onboard/SKILL.md")).toBe(true);
+    expect(cursorOnly.has(".cursor/skills/l1-task/SKILL.md")).toBe(true);
+    expect(cursorOnly.has(".cursor/skills/ponytail/SKILL.md")).toBe(true);
+    expect(cursorOnly.has(".cursor/skills/grilling/SKILL.md")).toBe(true);
+    expect(cursorOnly.has(".cursor/skills/codebase-design/DEEPENING.md")).toBe(true);
+    expect(cursorOnly.has(".cursor/skills/tdd/tests.md")).toBe(true);
+
+    // 2. Claude Code standalone verification (no duplicate .claude/commands)
+    const claudeOnly = renderAgentFilesMap({
+      projectDir: dir,
+      rootDir: "l1dder",
+      language: "ru",
+      agents: ["claude"],
+    });
+    expect(claudeOnly.has("CLAUDE.md")).toBe(true);
+    expect(claudeOnly.get("CLAUDE.md")).toContain("/l1-onboard");
+    expect(claudeOnly.has(".claude/rules/l1dder/00-methodology.md")).toBe(true);
+    expect(claudeOnly.has(".claude/rules/l1dder/30-tech-stack.md")).toBe(true);
+    expect(claudeOnly.has(".claude/skills/l1-onboard/SKILL.md")).toBe(true);
+    expect(claudeOnly.has(".claude/skills/codebase-design/DEEPENING.md")).toBe(true);
+    expect(claudeOnly.has(".claude/commands/l1-onboard.md")).toBe(false);
+
+    const ponytailSkill = claudeOnly.get(".claude/skills/ponytail/SKILL.md") ?? "";
+    const parsedPonytail = parseFrontmatter(ponytailSkill);
+    expect(parsedPonytail.data["description"]?.length).toBeGreaterThan(20);
+
+    // 3. Combined Cursor + Claude + Codex verification (deduplicated into .agents/skills)
     const rendered = renderAgentFilesMap({
       projectDir: dir,
       rootDir: "l1dder",
       language: "ru",
       agents: ["cursor", "claude", "codex"],
     });
-
-    // 1. Cursor verification
-    expect(rendered.has("AGENTS.md")).toBe(true);
-    expect(rendered.has(".cursor/rules/l1dder/00-methodology.mdc")).toBe(true);
-    expect(rendered.has(".cursor/rules/l1dder/10-conventions.mdc")).toBe(true);
-    expect(rendered.has(".cursor/rules/l1dder/20-workflow.mdc")).toBe(true);
-    expect(rendered.has(".cursor/rules/l1dder/30-tech-stack.mdc")).toBe(true);
-    expect(rendered.has(".cursor/rules/l1dder/40-skills-router.mdc")).toBe(true);
-    expect(rendered.get(".cursor/rules/l1dder/00-methodology.mdc")).toContain("alwaysApply: true");
-    expect(rendered.has(".cursor/skills/l1-onboard/SKILL.md")).toBe(true);
-    expect(rendered.has(".cursor/skills/l1-task/SKILL.md")).toBe(true);
-    expect(rendered.has(".cursor/skills/ponytail/SKILL.md")).toBe(true);
-    expect(rendered.has(".cursor/skills/grilling/SKILL.md")).toBe(true);
-    expect(rendered.has(".cursor/skills/codebase-design/DEEPENING.md")).toBe(true);
-    expect(rendered.has(".cursor/skills/tdd/tests.md")).toBe(true);
-
-    // 2. Claude Code verification
-    expect(rendered.has("CLAUDE.md")).toBe(true);
-    expect(rendered.get("CLAUDE.md")).toContain("/l1-onboard");
-    expect(rendered.has(".claude/rules/l1dder/00-methodology.md")).toBe(true);
-    expect(rendered.has(".claude/rules/l1dder/30-tech-stack.md")).toBe(true);
-    expect(rendered.has(".claude/skills/l1-onboard/SKILL.md")).toBe(true);
-    expect(rendered.has(".claude/skills/codebase-design/DEEPENING.md")).toBe(true);
-    expect(rendered.has(".claude/commands/l1-onboard.md")).toBe(true);
-    expect(rendered.has(".claude/commands/l1-idea.md")).toBe(true);
-    expect(rendered.has(".claude/commands/l1-feature.md")).toBe(true);
-    expect(rendered.has(".claude/commands/l1-planning.md")).toBe(true);
-    expect(rendered.has(".claude/commands/l1-task.md")).toBe(true);
-    expect(rendered.has(".claude/commands/l1-hotfix.md")).toBe(true);
-    expect(rendered.has(".claude/commands/l1-evo.md")).toBe(true);
-    expect(rendered.has(".claude/commands/ponytail.md")).toBe(true);
-
-    // Verify frontmatter descriptions in Claude commands are non-empty
-    const ponytailCmd = rendered.get(".claude/commands/ponytail.md") ?? "";
-    const parsedPonytail = parseFrontmatter(ponytailCmd);
-    expect(parsedPonytail.data["description"]?.length).toBeGreaterThan(20);
-
-    // 3. OpenAI Codex verification
     expect(rendered.get("AGENTS.md")).toContain("$l1-onboard");
+    expect(rendered.has(".cursor/rules/l1dder/00-methodology.mdc")).toBe(true);
+    expect(rendered.has(".claude/rules/l1dder/00-methodology.md")).toBe(true);
     expect(rendered.has(".agents/skills/l1-onboard/SKILL.md")).toBe(true);
     expect(rendered.has(".agents/skills/l1-task/SKILL.md")).toBe(true);
     expect(rendered.has(".agents/skills/grilling/SKILL.md")).toBe(true);
     expect(rendered.has(".agents/skills/codebase-design/SKILL.md")).toBe(true);
     expect(rendered.has(".agents/skills/codebase-design/DESIGN-IT-TWICE.md")).toBe(true);
     expect(rendered.has(".agents/skills/domain-modeling/GLOSSARY-FORMAT.md")).toBe(true);
+    // Must not duplicate skills into .cursor/skills or .claude/skills when .agents/skills is active
+    expect(rendered.has(".cursor/skills/l1-onboard/SKILL.md")).toBe(false);
+    expect(rendered.has(".claude/skills/l1-onboard/SKILL.md")).toBe(false);
   });
 
   it("installs RU methodology into l1dder/, bundles all 20 skills (including mattpocock/skills + companions), and configures agents", async () => {
@@ -142,7 +149,7 @@ describe("L1DDER CLI — Cursor, Claude Code & OpenAI Codex Installation", () =>
     expect(existsSync(join(dir, ".agents/skills/codebase-design/DEEPENING.md"))).toBe(true);
     expect(existsSync(join(dir, ".windsurf/rules/l1dder.md"))).toBe(true);
     expect(existsSync(join(dir, ".windsurf/workflows/l1-onboard.md"))).toBe(true);
-    expect(existsSync(join(dir, ".opencode/commands/l1-planning.md"))).toBe(true);
+    expect(existsSync(join(dir, ".opencode/commands/l1-planning.md"))).toBe(false);
     expect(existsSync(join(dir, ".clinerules/l1dder.md"))).toBe(true);
     expect(existsSync(join(dir, ".roo/rules/l1dder.md"))).toBe(true);
 
@@ -422,6 +429,47 @@ describe("L1DDER CLI — Cursor, Claude Code & OpenAI Codex Installation", () =>
     for (const content of [siteRu, siteEn, rootReadme]) {
       expect(content).toContain("https://github.com/DietrichGebert/ponytail");
       expect(content).toContain("https://github.com/mattpocock/skills");
+    }
+  });
+
+  it("HOTFIX-002 regression: never generates duplicate skill/command folders across agents and prunes stale duplicate directories on sync", () => {
+    const dir = makeTempDir();
+    // Simulate legacy duplicate directories present in a project
+    mkdirSync(join(dir, ".claude/commands"), { recursive: true });
+    writeFileSync(join(dir, ".claude/commands/l1-task.md"), "legacy duplicate", "utf-8");
+    mkdirSync(join(dir, ".opencode/commands"), { recursive: true });
+    writeFileSync(join(dir, ".opencode/commands/l1-task.md"), "legacy duplicate", "utf-8");
+
+    runProjectSync({
+      projectDir: dir,
+      rootDir: "l1dder",
+      language: "ru",
+      agents: ["codex", "opencode"],
+      force: false,
+      updateGitignore: true,
+    });
+
+    // Legacy duplicate command folders must be pruned
+    expect(existsSync(join(dir, ".claude/commands"))).toBe(false);
+    expect(existsSync(join(dir, ".opencode/commands"))).toBe(false);
+
+    // Check rendered maps for cursor, claude, codex, cursor+codex, cursor+claude
+    for (const combo of [
+      ["cursor"],
+      ["claude"],
+      ["codex"],
+      ["opencode"],
+      ["cursor", "codex"],
+      ["cursor", "claude"],
+    ] as const) {
+      const map = renderAgentFilesMap({
+        projectDir: dir,
+        rootDir: "l1dder",
+        language: "ru",
+        agents: combo,
+      });
+      const l1TaskEntries = [...map.keys()].filter((k) => k.includes("l1-task"));
+      expect(l1TaskEntries.length).toBe(1);
     }
   });
 });

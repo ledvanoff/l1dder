@@ -144,9 +144,13 @@ for (const modelName of MODELS) {
     "utf-8",
   );
 
+  // Simulate pre-existing duplicate folders before init/sync to test pruning in playground too
+  mkdirSync(join(boxDir, ".claude", "commands"), { recursive: true });
+  writeFileSync(join(boxDir, ".claude", "commands", "l1-task.md"), "duplicate", "utf-8");
+
   execFileSync(
     process.execPath,
-    [cliDist, "init", "--cwd", boxDir, "--lang", "ru", "--agents", "codex", "--yes"],
+    [cliDist, "init", "--cwd", boxDir, "--lang", "ru", "--agents", "cursor,claude,codex", "--yes"],
     { stdio: "pipe" },
   );
 

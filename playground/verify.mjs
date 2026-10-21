@@ -222,6 +222,21 @@ function verifySandbox(modelName) {
     "Cascading closure (TASK-01.99 ✅ -> SPRINT-01 ✅ -> FEAT-001 ✅ -> IDEA-001 ✅) verified across all trackers",
   );
 
+  // 15. Zero duplicate skill/command folders across all agents (HOTFIX-002 check)
+  const candidateSkillDirs = [
+    ".cursor/skills",
+    ".claude/skills",
+    ".claude/commands",
+    ".agents/skills",
+    ".opencode/commands",
+  ];
+  const existingSkillDirs = candidateSkillDirs.filter((rel) => existsSync(join(boxDir, rel)));
+  check(
+    "15-no-duplicate-skills",
+    existingSkillDirs.length === 1 && existingSkillDirs[0] === ".agents/skills",
+    `Strictly 1 canonical skill directory exists with 0 duplicates (found: ${existingSkillDirs.join(", ") || "none"})`,
+  );
+
   return {
     modelName,
     ok: checks.every((c) => c.ok),

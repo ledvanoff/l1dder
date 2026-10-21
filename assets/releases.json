@@ -1,6 +1,28 @@
 {
   "releases": [
     {
+      "version": "1.0.1",
+      "date": "2026-10-21",
+      "summary": {
+        "ru": "Хотфикс дедупликации скиллов между ИИ-агентами (HOTFIX-002) и улучшение текстов документации (HOTFIX-001).",
+        "en": "Skill deduplication hotfix across AI agents (HOTFIX-002) and documentation copy refinements (HOTFIX-001)."
+      },
+      "changes": {
+        "ru": [
+          "HOTFIX-002: Полностью устранено дублирование слэш-команд в меню `/` при совместной установке нескольких агентов (Cursor, Claude Code, Codex, OpenCode) и добавлена автоочистка старых команд v0.2.x (l1dder-*).",
+          "HOTFIX-001: Обновлены формулировки на сайте документации и проставлены прямые ссылки на DietrichGebert/ponytail и mattpocock/skills."
+        ],
+        "en": [
+          "HOTFIX-002: Eliminated duplicate slash commands in the `/` menu when multiple agents (Cursor, Claude Code, Codex, OpenCode) are enabled, and added automatic pruning of legacy v0.2.x commands (`l1dder-*`).",
+          "HOTFIX-001: Refined documentation site copy and added direct links to DietrichGebert/ponytail and mattpocock/skills."
+        ]
+      },
+      "breaking": {
+        "ru": [],
+        "en": []
+      }
+    },
+    {
       "version": "1.0.0",
       "date": "2026-10-21",
       "summary": {

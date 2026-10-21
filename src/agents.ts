@@ -1,4 +1,12 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join } from "node:path";
 
 import type { AgentId, Language } from "./types.js";
@@ -10,9 +18,7 @@ export type AgentSyncScope = "all" | "skills-only";
 
 /**
  * Skills that are explicitly invoked by the human via `/command` in chat
- * (used for `.claude/commands/`, `.windsurf/workflows/`, `.github/prompts/`, `.opencode/commands/`).
- * All 20+ skills (both user-invoked and model-invoked) are always installed into
- * `.cursor/skills/`, `.claude/skills/`, and `.agents/skills/`.
+ * (used for Windsurf `.windsurf/workflows/` and GitHub Copilot `.github/prompts/`).
  */
 const USER_INVOKED_COMMAND_SKILLS: ReadonlySet<string> = new Set([
   "l1-onboard",
@@ -28,6 +34,26 @@ const USER_INVOKED_COMMAND_SKILLS: ReadonlySet<string> = new Set([
   "ponytail-debt",
   "retro",
 ]);
+
+/**
+ * Legacy v0.2.x command/skill names that must be pruned on sync/update so they
+ * never pollute the editor `/` menu.
+ */
+const LEGACY_V02_SKILL_NAMES: readonly string[] = [
+  "l1dder",
+  "l1dder-feature",
+  "l1dder-task",
+  "l1dder-sprint",
+  "l1dder-hotfix",
+  "l1dder-stuck",
+  "l1dder-done",
+];
+
+const ALL_SKILL_DIRS: readonly string[] = [
+  ".cursor/skills",
+  ".claude/skills",
+  ".agents/skills",
+];
 
 export interface ParsedFrontmatter {
   readonly data: Readonly<Record<string, string>>;
@@ -264,6 +290,29 @@ export function buildEntryPointSummary(lang: Language, rootDir: string): string 
   ].join("\n");
 }
 
+/**
+ * Resolve AT MOST ONE canonical `skills/` directory for the selected agents so
+ * editors that scan multiple folders (like Cursor, which scans `.cursor/skills`,
+ * `.claude/skills`, and `.agents/skills`) NEVER show duplicate slash commands:
+ *
+ * - If `codex` or `opencode` is enabled → `.agents/skills` (read natively by Codex, OpenCode, and Cursor).
+ * - Else if `claude` is enabled → `.claude/skills` (read natively by Claude Code and Cursor).
+ * - Else if `cursor` is enabled → `.cursor/skills` (read natively by Cursor).
+ * - Else → `null` (Windsurf/Copilot/Cline use their own folders).
+ */
+export function resolveCanonicalSkillsDir(selected: ReadonlySet<AgentId>): string | null {
+  if (selected.has("codex") || selected.has("opencode")) {
+    return ".agents/skills";
+  }
+  if (selected.has("claude")) {
+    return ".claude/skills";
+  }
+  if (selected.has("cursor")) {
+    return ".cursor/skills";
+  }
+  return null;
+}
+
 function addSkillFolderToMap(
   outMap: Map<string, string>,
   baseSkillsDir: string,
@@ -293,8 +342,8 @@ function addMergedMarkerFileToMap(
 
 /**
  * Pure computation of agent files (`relPath -> content`) for the selected AI agents.
- * When `scope` is `"skills-only"`, only skill and command files are emitted (leaving
- * rules and root `AGENTS.md` / `CLAUDE.md` untouched).
+ * Guarantees zero duplicate skill/command definitions across `.cursor/`, `.claude/`,
+ * `.agents/`, and `.opencode/`.
  */
 export function renderAgentFilesMap(options: {
   readonly projectDir: string;
@@ -327,51 +376,32 @@ export function renderAgentFilesMap(options: {
     addMergedMarkerFileToMap(projectDir, outMap, "AGENTS.md", entrySummary);
   }
 
-  // 2. Cursor (.cursor/rules/l1dder/*.mdc + .cursor/skills/<skill>/*)
-  if (selected.has("cursor")) {
-    if (includeRules) {
-      for (const rule of rules) {
-        const text = rule.rawContent.endsWith("\n") ? rule.rawContent : `${rule.rawContent}\n`;
-        outMap.set(`.cursor/rules/l1dder/${rule.fileName}`, text);
-      }
+  // 2. Cursor rules (.cursor/rules/l1dder/*.mdc)
+  if (selected.has("cursor") && includeRules) {
+    for (const rule of rules) {
+      const text = rule.rawContent.endsWith("\n") ? rule.rawContent : `${rule.rawContent}\n`;
+      outMap.set(`.cursor/rules/l1dder/${rule.fileName}`, text);
     }
+  }
+
+  // 3. Claude Code rules (CLAUDE.md + .claude/rules/l1dder/*.md)
+  if (selected.has("claude") && includeRules) {
+    addMergedMarkerFileToMap(projectDir, outMap, "CLAUDE.md", entrySummary);
+    for (const rule of rules) {
+      const text = rule.body.endsWith("\n") ? rule.body : `${rule.body}\n`;
+      outMap.set(`.claude/rules/l1dder/${rule.baseName}.md`, text);
+    }
+  }
+
+  // 4. Single deduplicated skills folder for Cursor / Claude Code / Codex / OpenCode
+  const canonicalSkillsDir = resolveCanonicalSkillsDir(selected);
+  if (canonicalSkillsDir !== null) {
     for (const skill of skills) {
-      addSkillFolderToMap(outMap, ".cursor/skills", skill);
+      addSkillFolderToMap(outMap, canonicalSkillsDir, skill);
     }
   }
 
-  // 3. Claude Code (CLAUDE.md + .claude/rules/l1dder/*.md + .claude/skills/<skill>/* + .claude/commands/<cmd>.md)
-  if (selected.has("claude")) {
-    if (includeRules) {
-      addMergedMarkerFileToMap(projectDir, outMap, "CLAUDE.md", entrySummary);
-      for (const rule of rules) {
-        const text = rule.body.endsWith("\n") ? rule.body : `${rule.body}\n`;
-        outMap.set(`.claude/rules/l1dder/${rule.baseName}.md`, text);
-      }
-    }
-    for (const skill of skills) {
-      addSkillFolderToMap(outMap, ".claude/skills", skill);
-    }
-    for (const skill of commandSkills) {
-      outMap.set(`.claude/commands/${skill.name}.md`, renderCommandMarkdown(skill, true));
-    }
-  }
-
-  // 4. OpenAI Codex & OpenCode (.agents/skills/<skill>/*)
-  if (selected.has("codex") || selected.has("opencode")) {
-    for (const skill of skills) {
-      addSkillFolderToMap(outMap, ".agents/skills", skill);
-    }
-  }
-
-  // 5. OpenCode (.opencode/commands/<cmd>.md)
-  if (selected.has("opencode")) {
-    for (const skill of commandSkills) {
-      outMap.set(`.opencode/commands/${skill.name}.md`, renderCommandMarkdown(skill, false));
-    }
-  }
-
-  // 6. Windsurf (.windsurf/rules/l1dder.md + .windsurf/workflows/<cmd>.md)
+  // 5. Windsurf (.windsurf/rules/l1dder.md + .windsurf/workflows/<cmd>.md)
   if (selected.has("windsurf")) {
     if (includeRules) {
       outMap.set(".windsurf/rules/l1dder.md", combinedRulesDoc);
@@ -382,7 +412,7 @@ export function renderAgentFilesMap(options: {
     }
   }
 
-  // 7. GitHub Copilot (.github/copilot-instructions.md + .github/prompts/<cmd>.prompt.md)
+  // 6. GitHub Copilot (.github/copilot-instructions.md + .github/prompts/<cmd>.prompt.md)
   if (selected.has("copilot")) {
     if (includeRules) {
       addMergedMarkerFileToMap(projectDir, outMap, ".github/copilot-instructions.md", entrySummary);
@@ -393,13 +423,75 @@ export function renderAgentFilesMap(options: {
     }
   }
 
-  // 8. Cline & Roo Code (.clinerules/l1dder.md + .roo/rules/l1dder.md)
+  // 7. Cline & Roo Code (.clinerules/l1dder.md + .roo/rules/l1dder.md)
   if (selected.has("cline") && includeRules) {
     outMap.set(".clinerules/l1dder.md", combinedRulesDoc);
     outMap.set(".roo/rules/l1dder.md", combinedRulesDoc);
   }
 
   return outMap;
+}
+
+/**
+ * Remove duplicate skill folders and legacy `.claude/commands` / `.opencode/commands`
+ * so no agent ever displays duplicate slash commands.
+ */
+function pruneDuplicateAndLegacySkillFiles(
+  projectDir: string,
+  managedSkillNames: readonly string[],
+  activeSkillsDir: string | null,
+): void {
+  // 1. Remove legacy .claude/commands and .opencode/commands directories
+  for (const legacyCmdDir of [".claude/commands", ".opencode/commands"]) {
+    const absCmdDir = join(projectDir, legacyCmdDir);
+    if (!existsSync(absCmdDir)) continue;
+    for (const name of [...managedSkillNames, ...LEGACY_V02_SKILL_NAMES]) {
+      const file = join(absCmdDir, `${name}.md`);
+      if (existsSync(file)) {
+        rmSync(file, { force: true });
+      }
+    }
+    removeDirIfEmpty(absCmdDir);
+    removeDirIfEmpty(dirname(absCmdDir));
+  }
+
+  // 2. Remove legacy v0.2 skill folders from all skill directories, and remove managed
+  //    skills from non-active skill directories so only `activeSkillsDir` has them.
+  for (const skillDir of ALL_SKILL_DIRS) {
+    const absSkillDir = join(projectDir, skillDir);
+    if (!existsSync(absSkillDir)) continue;
+
+    for (const legacyName of LEGACY_V02_SKILL_NAMES) {
+      const legacyFolder = join(absSkillDir, legacyName);
+      if (existsSync(legacyFolder)) {
+        rmSync(legacyFolder, { recursive: true, force: true });
+      }
+    }
+
+    if (skillDir !== activeSkillsDir) {
+      for (const skillName of managedSkillNames) {
+        const dupFolder = join(absSkillDir, skillName);
+        if (existsSync(dupFolder)) {
+          rmSync(dupFolder, { recursive: true, force: true });
+        }
+      }
+    }
+
+    removeDirIfEmpty(absSkillDir);
+    removeDirIfEmpty(dirname(absSkillDir));
+  }
+}
+
+function removeDirIfEmpty(absDir: string): void {
+  try {
+    if (!existsSync(absDir) || !statSync(absDir).isDirectory()) return;
+    const entries = readdirSync(absDir).filter((e) => e !== ".DS_Store");
+    if (entries.length === 0) {
+      rmSync(absDir, { recursive: true, force: true });
+    }
+  } catch {
+    // Ignore permission errors on protected parent dirs
+  }
 }
 
 /**
@@ -413,7 +505,16 @@ export function syncAgentIntegrations(options: {
   readonly agents: readonly AgentId[];
   readonly scope?: AgentSyncScope | undefined;
 }): readonly string[] {
-  const { projectDir } = options;
+  const { projectDir, rootDir, agents } = options;
+  const { skills } = loadProjectRulesAndSkills(projectDir, rootDir);
+  const activeSkillsDir = resolveCanonicalSkillsDir(new Set(agents));
+
+  pruneDuplicateAndLegacySkillFiles(
+    projectDir,
+    skills.map((s) => s.name),
+    activeSkillsDir,
+  );
+
   const rendered = renderAgentFilesMap(options);
   const written: string[] = [];
 
@@ -433,13 +534,4 @@ function buildCombinedRulesMarkdown(entrySummary: string, rules: readonly RuleDo
     sections.push(`\n---\n\n${rule.body.trim()}`);
   }
   return `${sections.join("\n")}\n`;
-}
-
-function renderCommandMarkdown(skill: SkillDoc, includeArgumentHint: boolean): string {
-  const fmLines = [`description: ${JSON.stringify(skill.description)}`];
-  if (includeArgumentHint && skill.argumentHint) {
-    fmLines.push(`argument-hint: ${JSON.stringify(skill.argumentHint)}`);
-  }
-  const suffix = skill.argumentHint ? "\nArgument: $ARGUMENTS\n" : "";
-  return `---\n${fmLines.join("\n")}\n---\n\n${skill.body.trim()}\n${suffix}`;
 }
