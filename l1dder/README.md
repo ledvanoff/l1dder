@@ -2,7 +2,7 @@
 
 Самодостаточный методологический пакет **L1DDER** для итеративной AI-driven / Spec-driven разработки с ИИ-агентами (**Cursor, Claude Code, OpenAI Codex, Windsurf, GitHub Copilot, OpenCode, Cline**).
 
-Никаких скрытых стейт-машин (`state.yml`) и хрупких блокировок: **сами Markdown-документы в `docs/` с паспортами сквозных ID являются единственным источником истины**.
+**Сами Markdown-документы в `docs/` со сквозной связью сущностей по ID (`ID Passport`) являются единственным источником истины.**
 
 ---
 
@@ -82,7 +82,7 @@ npx l1dder init --lang ru --agents cursor,claude --yes
 
 ## Справочник CLI-команд и манифест `l1dder/skills.json`
 
-В коробку `l1dder/` уже вшиты **20 скиллов** (7 управляющих `/l1-*` + 4 скилла `DietrichGebert/ponytail` + 9 инженерных скиллов `mattpocock/skills`: `grilling`, `domain-modeling`, `codebase-design`, `tdd`, `diagnosing-bugs`, `code-review`, `retro`, `prototype`, `writing-for-agents`), которые описаны в манифесте **`l1dder/skills.json`**.
+В коробку `l1dder/` уже вшиты **20 скиллов** (7 управляющих `/l1-*` + 4 скилла **[DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)** + 9 инженерных скиллов **[mattpocock/skills](https://github.com/mattpocock/skills)**: `grilling`, `domain-modeling`, `codebase-design`, `tdd`, `diagnosing-bugs`, `code-review`, `retro`, `prototype`, `writing-for-agents`), которые описаны в манифесте **`l1dder/skills.json`**.
 
 | Команда в терминале | Что делает |
 |---------------------|-----------|

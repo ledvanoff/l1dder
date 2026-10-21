@@ -102,8 +102,8 @@ npx l1dder skills update
 
 1. **`l1dder` (7 управляющих скиллов процесса):** собственные слэш-команды фреймворка (`/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-hotfix`, `/l1-evo`).
 2. **`core` (13 базовых инженерных дисциплин — уже в коробке `bundled: true`):**
-   - `DietrichGebert/ponytail`: `ponytail`, `ponytail-review`, `ponytail-audit`, `ponytail-debt`.
-   - `mattpocock/skills` (`Model-invoked` дисциплины): `grilling`, `domain-modeling`, `codebase-design`, `tdd`, `diagnosing-bugs`, `code-review`, `retro`, `prototype`, `writing-for-agents` (вместе со всеми их вспомогательными файлами `DEEPENING.md`, `DESIGN-IT-TWICE.md`, `tests.md`, `mocking.md`, `LOGIC.md`, `UI.md`, `GLOSSARY-FORMAT.md`, `ADR-FORMAT.md`).
+   - **[DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)**: `ponytail`, `ponytail-review`, `ponytail-audit`, `ponytail-debt`.
+   - **[mattpocock/skills](https://github.com/mattpocock/skills)** (`Model-invoked` дисциплины): `grilling`, `domain-modeling`, `codebase-design`, `tdd`, `diagnosing-bugs`, `code-review`, `retro`, `prototype`, `writing-for-agents` (вместе со всеми их вспомогательными файлами `DEEPENING.md`, `DESIGN-IT-TWICE.md`, `tests.md`, `mocking.md`, `LOGIC.md`, `UI.md`, `GLOSSARY-FORMAT.md`, `ADR-FORMAT.md`).
    - Благодаря гибридному подходу (`bundled: true`) они **уже лежат внутри npm-пакета `l1dder`** и устанавливаются за долю секунды без интернета и VPN, но при желании легко обновляются из апстрима командой `npx l1dder skills update`.
 3. **`stack` (скиллы под конкретный стек проекта):** настраиваются во время `/l1-onboard` (или командой `npx l1dder skills add <repo> --skill <name>`), сохраняются в `l1dder/skills.json` и не затираются при `npx l1dder sync`.
 

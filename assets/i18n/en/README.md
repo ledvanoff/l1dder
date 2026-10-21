@@ -2,7 +2,7 @@
 
 Self-contained **L1DDER** methodology package for iterative AI-driven / Spec-driven development with AI coding agents (**Cursor, Claude Code, OpenAI Codex, Windsurf, GitHub Copilot, OpenCode, Cline**).
 
-Zero hidden state machines (`state.yml`) and zero brittle hooks: **your Markdown documents in `docs/` with traceable ID Passports are the single source of truth**.
+**Your Markdown documents in `docs/` with end-to-end linked ID Passports are the single source of truth.**
 
 ---
 
@@ -82,7 +82,7 @@ Start with **[`user-guide/`](user-guide/README.md)**:
 
 ## Terminal CLI Commands & Skills Manifest (`l1dder/skills.json`)
 
-`l1dder/` ships with **20 bundled skills** out of the box (7 `/l1-*` workflow skills + 4 `DietrichGebert/ponytail` skills + 9 `mattpocock/skills` engineering skills: `grilling`, `domain-modeling`, `codebase-design`, `tdd`, `diagnosing-bugs`, `code-review`, `retro`, `prototype`, `writing-for-agents`), tracked in **`l1dder/skills.json`**.
+`l1dder/` ships with **20 bundled skills** out of the box (7 `/l1-*` workflow skills + 4 **[DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)** skills + 9 **[mattpocock/skills](https://github.com/mattpocock/skills)** engineering skills: `grilling`, `domain-modeling`, `codebase-design`, `tdd`, `diagnosing-bugs`, `code-review`, `retro`, `prototype`, `writing-for-agents`), tracked in **`l1dder/skills.json`**.
 
 | Command | Description |
 |---------|-------------|

@@ -101,8 +101,8 @@ Inside `l1dder/` sits **`l1dder/skills.json`**, organizing all skills into 3 cle
 
 1. **`l1dder` (7 workflow control skills):** built-in slash commands (`/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-hotfix`, `/l1-evo`).
 2. **`core` (13 core engineering skills — bundled out of the box `bundled: true`):**
-   - `DietrichGebert/ponytail`: `ponytail`, `ponytail-review`, `ponytail-audit`, `ponytail-debt`.
-   - `mattpocock/skills` (`Model-invoked` engineering primitives): `grilling`, `domain-modeling`, `codebase-design`, `tdd`, `diagnosing-bugs`, `code-review`, `retro`, `prototype`, `writing-for-agents` (along with all companion reference files `DEEPENING.md`, `DESIGN-IT-TWICE.md`, `tests.md`, `mocking.md`, `LOGIC.md`, `UI.md`, `GLOSSARY-FORMAT.md`, `ADR-FORMAT.md`).
+   - **[DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)**: `ponytail`, `ponytail-review`, `ponytail-audit`, `ponytail-debt`.
+   - **[mattpocock/skills](https://github.com/mattpocock/skills)** (`Model-invoked` engineering primitives): `grilling`, `domain-modeling`, `codebase-design`, `tdd`, `diagnosing-bugs`, `code-review`, `retro`, `prototype`, `writing-for-agents` (along with all companion reference files `DEEPENING.md`, `DESIGN-IT-TWICE.md`, `tests.md`, `mocking.md`, `LOGIC.md`, `UI.md`, `GLOSSARY-FORMAT.md`, `ADR-FORMAT.md`).
    - Because they are bundled (`bundled: true`), `npx l1dder init` installs them offline in milliseconds, while `npx l1dder skills update` lets you pull fresh upstream updates from GitHub anytime.
 3. **`stack` (project stack skills):** configured during `/l1-onboard` (or via `npx l1dder skills add <repo> --skill <name>`), stored in `l1dder/skills.json`, and preserved across `npx l1dder sync`.
 

@@ -77,5 +77,5 @@ Mandatory header table in every document (`requirements.md`, `design.md`, `tasks
 
 ## Ponytail (`shortcut:`, `Skipped / Risk`) & Deep Modules (`Seams`)
 
-- **Ponytail:** 6-Step Decision Ladder, `// shortcut: <what>, <limit>` markers, and mandatory 2-line `Ponytail skipped / Risk` footer.
-- **Deep Modules (`codebase-design`) & Pre-agreed Test Seams (`tdd`):** modules hiding complex logic behind simple interfaces, tested via vertical `RED → GREEN` slices at public seams.
+- **Ponytail ([DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)):** 6-Step Decision Ladder, `// shortcut: <what>, <limit>` markers, and mandatory 2-line `Ponytail skipped / Risk` footer.
+- **Deep Modules (`codebase-design`) & Pre-agreed Test Seams (`tdd`) ([mattpocock/skills](https://github.com/mattpocock/skills)):** modules hiding complex logic behind simple interfaces, tested via vertical `RED → GREEN` slices at public seams.

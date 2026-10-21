@@ -4,7 +4,7 @@ layout: home
 hero:
   name: "L1DDER"
   text: "Spec-Driven & Roadmap-Gated AI Development"
-  tagline: "Control your entire product lifecycle with 6 slash commands (/l1-*) and 'ok' approvals. Zero hidden state.yml — pure Markdown documents with end-to-end ID Passports. Works with Cursor, Claude Code, Codex, Windsurf, Copilot, OpenCode, and Cline."
+  tagline: "Control your entire product lifecycle with 6 slash commands (/l1-*) and 'ok' approvals. Works with Cursor, Claude Code, Codex, Windsurf, Copilot, OpenCode, and Cline."
   actions:
     - theme: brand
       text: "⚡ 3-Minute Quickstart"
@@ -18,23 +18,25 @@ hero:
 
 features:
   - icon: 🎯
-    title: "Zero Hidden State"
-    details: "No brittle state.yml files or blocking git hooks. Your Markdown documents (docs/roadmap.md, docs/backlog.md, docs/ideas.md) are the single source of truth."
+    title: "Transparent Markdown Control"
+    details: "Your clear Markdown documents (docs/roadmap.md, docs/backlog.md, docs/ideas.md) are the single source of truth — zero hidden state or complex setup."
   - icon: 🔗
-    title: "End-to-End Nested ID Passports"
-    details: "Every artifact stores all parent IDs in its header (IDEA-001 → FEAT-001 → SPRINT-01 → TASK-01.01..99). Even small fast models never lose track."
+    title: "End-to-End Linked Entities"
+    details: "Every entity is linked across the ID chain (IDEA-001 → FEAT-001 → SPRINT-01 → TASK-01.01..99). Every document stores all parent IDs in its header so even fast models never lose context."
   - icon: 🩺
     title: "Mandatory Sprint Doctor Checklist"
     details: "Every sprint ends with task TASK-NN.99: full CI, two-axis code review, E2E verification, mandatory Living Docs Sync, and Human UAT."
   - icon: ✂️
     title: "Built-in Ponytail + Matt Pocock Skills"
-    details: "Ships out of the box with ponytail (Lazy Senior Dev), grilling (decision-tree interviews), codebase-design (Deep Modules), and vertical TDD at seams."
+    details: "Ships out of the box with 13 engineering skills from DietrichGebert/ponytail (Lazy Senior Dev) and mattpocock/skills (grilling, codebase-design, vertical TDD at seams, diagnosing-bugs)."
+    link: /en/agents-cli#2-📦-skills-manifest-l1dder-skills-json-package-json-for-skills
+    linkText: "Explore bundled skills →"
   - icon: 🤖
     title: "1-Second Multi-Agent Installer"
     details: "Run npx l1dder init to install l1dder/ and configure native rules, commands, and skills for Cursor, Claude Code, Codex, Windsurf, Copilot, OpenCode, and Cline."
   - icon: 🌍
     title: "Full EN & RU Localization"
-    details: "All rules, 11 skills, templates, and human guides ship in both English (--lang en) and Russian (--lang ru)."
+    details: "All rules, 20 skills, templates, and human guides ship in both English (--lang en) and Russian (--lang ru)."
 ---
 
 ## Setup: Via Your AI Agent Chat or Terminal
@@ -59,3 +61,11 @@ npx l1dder init --lang en --yes
 ```
 
 Then open your AI agent chat and type `/l1-onboard`.
+
+---
+
+## Bundled Engineering Disciplines
+
+Alongside the 7 `/l1-*` workflow commands, `L1DDER` (`l1dder/skills.json`) bundles proven engineering skills out of the box:
+- **[DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)** — minimalism discipline (*Lazy Senior Dev Mode*): 6-step decision ladder, diff review `ponytail-review`, bloat scan `ponytail-audit`, and shortcut ledger `ponytail-debt`.
+- **[mattpocock/skills](https://github.com/mattpocock/skills)** — engineering primitives: decision-tree interviewing `grilling`, ubiquitous language `domain-modeling`, deep modules `codebase-design` (*Deep Modules & Seams*), vertical `tdd` at pre-agreed seams, bug diagnosis `diagnosing-bugs` (*RED Gate*), two-axis `code-review`, and session `retro`.

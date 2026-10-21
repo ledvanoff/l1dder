@@ -6,12 +6,12 @@
 
 > 🌍 **Documentation Site (with visual diagrams):** [Русская версия](https://ledvanoff.github.io/l1dder/) | [English Version](https://ledvanoff.github.io/l1dder/en/)
 
-**L1DDER** is a self-contained Spec-Driven & Roadmap-Gated AI development framework (**Zero Hidden State**) for **Cursor, Claude Code, OpenAI Codex, Windsurf, GitHub Copilot, OpenCode, and Cline**.
+**L1DDER** is a self-contained Spec-Driven & Roadmap-Gated AI development framework for **Cursor, Claude Code, OpenAI Codex, Windsurf, GitHub Copilot, OpenCode, and Cline**.
 
-- **Zero Hidden State:** No brittle `state.yml` state machines or blocking git hooks. Your Markdown documents in `docs/` (`ideas.md`, `backlog.md`, `roadmap.md`) with traceable **ID Passports** are the single source of truth.
+- **Transparent Markdown Control:** Your Markdown documents in `docs/` (`ideas.md`, `backlog.md`, `roadmap.md`) with end-to-end linked **ID Passports** are the single source of truth.
 - **6 Slash Commands (`/l1-*`):** Control the entire product lifecycle with `/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, and `/l1-hotfix` + `"ok"` approvals.
 - **Mandatory Sprint Doctor (`TASK-NN.99`):** Every sprint ends with a 4-block `Doctor Checklist` (CI, 2-axis code review, Agent E2E verification, mandatory Living Docs Sync, and Human UAT).
-- **Built-in Engineering Discipline:** Ships with `ponytail` (*Lazy Senior Dev* mode, `shortcut:` ledger, 2-line `Skipped / Risk` footer) and practices from `mattpocock/skills` (`grilling`, `domain-modeling`, `codebase-design` Deep Modules, vertical `tdd` at seams, `diagnosing-bugs`).
+- **Built-in Engineering Discipline:** Ships with **[DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)** (*Lazy Senior Dev* mode, `shortcut:` ledger, 2-line `Skipped / Risk` footer) and **[mattpocock/skills](https://github.com/mattpocock/skills)** (`grilling`, `domain-modeling`, `codebase-design` Deep Modules, vertical `tdd` at seams, `diagnosing-bugs`).
 
 ---
 
@@ -75,7 +75,7 @@ Then open your AI agent chat and run `/l1-onboard`.
 ## 🛠 CLI Commands & Skills Manifest (`l1dder/skills.json`)
 
 All skills are managed via **`l1dder/skills.json`** (like `package.json` for AI Agent Skills):
-- **20 Bundled Skills Out-of-the-Box:** 7 `/l1-*` workflow skills + 4 `DietrichGebert/ponytail` skills + 9 `mattpocock/skills` engineering skills (`grilling`, `domain-modeling`, `codebase-design`, `tdd`, `diagnosing-bugs`, `code-review`, `retro`, `prototype`, `writing-for-agents`).
+- **20 Bundled Skills Out-of-the-Box:** 7 `/l1-*` workflow skills + 4 **[DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)** skills + 9 **[mattpocock/skills](https://github.com/mattpocock/skills)** engineering skills (`grilling`, `domain-modeling`, `codebase-design`, `tdd`, `diagnosing-bugs`, `code-review`, `retro`, `prototype`, `writing-for-agents`).
 - **Project Stack Skills (`stack`):** configured during `/l1-onboard` or added via CLI.
 
 ```bash

@@ -90,9 +90,9 @@ flowchart TB
 
 ---
 
-## 🔗 Nested ID Chain: Why the Agent Never Loses Context
+## 🔗 End-to-End Linked Entities (ID Chain): Why the Agent Never Loses Context
 
-Every document stores all parent IDs in its header **ID Passport** — like nested Russian dolls:
+In `L1DDER`, **all entities are linked across an end-to-end ID chain**. Every document stores all of its parent IDs in its header **ID Passport**:
 
 ```mermaid
 flowchart LR

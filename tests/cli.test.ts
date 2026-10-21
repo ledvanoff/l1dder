@@ -399,4 +399,29 @@ describe("L1DDER CLI — Cursor, Claude Code & OpenAI Codex Installation", () =>
     expect(codeApproved).toBe(0);
     expect(readFileSync(coreRulePath, "utf-8")).not.toBe("# Old Core Rule v1.0.0\n");
   });
+
+  it("HOTFIX-001 regression: docs site and user-guide have clean wording (no state.yml or матрёшка) and include GitHub links to ponytail and mattpocock/skills", () => {
+    const siteRu = readFileSync(join(process.cwd(), "site/index.md"), "utf-8");
+    const siteEn = readFileSync(join(process.cwd(), "site/en/index.md"), "utf-8");
+    const guideRu = readFileSync(
+      join(process.cwd(), "assets/i18n/ru/user-guide/README.md"),
+      "utf-8",
+    );
+    const guideEn = readFileSync(
+      join(process.cwd(), "assets/i18n/en/user-guide/README.md"),
+      "utf-8",
+    );
+    const rootReadme = readFileSync(join(process.cwd(), "README.md"), "utf-8");
+
+    for (const content of [siteRu, siteEn, guideRu, guideEn, rootReadme]) {
+      expect(content).not.toContain("state.yml");
+      expect(content).not.toMatch(/матрёшк/iu);
+      expect(content).not.toMatch(/Russian dolls/iu);
+    }
+
+    for (const content of [siteRu, siteEn, rootReadme]) {
+      expect(content).toContain("https://github.com/DietrichGebert/ponytail");
+      expect(content).toContain("https://github.com/mattpocock/skills");
+    }
+  });
 });
