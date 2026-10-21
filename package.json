@@ -46,7 +46,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup && node scripts/sync-root-l1dder.mjs && node scripts/sync-site-docs.mjs",
+    "build": "node scripts/sync-release-meta.mjs && tsup && node scripts/sync-root-l1dder.mjs && node scripts/sync-site-docs.mjs",
+    "release": "node scripts/release.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "playground:prepare": "node playground/prepare.mjs",

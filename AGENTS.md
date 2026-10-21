@@ -1,23 +1,30 @@
 # L1DDER Framework Repository — Instructions for AI Agents
 
-Этот репозиторий содержит исходный код CLI-пакета **`l1dder`**, двуязычные (`ru`/`en`) ассеты методологии в `assets/i18n/{ru,en}/` и сайт документации `site/`.
+Этот репозиторий содержит исходный код CLI-пакета **`l1dder`**, двуязычные (`ru`/`en`) ассеты методологии в `assets/i18n/{ru,en}/`, реестр релизов `assets/releases.json` и сайт документации `site/`.
 
 ## Железные правила при разработке самого фреймворка `L1DDER`
 
 1. **Синхронное редактирование `ru` и `en` (`Single Change = Full Sync`):**
-   - Любое изменение в правилах, скиллах, шаблонах или путеводителе вносится синхронно в `assets/i18n/ru/` и `assets/i18n/en/`.
-   - После изменений обязательно запускается `npm run build` (собирает `dist/cli.js`, синхронизирует корневую папку `./l1dder/` и страницы сайта `./site/`).
-2. **Обязательный чейнджлог и фиксация `BREAKING CHANGES` в каждой версии:**
-   - При выпуске каждой новой версии (`package.json` + `PACKAGE_VERSION` в `src/installer.ts`) агент **обязан** записать изменения и **все ломающие изменения (`BREAKING CHANGES`)** в 3 места:
-     1. **`assets/releases.json`** — машиночитаемый реестр релизов (`version`, `date`, `summary`, `changes`, `breaking` на `ru` и `en`). Именно этот файл CLI читает при вызове пользователем `npx l1dder@latest update`: если между установленной у пользователя версией и новой версией есть записи в `breaking`, CLI выводит предупреждение и запрашивает подтверждение (`да/нет`) перед обновлением файлов.
-     2. **`CHANGELOG.md`** — человекочитаемый чейнджлог в корне репозитория с секцией `### ⚠️ BREAKING CHANGES`.
-     3. **`assets/i18n/{ru,en}/evolution/WORKLOG-CHANGELOG.md`** — подробный журнал итераций методологии.
-3. **Проверка перед коммитом / релизом:**
-   - Всегда выполняй: `make ci` (`npm run typecheck && npm run build && npm test && npm run docs:build && node dist/cli.js doctor`).
-4. **Git-флоу (`dev` → `main`):**
-   - Вся ежедневная разработка (`/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-evo`) ведётся в рабочем транке **`dev`** (или фича-ветках от `dev`).
-   - Ветка **`main`** — это чистая релизная витрина: пуш в `main` обновляет сайт документации на GitHub Pages (`docs.yml`), а пуш тега `vX.Y.Z` на `main` публикует пакет `l1dder` в npm (`publish.yml`).
-   - Выпуск релиза после закрытия `TASK-NN.99` в `dev`: `git checkout main && git merge dev && git tag vX.Y.Z && git push origin main --tags && git checkout dev`.
+   - Любое пользовательское изменение в правилах, скиллах, шаблонах или путеводителе вносится синхронно в `assets/i18n/ru/` и `assets/i18n/en/`.
+   - После изменений обязательно запускается `make ci` (или `npm run build`), который автоматически:
+     - синхронизирует `package.json` и генерирует `CHANGELOG.md` из `assets/releases.json` (`scripts/sync-release-meta.mjs`);
+     - собирает `dist/cli.js`;
+     - синхронизирует корневую папку `./l1dder/` и папки агентов (`scripts/sync-root-l1dder.mjs`);
+     - синхронизирует страницы сайта `./site/` (`scripts/sync-site-docs.mjs`).
+
+2. **Когда менять версию, а когда НЕ менять (`dev` vs Release):**
+   - **НЕ меняй версию (`assets/releases.json`)** при внутренних инфраструктурных работах в репозитории (`scripts/`, `Makefile`, `tests/`, `playground/`, внутренняя догфудинг-документация `docs/`). Такие изменения просто коммитятся и пушатся в рабочую ветку **`dev`**.
+   - **Меняй версию ТОЛЬКО перед выкаткой релиза в npm**, когда накопились пользовательские изменения в CLI (`src/`) или поставляемых ассетах (`assets/i18n/{ru,en}/`) и пользователь явно попросил выпустить релиз.
+
+3. **Как выпускать новый релиз (`assets/releases.json` — ЕДИНСТВЕННЫЙ источник истины):**
+   - Мы **не используем `@changesets/cli`** и **не редактируем `package.json` (поле `version`) или `CHANGELOG.md` вручную**.
+   - Чтобы выпустить новую версию `X.Y.Z`:
+     1. Добавь новый объект релиза **первым элементом** в массив `releases` файла **`assets/releases.json`** (заполнив `version`, `date`, `summary` (`ru`/`en`), `changes` (`ru`/`en`) и `breaking` (`ru`/`en`) — именно поле `breaking` CLI проверяет при `npx l1dder@latest update`, запрашивая подтверждение у пользователя).
+     2. Запусти одну команду:
+        ```bash
+        make release
+        ```
+        Скрипт `scripts/release.mjs` сам прогонит `make ci` (автоматически обновив `package.json` и `CHANGELOG.md`), закоммитит метаданные в `dev`, сольёт `dev → main`, создаст тег `vX.Y.Z`, запушит `main`, `dev` и теги в GitHub и вернёт ветку обратно на `dev`. GitHub Actions автоматически опубликует пакет в npm (OIDC) и обновит сайт на GitHub Pages.
 
 <!-- l1dder:begin -->
 # Методология проекта: L1DDER (`l1dder/`)

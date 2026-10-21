@@ -11,11 +11,10 @@
 ### Режим А: Когда `L1DDER` развивается в собственном репозитории пакета (Standalone Framework Repo)
 Когда фреймворк `l1dder` развивается как самостоятельный npm-пакет:
 1. Крупные фичи проходят через цепочку `/l1-idea → /l1-feature → /l1-planning → /l1-task`, а быстрые правки методологии — через `/l1-evo`.
-2. **ЖЕЛЕЗНОЕ ПРАВИЛО РЕЛИЗА И BREAKING CHANGES:**
-   При подготовке каждой новой версии `l1dder` (`package.json` + `PACKAGE_VERSION` в `src/installer.ts`) агент **обязан** синхронно обновить **3 файла чейнджлога**:
-   - **`assets/releases.json`** — машиночитаемый реестр релизов, который CLI проверяет перед выполнением `npx l1dder update`. В каждой записи релиза обязательно заполняются поля `version`, `date`, `summary` (`ru`/`en`), `changes` (`ru`/`en`) и **`breaking` (`ru`/`en`)**.
-   - **`CHANGELOG.md`** — корневой чейнджлог пакета с явной секцией `### ⚠️ BREAKING CHANGES` (если есть ломающие изменения).
-   - **`assets/i18n/{ru,en}/evolution/WORKLOG-CHANGELOG.md`** — подробный журнал эволюции методологии.
+2. **ЖЕЛЕЗНОЕ ПРАВИЛО РЕЛИЗА И BREAKING CHANGES (`assets/releases.json` — единый источник истины):**
+   - Внутренние инфраструктурные правки самого репозитория (`scripts/`, `Makefile`, `tests/`, `playground/`, `docs/`) коммитятся в ветку `dev` **без поднятия версии**.
+   - При выпуске каждой новой публичной версии `l1dder` агент редактирует **только один файл версий — `assets/releases.json`** (добавляя новый объект первым элементом массива `releases` с полями `version`, `date`, `summary`, `changes` и **`breaking` на `ru` и `en`**), а также фиксирует подробности итерации в `assets/i18n/{ru,en}/evolution/WORKLOG-CHANGELOG.md`.
+   - Поле `"version"` в `package.json` и корневой `CHANGELOG.md` **генерируются автоматически** из `assets/releases.json` скриптом `scripts/sync-release-meta.mjs` при `npm run build` / `make ci`. Выкатка релиза из `dev` в `main` + npm выполняется одной командой `make release`.
 
 ### Что считается `BREAKING CHANGE` (Ломающим изменением) в `L1DDER`:
 Любое изменение из списка ниже **обязано** быть записано в массив `breaking` в `assets/releases.json` (тогда при вызове `npx l1dder@latest update` CLI сначала покажет пользователю список ломающих изменений и спросит подтверждение `да/нет`):
@@ -60,4 +59,4 @@
 |----------------------------|--------------------------------------------|
 | **Формат ID, статусы или переходы статусов** | 1. `l1dder/rules/00-methodology.mdc` и `20-workflow.mdc`<br/>2. Соответствующие `l1dder/skills/l1-*/SKILL.md`<br/>3. Шаблоны в `l1dder/templates/`<br/>4. `l1dder/GLOSSARY.md` и `l1dder/METHODOLOGY.md`<br/>5. `l1dder/user-guide/` + запись в `breaking` в `assets/releases.json` |
 | **Шаги внутри скилла `/l1-*` или `ponytail*`** | 1. `l1dder/skills/<skill>/SKILL.md` (в `ru` и `en`)<br/>2. `l1dder/rules/20-workflow.mdc`<br/>3. `l1dder/user-guide/02-FLOWS-IN-DETAIL.md` + запуск `npx l1dder sync` |
-| **Новая версия npm-пакета `l1dder`** | 1. `package.json` и `PACKAGE_VERSION` в `src/installer.ts`<br/>2. `assets/releases.json` (обязательно заполнить `changes` и `breaking` на `ru` и `en`)<br/>3. `CHANGELOG.md`<br/>4. `assets/i18n/{ru,en}/evolution/WORKLOG-CHANGELOG.md` |
+| **Новая версия npm-пакета `l1dder`** | 1. Добавить запись наверх `assets/releases.json` (`version`, `date`, `summary`, `changes`, `breaking` на `ru` и `en`)<br/>2. `assets/i18n/{ru,en}/evolution/WORKLOG-CHANGELOG.md`<br/>3. Запустить `make release` (`package.json` и `CHANGELOG.md` обновятся автоматически!) |

@@ -6,12 +6,11 @@
 
 ---
 
-## 1. Mandatory Release Changelog & `BREAKING CHANGES` Policy
+## 1. Mandatory Release Changelog & `BREAKING CHANGES` Policy (`assets/releases.json` = Single Source of Truth)
 
-Whenever preparing a new version of the `l1dder` package (`package.json` + `PACKAGE_VERSION` in `src/installer.ts`), the agent **must** synchronously update **3 changelog files**:
-1. **`assets/releases.json`** — machine-readable release registry inspected by `npx l1dder update`. Every release entry must include `version`, `date`, `summary` (`ru`/`en`), `changes` (`ru`/`en`), and **`breaking` (`ru`/`en`)**.
-2. **`CHANGELOG.md`** — root human-readable changelog with an explicit `### ⚠️ BREAKING CHANGES` section whenever breaking changes exist.
-3. **`assets/i18n/{ru,en}/evolution/WORKLOG-CHANGELOG.md`** — detailed methodology evolution log.
+- Internal repository infrastructure changes (`scripts/`, `Makefile`, `tests/`, `playground/`, `docs/`) are committed to the `dev` branch **without bumping the package version**.
+- Whenever releasing a new public version of the `l1dder` package, the agent adds a new release entry at the top of **`assets/releases.json`** (`version`, `date`, `summary`, `changes`, and **`breaking`** in both `ru` and `en`) and logs the iteration in `assets/i18n/{ru,en}/evolution/WORKLOG-CHANGELOG.md`.
+- `"version"` in `package.json` and the root `CHANGELOG.md` are **auto-generated** from `assets/releases.json` by `scripts/sync-release-meta.mjs` during `npm run build` / `make ci`. Publishing a release from `dev` to `main` + npm is done with a single command: `make release`.
 
 ### What Counts as a `BREAKING CHANGE`:
 Any of the following **must** be listed in `breaking.ru` and `breaking.en` inside `assets/releases.json` (so `npx l1dder@latest update` warns the user first and asks for `yes/no` confirmation before updating):

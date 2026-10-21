@@ -10,7 +10,7 @@
 |------|-------|-----------------------------------|
 | **Язык и рантайм** | `TypeScript 5.7+` (`strict: true`), `Node.js >= 20` (`.nvmrc = 22`) | Строгая типизация (`noImplicitAny`, `strictNullChecks`, `noUncheckedIndexedAccess`). 0 внешних runtime-зависимостей в CLI. |
 | **Сборщик CLI** | `tsup` (ESM bundle → `dist/cli.js`) | Единый исполняемый бандл без внешних пакетов (`node:fs`, `node:path`, `node:readline/promises`). |
-| **Ассеты методологии** | `assets/i18n/{ru,en}/` + `assets/releases.json` | Двуязычный каталог правил (`rules/`), 20 скиллов (`skills/`), шаблонов (`templates/`), гайдов (`user-guide/`) и реестр релизов (`releases.json`). |
+| **Ассеты и Релизы** | `assets/i18n/{ru,en}/` + `assets/releases.json` | Двуязычный каталог правил (`rules/`), 20 скиллов (`skills/`), шаблонов (`templates/`), гайдов (`user-guide/`). **`assets/releases.json` — единственный источник истины для версии пакета и `CHANGELOG.md`**. |
 | **Сайт документации** | `VitePress` + `vitepress-plugin-mermaid` (`site/`) | Двуязычный (`/` RU и `/en/` EN) статический сайт для GitHub Pages с рендером диаграмм Mermaid. |
 | **Тестирование и полигон** | `Vitest` (`tests/*.test.ts`) + `playground/` | Unit/Integration-тесты CLI и полигон `playground/` для автоматического прогона сценариев на реальных моделях ИИ (`Composer`, `Grok`). |
 
@@ -23,19 +23,24 @@ L!DDER-REBORN/
 ├── src/                        # Исходный код тонкого CLI (Deep Modules):
 │   ├── types.ts                # Типы конфигурации, манифеста скиллов и отчётов
 │   ├── assets.ts               # Загрузка двуязычных ассетов из assets/i18n/{ru,en}/ и защита Stack-файлов
-│   ├── agents.ts               # Генерация и маркерное слияние файлов для 7 ИИ-агентов (Cursor, Claude, Codex, Windsurf, Copilot, OpenCode, Cline)
+│   ├── agents.ts               # Генерация и дедупликация файлов для 7 ИИ-агентов (Cursor, Claude, Codex, Windsurf, Copilot, OpenCode, Cline)
 │   ├── skills-manager.ts       # Управление манифестом l1dder/skills.json и скачивание стек-скиллов
 │   ├── changelog.ts            # Проверка версий semver, вывод чейнджлога и защита от BREAKING CHANGES
 │   ├── installer.ts            # Операции init, update/sync (включая skills-only) и doctor
 │   └── cli.ts                  # Парсер аргументов и точка входа CLI
 ├── assets/
-│   ├── releases.json           # Машиночитаемый реестр релизов и BREAKING CHANGES (RU + EN)
+│   ├── releases.json           # ЕДИНСТВЕННЫЙ источник истины по версиям, чейнджлогу и BREAKING CHANGES (RU + EN)
 │   └── i18n/{ru,en}/           # Эталонные шаблоны, правила, 20 скиллов и документация
+├── scripts/
+│   ├── sync-release-meta.mjs   # Автосинхронизация version в package.json и генерация CHANGELOG.md из assets/releases.json
+│   ├── sync-root-l1dder.mjs    # Синхронизация догфудинг-инстанса ./l1dder/ и папок агентов
+│   ├── sync-site-docs.mjs      # Синхронизация страниц VitePress сайта ./site/ из assets/i18n/{ru,en}/
+│   └── release.mjs             # Автоматический выпуск релиза (make ci -> merge dev into main -> tag vX.Y.Z -> push)
 ├── l1dder/                     # Догфудинг-инстанс методологии самого проекта L1DDER
 ├── docs/                       # Догфудинг-документация самого проекта L1DDER (concept/, ideas.md, backlog.md, roadmap.md, specs/, sprints/)
 ├── playground/                 # Изолированный полигон для автотестирования методологии на моделях (Composer, Grok)
 ├── site/                       # Исходники сайта документации VitePress (RU + EN)
-└── tests/                      # Автотесты CLI, мульти-агентной генерации, skills.json и BREAKING CHANGES
+└── tests/                      # Автотесты CLI, дедупликации скиллов, skills.json и BREAKING CHANGES
 ```
 
 ---
@@ -44,20 +49,29 @@ L!DDER-REBORN/
 
 ```makefile
 make dev            # npm run docs:dev (локальный сервер сайта документации)
-make build          # npm run build (сборка dist/cli.js + синхронизация l1dder/ и site/)
+make build          # npm run build (sync-release-meta + tsup + sync-root-l1dder + sync-site-docs)
 make lint           # npm run typecheck (проверка типов tsc --noEmit)
 make typecheck      # npm run typecheck
 make test           # npm test (vitest run)
 make test-e2e       # npm run docs:build (полная сборка сайта VitePress)
 make doctor         # node dist/cli.js doctor (проверка целостности l1dder/ и docs/)
 make ci             # typecheck + build + test + test-e2e + doctor
+make release        # npm run release (выкатка новой версии из assets/releases.json в main, GitHub Pages и npm)
 ```
 
 ---
 
-## 4. Git-флоу репозитория (`dev` → `main`)
+## 4. Git-флоу (`dev` → `main`) и Правила версионирования / релиза
 
-- **`dev` (рабочий транк):** вся ежедневная разработка и догфудинг спринтов ведутся в ветке `dev` (на каждый пуш запускается `.github/workflows/ci.yml`).
-- **`main` (релизная ветка):** отражает текущую опубликованную версию пакета. При слиянии `dev → main` и пуше тега `vX.Y.Z`:
-  - `.github/workflows/docs.yml` автоматически деплоит сайт документации на GitHub Pages (`https://ledvanoff.github.io/l1dder/`);
-  - `.github/workflows/publish.yml` автоматически публикует `l1dder` в npm через OIDC Trusted Publishing.
+1. **Ежедневная работа в ветке `dev` (без поднятия версии):**
+   - Вся разработка (`/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-evo`, `/l1-hotfix`) и внутренние инфраструктурные правки (`scripts/`, `Makefile`, `tests/`, `playground/`, `docs/`) ведутся в ветке **`dev`**.
+   - Внутренние изменения репозитория, не меняющие поведение опубликованного пакета `l1dder`, **не требуют** добавления новой версии в `assets/releases.json` — они просто коммитятся в `dev`.
+2. **Как выпустить новую версию пакета (`make release`):**
+   - **`assets/releases.json` — единственный файл, где задаётся версия и пишется чейнджлог.** Никогда не правь `"version"` в `package.json` и `CHANGELOG.md` руками — их автоматически перезаписывает `scripts/sync-release-meta.mjs` при `npm run build`!
+   - Шаг 1: Добавь новый объект релиза на самый верх массива `"releases"` в `assets/releases.json` (`version`, `date`, `summary`, `changes`, `breaking` на `ru` и `en`).
+   - Шаг 2: Запусти в терминале (находясь на ветке `dev`):
+     ```bash
+     make release
+     ```
+   - Скрипт `scripts/release.mjs` автоматически проверит, что тега `vX.Y.Z` ещё нет, прогонит `make ci` (обновив `package.json` и `CHANGELOG.md`), закоммитит их в `dev`, переключится на `main`, смержит `dev`, поставит тег `vX.Y.Z`, запушит `main`, `dev` и теги в `origin` и вернёт ветку обратно на `dev`.
+   - На пуш в `main` с тегом `vX.Y.Z` GitHub Actions автоматически деплоит сайт на GitHub Pages (`docs.yml`) и публикует пакет в npmjs через OIDC (`publish.yml`).

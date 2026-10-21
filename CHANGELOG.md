@@ -1,29 +1,47 @@
 # Changelog
 
-Все заметные изменения и **ломающие изменения (`BREAKING CHANGES`)** фреймворка `L1DDER` фиксируются в этом файле (а также в машиночитаемом реестре `assets/releases.json`, который CLI проверяет перед каждым обновлением `npx l1dder update`).
+> **Автогенерируемый файл:** этот файл автоматически собирается из единого источника истины [`assets/releases.json`](assets/releases.json) при вызове `npm run build`.
+> При подготовке нового релиза добавляй запись только в `assets/releases.json`.
 
 ---
 
 ## [1.0.1] — 2026-10-21
 
-### Fixed (Хотфиксы `HOTFIX-001` и `HOTFIX-002`)
+**RU:** Хотфикс дедупликации скиллов между ИИ-агентами (HOTFIX-002) и улучшение текстов документации (HOTFIX-001).
 
-- **`HOTFIX-002` (Дедупликация скиллов и команд во всех ИИ-агентах):** Устранено дублирование слэш-команд в меню `/` при совместной установке `Cursor`, `Claude Code`, `Codex` и `OpenCode` (`resolveCanonicalSkillsDir` всегда выбирает ровно одну каноническую папку скиллов без дублей в `.claude/commands/` и `.opencode/commands/`). Добавлено автоматическое удаление устаревших команд `l1dder-*` от версий `0.2.x` при вызове `npx l1dder update` / `sync`.
-- **`HOTFIX-001` (Документация и витрина сайта):** Очищены формулировки на главной странице и в путеводителе, добавлены прямые ссылки на [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) и [mattpocock/skills](https://github.com/mattpocock/skills).
+**EN:** Skill deduplication hotfix across AI agents (HOTFIX-002) and documentation copy refinements (HOTFIX-001).
+
+### Changes (Изменения)
+
+- **[RU]** HOTFIX-002: Полностью устранено дублирование слэш-команд в меню `/` при совместной установке нескольких агентов (Cursor, Claude Code, Codex, OpenCode) и добавлена автоочистка старых команд v0.2.x (l1dder-*).
+- **[RU]** HOTFIX-001: Обновлены формулировки на сайте документации и проставлены прямые ссылки на DietrichGebert/ponytail и mattpocock/skills.
+- **[EN]** HOTFIX-002: Eliminated duplicate slash commands in the `/` menu when multiple agents (Cursor, Claude Code, Codex, OpenCode) are enabled, and added automatic pruning of legacy v0.2.x commands (`l1dder-*`).
+- **[EN]** HOTFIX-001: Refined documentation site copy and added direct links to DietrichGebert/ponytail and mattpocock/skills.
 
 ---
 
 ## [1.0.0] — 2026-10-21
 
-### ⚠️ BREAKING CHANGES (Ломающие изменения относительно 0.2.x)
+**RU:** Полный переход на архитектуру Zero Hidden State (без state.yml и блокирующих git-хуков), 6 слэш-команд /l1-*, манифест скиллов l1dder/skills.json (20 скиллов в коробке) и поддержка 7 ИИ-агентов (Cursor, Claude Code, Codex, Windsurf, Copilot, OpenCode, Cline).
 
-- **Zero Hidden State:** Удалена скрытая стейт-машина `l1dder/.framework/state.yml` и блокирующий git-хук `commit-msg`. Единственный источник истины теперь — Markdown-документы в `docs/` (`docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md`) с паспортами сквозных ID (`ID Passport`).
-- **Новые слэш-команды `/l1-*`:** Старые команды `/l1dder-*` заменены на `/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-hotfix`, `/l1-evo`.
-- **Разделение `l1dder/` и `docs/`:** Правила, скиллы, шаблоны и манифест `skills.json` живут в `l1dder/`, а продуктовая документация проекта — в `docs/`.
+**EN:** Complete transition to Zero Hidden State architecture (no state.yml or blocking git hooks), 6 /l1-* slash commands, l1dder/skills.json manifest (20 bundled skills), and support for 7 AI agents (Cursor, Claude Code, Codex, Windsurf, Copilot, OpenCode, Cline).
 
-### Added (Добавлено)
+### ⚠️ BREAKING CHANGES (Ломающие изменения)
 
-- **Управляющие скиллы процесса (`/l1-*`):** `l1-onboard`, `l1-idea`, `l1-feature`, `l1-planning`, `l1-task` (с обязательным финалом спринта `TASK-NN.99` Doctor Checklist), `l1-hotfix`, `l1-evo`.
-- **Манифест скиллов `l1dder/skills.json` и 20 скиллов в коробке:** в поставку включены 4 скилла `DietrichGebert/ponytail` и 9 инженерных скиллов `mattpocock/skills` (`grilling`, `domain-modeling`, `codebase-design`, `tdd`, `diagnosing-bugs`, `code-review`, `retro`, `prototype`, `writing-for-agents`) со всеми вложенными справочниками.
-- **Мульти-агентный инсталлятор:** поддержка `Cursor`, `Claude Code`, `OpenAI Codex`, `Windsurf`, `GitHub Copilot`, `OpenCode`, `Cline` на русском (`--lang ru`) и английском (`--lang en`) языках.
-- **Безопасное обновление (`npx l1dder update` и `npx l1dder update --skills`):** проверка `BREAKING CHANGES` с интерактивным подтверждением пользователя перед обновлением.
+- **[RU]** Удалена скрытая стейт-машина l1dder/.framework/state.yml и блокирующий git-хук commit-msg. Единственный источник истины теперь — Markdown-файлы в docs/ (docs/ideas.md, docs/backlog.md, docs/roadmap.md).
+- **[RU]** Старые слэш-команды /l1dder-* заменены на единую линейку /l1-onboard, /l1-idea, /l1-feature, /l1-planning, /l1-task, /l1-hotfix, /l1-evo.
+- **[RU]** Артефакты проекта (концепт, идеи, бэклог, роадмап, спеки и спринты) теперь хранятся в папке docs/, а сам фреймворк, правила и скиллы — в папке l1dder/.
+- **[EN]** Removed hidden state machine l1dder/.framework/state.yml and blocking commit-msg git hook. Markdown files in docs/ (docs/ideas.md, docs/backlog.md, docs/roadmap.md) are now the single source of truth.
+- **[EN]** Replaced legacy /l1dder-* slash commands with /l1-onboard, /l1-idea, /l1-feature, /l1-planning, /l1-task, /l1-hotfix, /l1-evo.
+- **[EN]** Project artifacts (concept, ideas, backlog, roadmap, specs, sprints) now live in docs/, while framework rules, templates, and skills live in l1dder/.
+
+### Changes (Изменения)
+
+- **[RU]** Добавлены 7 управляющих скиллов: /l1-onboard, /l1-idea, /l1-feature, /l1-planning, /l1-task, /l1-hotfix, /l1-evo.
+- **[RU]** В коробку вшиты 13 инженерных скиллов из DietrichGebert/ponytail и mattpocock/skills (управляются через l1dder/skills.json).
+- **[RU]** Добавлена поддержка установки и обновления для Cursor, Claude Code, OpenAI Codex, Windsurf, GitHub Copilot, OpenCode и Cline.
+- **[RU]** Добавлены команды npx l1dder update, npx l1dder update --skills и npx l1dder skills [list|add|install|update].
+- **[EN]** Added 7 workflow control skills: /l1-onboard, /l1-idea, /l1-feature, /l1-planning, /l1-task, /l1-hotfix, /l1-evo.
+- **[EN]** Bundled 13 core engineering skills from DietrichGebert/ponytail and mattpocock/skills (managed via l1dder/skills.json).
+- **[EN]** Added multi-agent installer & updater for Cursor, Claude Code, OpenAI Codex, Windsurf, GitHub Copilot, OpenCode, and Cline.
+- **[EN]** Added npx l1dder update, npx l1dder update --skills, and npx l1dder skills [list|add|install|update].

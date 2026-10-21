@@ -1,6 +1,6 @@
 # Makefile — L1DDER Framework Repository (Dogfooding Contract)
 
-.PHONY: dev build lint format typecheck test test-e2e doctor ci
+.PHONY: dev build lint format typecheck test test-e2e doctor ci release
 
 dev:
 	npm run docs:dev
@@ -27,3 +27,6 @@ doctor:
 	node dist/cli.js doctor
 
 ci: typecheck build test test-e2e doctor
+
+release:
+	npm run release
