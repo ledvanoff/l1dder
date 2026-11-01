@@ -44,8 +44,8 @@
 | `TASK-02.02` | `FEAT-003.02` | Модуль SEO, `sitemap.xml`, тексты и языковые связи для всех 18 страниц | `feat` | ✅ реализована | [plan](tasks/TASK-02.02-seo-module/plan.md) | [summary](tasks/TASK-02.02-seo-module/summary.md) |
 | `TASK-02.03` | `FEAT-003.03` | Карточка превью, Open Graph и Twitter, теги подтверждения Google и Яндекса | `feat` | ✅ реализована | [plan](tasks/TASK-02.03-preview-card/plan.md) | [summary](tasks/TASK-02.03-preview-card/summary.md) |
 | `TASK-02.04` | `FEAT-003.04` | `llms.txt` из общей таблицы страниц | `feat` | ✅ реализована | [plan](tasks/TASK-02.04-llms-txt/plan.md) | [summary](tasks/TASK-02.04-llms-txt/summary.md) |
-| `TASK-02.05` | `FEAT-003.05` | Витрины: описание и темы GitHub, начало README, `description` и `keywords` в npm | `chore` | 🚧 реализация | [plan](tasks/TASK-02.05-showcases/plan.md) | — |
-| `TASK-02.99` | `FEAT-003.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)**: браузерный гейт сайта и только после него релиз | `chore` | 📋 запланирована | — | — |
+| `TASK-02.05` | `FEAT-003.05` | Витрины: описание и темы GitHub, начало README, `description` и `keywords` в npm | `chore` | ✅ реализована | [plan](tasks/TASK-02.05-showcases/plan.md) | [summary](tasks/TASK-02.05-showcases/summary.md) |
+| `TASK-02.99` | `FEAT-003.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)**: браузерный гейт сайта и только после него релиз | `chore` | 🚧 реализация | [plan](tasks/TASK-02.99-doctor/plan.md) | — |
 
 ---
 
