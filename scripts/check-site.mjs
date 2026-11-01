@@ -3,7 +3,7 @@
  * scripts/check-site.mjs
  *
  * Checks the built VitePress site without a browser (no new dependencies):
- *   node scripts/check-site.mjs [distDir]                    every internal link, anchor and file exists
+ *   node scripts/check-site.mjs [distDir]                    links, anchors, files, sitemap.xml and SEO tags are correct
  *   node scripts/check-site.mjs [distDir] --baseline <file>  the above, and no page got worse than the baseline
  *   node scripts/check-site.mjs [distDir] --write-baseline <file>
  *
@@ -87,9 +87,25 @@ if (args.writeBaseline) {
 }
 
 const errors = [];
+const seen = { title: new Map(), description: new Map() };
 for (const file of files) {
   const html = readFileSync(join(dist, file), "utf-8");
   if (summarizePage(file).h1 === null) errors.push(`${file}: no H1`);
+  const tags = {
+    title: html.match(/<title>([^<]*)<\/title>/)?.[1],
+    description: html.match(/<meta name="description" content="([^"]*)"/)?.[1],
+  };
+  for (const name of ["title", "description"]) {
+    const value = tags[name];
+    if (!value) errors.push(`${file}: no ${name}`);
+    else if (seen[name].has(value)) errors.push(`${file}: same ${name} as ${seen[name].get(value)}`);
+    else seen[name].set(value, file);
+  }
+  const canonical = html.match(/<link rel="canonical" href="([^"]*)"/)?.[1];
+  if (canonical !== SITE_ORIGIN + pagePath(file)) errors.push(`${file}: canonical is ${canonical}`);
+  for (const lang of ["ru", "en", "x-default"]) {
+    if (!html.includes(`<link rel="alternate" hreflang="${lang}"`)) errors.push(`${file}: no hreflang ${lang}`);
+  }
   for (const [, href] of html.matchAll(/\b(?:href|src)="([^"]+)"/g)) {
     const url = new URL(href, SITE_ORIGIN + pagePath(file));
     if (url.origin !== SITE_ORIGIN) continue;
@@ -101,6 +117,17 @@ for (const file of files) {
     if (target === undefined) errors.push(`${file}: broken link: ${href}`);
     else if (url.hash.length > 1 && !idsOf(target).has(decodeURIComponent(url.hash.slice(1)))) errors.push(`${file}: broken anchor: ${href}`);
   }
+}
+const sitemapFile = join(dist, "sitemap.xml");
+if (existsSync(sitemapFile)) {
+  const listed = new Set([...readFileSync(sitemapFile, "utf-8").matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => new URL(match[1]).pathname));
+  for (const page of pages) {
+    if (!listed.has(page.path)) errors.push(`${page.path}: not in sitemap.xml`);
+    listed.delete(page.path);
+  }
+  for (const path of listed) errors.push(`${path}: in sitemap.xml but not a page`);
+} else {
+  errors.push("sitemap.xml is missing");
 }
 if (args.baseline) {
   const baselinePages = JSON.parse(readFileSync(args.baseline, "utf-8")).pages;

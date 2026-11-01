@@ -40,7 +40,7 @@ L!DDER-REBORN/
 │   ├── sync-release-meta.mjs   # Автосинхронизация version в package.json и генерация CHANGELOG.md из assets/releases.json
 │   ├── sync-root-l1dder.mjs    # Синхронизация догфудинг-инстанса ./l1dder/ и папок агентов
 │   ├── sync-site-docs.mjs      # Синхронизация страниц VitePress сайта ./site/ из assets/i18n/{ru,en}/
-│   ├── check-site.mjs          # Проверка готовой сборки сайта: ссылки, якоря, файлы и сравнение со снимком
+│   ├── check-site.mjs          # Проверка готовой сборки сайта: ссылки, якоря, файлы, sitemap.xml, SEO-теги и сравнение со снимком
 │   ├── render-release-notes.mjs # Заметки GitHub Release (EN + RU) для одной версии из assets/releases.json
 │   └── release.mjs             # Автоматический выпуск релиза (make ci -> merge dev into main -> tag vX.Y.Z -> push)
 ├── l1dder/                     # Догфудинг-инстанс методологии самого проекта L1DDER

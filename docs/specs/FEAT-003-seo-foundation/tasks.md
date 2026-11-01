@@ -14,7 +14,7 @@
 
 | Статус | ID шага спеки | ID задачи спринта (`SPRINT-02`) | Тип | Название задачи | Ключевые артефакты |
 |:------:|:-------------:|:-------------------------------:|:---:|-----------------|--------------------|
-| [ ] | `FEAT-003.01` | `TASK-02.01` | `chore` | Снимок сайта до правок и автоматическая проверка сборки в `make test-e2e` | `docs/sprints/SPRINT-02-seo-foundation/site-baseline.json`, `scripts/check-site.mjs`, `Makefile`, `tests/` |
+| [x] | `FEAT-003.01` | `TASK-02.01` | `chore` | Снимок сайта до правок и автоматическая проверка сборки в `make test-e2e` | `docs/sprints/SPRINT-02-seo-foundation/site-baseline.json`, `scripts/check-site.mjs`, `Makefile`, `tests/` |
 | [ ] | `FEAT-003.02` | `TASK-02.02` | `feat` | Модуль SEO, `sitemap.xml`, тексты и языковые связи для всех 18 страниц | `site/.vitepress/seo.mts`, `site/.vitepress/config.mts`, `tests/` |
 | [ ] | `FEAT-003.03` | `TASK-02.03` | `feat` | Карточка превью, Open Graph и Twitter, теги подтверждения Google и Яндекса | `site/public/`, `site/.vitepress/seo.mts`, `site/.vitepress/config.mts` |
 | [ ] | `FEAT-003.04` | `TASK-02.04` | `feat` | `llms.txt` из общей таблицы страниц | `site/.vitepress/seo.mts`, `site/.vitepress/config.mts`, `tests/` |

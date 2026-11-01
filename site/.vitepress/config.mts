@@ -1,6 +1,8 @@
 import { defineConfig } from "vitepress";
 import { withMermaid } from "vitepress-plugin-mermaid";
 
+import { buildPageSeo, SITE_URL } from "./seo.mjs";
+
 export default withMermaid(
   defineConfig({
     title: "L1DDER",
@@ -8,6 +10,14 @@ export default withMermaid(
       "Spec-Driven & Roadmap-Gated AI Development Framework for Cursor, Claude Code, Codex, Windsurf, Copilot, OpenCode, and Cline",
     base: "/l1dder/",
     cleanUrls: true,
+    sitemap: { hostname: SITE_URL },
+    transformPageData(pageData) {
+      const { title, description, head } = buildPageSeo(pageData.relativePath);
+      pageData.title = title;
+      pageData.titleTemplate = false;
+      pageData.description = description;
+      pageData.frontmatter.head = [...(pageData.frontmatter.head ?? []), ...head];
+    },
     locales: {
       root: {
         label: "Русский",
