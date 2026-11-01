@@ -1,5 +1,6 @@
-import { spawnSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import {
+  copyFileSync,
   existsSync,
   lstatSync,
   mkdirSync,
@@ -616,5 +617,43 @@ describe("HOTFIX-004 regression: GitHub release notes are bilingual and cover on
 
     expect(status).not.toBe(0);
     expect(stderr).toContain("2.0.0");
+  });
+});
+
+// shortcut: skipped on Windows because the script shells out to `make`; the release runs from macOS/Linux, revisit if that changes
+describe.skipIf(process.platform === "win32")("HOTFIX-005 regression: make release runs to the end", () => {
+  it("commits metadata, merges dev into main, and pushes both branches with the tag", () => {
+    const base = makeTempDir();
+    const remote = join(base, "remote.git");
+    const repo = join(base, "repo");
+    const git = (cwd: string, ...args: string[]) => execFileSync("git", args, { cwd, encoding: "utf-8" }).trim();
+
+    mkdirSync(remote);
+    git(remote, "init", "-q", "--bare");
+    mkdirSync(join(repo, "scripts"), { recursive: true });
+    mkdirSync(join(repo, "assets"));
+    git(repo, "init", "-q", "-b", "dev");
+    git(repo, "config", "user.name", "Test");
+    git(repo, "config", "user.email", "test@example.com");
+    git(repo, "config", "commit.gpgsign", "false");
+    copyFileSync(fileURLToPath(new URL("../scripts/release.mjs", import.meta.url)), join(repo, "scripts/release.mjs"));
+    writeFileSync(join(repo, "Makefile"), "ci:\n\t@true\n", "utf-8");
+    writeFileSync(join(repo, "assets/releases.json"), JSON.stringify({ releases: [{ version: "9.9.9" }] }), "utf-8");
+    git(repo, "add", "-A");
+    git(repo, "commit", "-q", "-m", "init");
+    git(repo, "branch", "main");
+    git(repo, "remote", "add", "origin", remote);
+    git(repo, "push", "-q", "origin", "main", "dev");
+    writeFileSync(join(repo, "CHANGELOG.md"), "metadata from make ci\n", "utf-8");
+
+    const { status, stderr } = spawnSync(process.execPath, ["scripts/release.mjs"], { cwd: repo, encoding: "utf-8" });
+
+    expect(stderr).not.toContain("TypeError");
+    expect(status).toBe(0);
+    expect(git(remote, "tag", "--list", "v9.9.9")).toBe("v9.9.9");
+    expect(git(remote, "log", "-1", "--format=%s", "main")).toBe("chore(release): v9.9.9");
+    expect(git(remote, "log", "-1", "--format=%s", "dev")).toBe("chore(release): v9.9.9");
+    expect(git(repo, "branch", "--show-current")).toBe("dev");
+    expect(git(repo, "status", "--porcelain")).toBe("");
   });
 });

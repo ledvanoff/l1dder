@@ -22,7 +22,7 @@ function git(args, options = {}) {
     cwd: repoRoot,
     encoding: "utf-8",
     stdio: options.stdio ?? "pipe",
-  }).trim();
+  })?.trim();
 }
 
 const catalog = JSON.parse(readFileSync(releasesPath, "utf-8"));
