@@ -35,6 +35,7 @@ L!DDER-REBORN/
 │   ├── sync-release-meta.mjs   # Автосинхронизация version в package.json и генерация CHANGELOG.md из assets/releases.json
 │   ├── sync-root-l1dder.mjs    # Синхронизация догфудинг-инстанса ./l1dder/ и папок агентов
 │   ├── sync-site-docs.mjs      # Синхронизация страниц VitePress сайта ./site/ из assets/i18n/{ru,en}/
+│   ├── check-site.mjs          # Проверка готовой сборки сайта: ссылки, якоря, файлы и сравнение со снимком
 │   ├── render-release-notes.mjs # Заметки GitHub Release (EN + RU) для одной версии из assets/releases.json
 │   └── release.mjs             # Автоматический выпуск релиза (make ci -> merge dev into main -> tag vX.Y.Z -> push)
 ├── l1dder/                     # Догфудинг-инстанс методологии самого проекта L1DDER
@@ -54,7 +55,8 @@ make build          # npm run build (sync-release-meta + tsup + sync-root-l1dder
 make lint           # npm run typecheck (проверка типов tsc --noEmit)
 make typecheck      # npm run typecheck
 make test           # npm test (vitest run)
-make test-e2e       # npm run docs:build (полная сборка сайта VitePress)
+make test-e2e       # npm run docs:build + scripts/check-site.mjs (сборка сайта и проверка ссылок, якорей и файлов)
+make site-gate      # make test-e2e + сравнение сайта со снимком (обязательно в задачах SPRINT-02 и перед его релизом)
 make doctor         # node dist/cli.js doctor (проверка целостности l1dder/ и docs/)
 make ci             # typecheck + build + test + test-e2e + doctor
 make release        # npm run release (выкатка новой версии из assets/releases.json в main, GitHub Pages и npm)

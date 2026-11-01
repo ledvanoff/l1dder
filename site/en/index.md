@@ -29,7 +29,7 @@ features:
   - icon: ✂️
     title: "Built-in Ponytail + Matt Pocock Skills"
     details: "Ships out of the box with 13 engineering skills from DietrichGebert/ponytail (Lazy Senior Dev) and mattpocock/skills (grilling, codebase-design, vertical TDD at seams, diagnosing-bugs)."
-    link: /en/agents-cli#2-📦-skills-manifest-l1dder-skills-json-package-json-for-skills
+    link: /en/agents-cli#_2-📦-skills-manifest-l1dder-skills-json-package-json-for-skills
     linkText: "Explore bundled skills →"
   - icon: 🤖
     title: "1-Second Multi-Agent Installer"

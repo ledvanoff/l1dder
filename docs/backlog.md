@@ -3,7 +3,7 @@
 > **Методология:** L1DDER (100% Dogfooding)
 > **Скиллы управления:** пополняется через `/l1-feature`, привязывается к спринтам через `/l1-planning`, статусы задач обновляются через `/l1-task` и `/l1-hotfix`.
 > **Источник истины по очерёдности:** [`docs/roadmap.md`](./roadmap.md)
-> **Последнее обновление:** 2026-10-21
+> **Последнее обновление:** 2026-11-01
 
 ---
 
@@ -13,6 +13,7 @@
 |-----------------|---------------|:--------------------:|:---------:|--------|-------------|-----------------------|
 | [`FEAT-001`](#feat-001) | Базовое ядро L1DDER v1.0.0 (CLI, 20 скиллов, skills.json, RU/EN, VitePress Docs) | [`IDEA-001`](./ideas.md#idea-001) | P0 | ✅ реализована | — | Завершено |
 | [`FEAT-002`](#feat-002) | Предрелизный гигиенический спринт, полигон на 2 моделях (Composer и Grok), аудит ponytail и релиз v1.0.0 | [`IDEA-002`](./ideas.md#idea-002) | P0 | ✅ реализована | [`FEAT-002`](./specs/FEAT-002-release-hygiene-v1/) | [`SPRINT-01`](./sprints/SPRINT-01-release-hygiene-v1/README.md) |
+| [`FEAT-003`](#feat-003) | SEO-база сайта и витрин проекта | [`IDEA-003`](./ideas.md#idea-003) | P1 | 🚧 реализация | [`FEAT-003`](./specs/FEAT-003-seo-foundation/) | [`SPRINT-02`](./sprints/SPRINT-02-seo-foundation/README.md) |
 
 ---
 
@@ -52,6 +53,34 @@
 | `FEAT-002.02` | `TASK-01.02` | Прогонка кодовой базы и всех 20 скиллов через `ponytail` (`ponytail-audit`, `ponytail-review`, `ponytail-debt`, `code-review`) и исправление косяков | `refactor` | ✅ реализована | [plan](./sprints/SPRINT-01-release-hygiene-v1/tasks/TASK-01.02-ponytail-skills-audit/plan.md) | [summary](./sprints/SPRINT-01-release-hygiene-v1/tasks/TASK-01.02-ponytail-skills-audit/summary.md) |
 | `FEAT-002.03` | `TASK-01.03` | Подготовка и выкатка релиза `l1dder@1.0.0` (`npm pack`, `CHANGELOG.md`, `releases.json`, git и деплой) | `chore` | ✅ реализована | [plan](./sprints/SPRINT-01-release-hygiene-v1/tasks/TASK-01.03-release-v1-0-0/plan.md) | [summary](./sprints/SPRINT-01-release-hygiene-v1/tasks/TASK-01.03-release-v1-0-0/summary.md) |
 | `FEAT-002.99` | `TASK-01.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)** *(Обязательная)* | `chore` | ✅ реализована | [plan](./sprints/SPRINT-01-release-hygiene-v1/tasks/TASK-01.99-doctor/plan.md) | [summary](./sprints/SPRINT-01-release-hygiene-v1/tasks/TASK-01.99-doctor/summary.md) |
+
+---
+
+### FEAT-003: SEO-база сайта и витрин проекта {#feat-003}
+
+| Поле паспорта | Значение |
+|---------------|----------|
+| **ID фичи / спеки** | `FEAT-003` |
+| **Родительская идея** | [`IDEA-003`](./ideas.md#idea-003) |
+| **Папка спецификации** | [`docs/specs/FEAT-003-seo-foundation/`](./specs/FEAT-003-seo-foundation/) |
+| **Приоритет** | `P1` |
+| **Статус фичи** | `🚧 реализация` |
+| **Назначенные спринты** | `SPRINT-02` |
+
+#### Спринт: `SPRINT-02` — SEO-база сайта и витрин без поломок сайта (`🚧 реализация`)
+- **ID спринта:** `SPRINT-02`
+- **Родительские ID:** `FEAT-003` → `IDEA-003`
+- **Цель спринта:** Дать поисковикам и ИИ-ассистентам корректные данные о L1DDER на сайте, GitHub и npm и строго доказать перед релизом, что сайт работает не хуже, чем до спринта.
+- **Документ спринта:** [`docs/sprints/SPRINT-02-seo-foundation/README.md`](./sprints/SPRINT-02-seo-foundation/README.md)
+
+| ID шага спеки | ID задачи спринта | Название задачи | Тип | Статус | Plan | Summary |
+|:-------------:|:-----------------:|-----------------|:---:|--------|------|---------|
+| `FEAT-003.01` | `TASK-02.01` | Снимок сайта до правок и автоматическая проверка сборки в `make test-e2e` | `chore` | 🚧 реализация | [plan](./sprints/SPRINT-02-seo-foundation/tasks/TASK-02.01-site-baseline-check/plan.md) | — |
+| `FEAT-003.02` | `TASK-02.02` | Модуль SEO, `sitemap.xml`, тексты и языковые связи для всех 18 страниц | `feat` | 📋 запланирована | — | — |
+| `FEAT-003.03` | `TASK-02.03` | Карточка превью, Open Graph и Twitter, теги подтверждения Google и Яндекса | `feat` | 📋 запланирована | — | — |
+| `FEAT-003.04` | `TASK-02.04` | `llms.txt` из общей таблицы страниц | `feat` | 📋 запланирована | — | — |
+| `FEAT-003.05` | `TASK-02.05` | Витрины: описание и темы GitHub, начало README, `description` и `keywords` в npm | `chore` | 📋 запланирована | — | — |
+| `FEAT-003.99` | `TASK-02.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)** *(Обязательная)*: браузерный гейт сайта и только после него релиз | `chore` | 📋 запланирована | — | — |
 
 ---
 

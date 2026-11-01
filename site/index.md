@@ -29,7 +29,7 @@ features:
   - icon: ✂️
     title: "Встроенная дисциплина Ponytail + Matt Pocock"
     details: "В коробку вшиты 13 инженерных скиллов из DietrichGebert/ponytail (Lazy Senior Dev) и mattpocock/skills (grilling, codebase-design, вертикальный TDD по швам, diagnosing-bugs)."
-    link: /agents-cli#2-📦-манифест-скиллов-l1dder-skills-json-«package-json-для-скиллов»
+    link: /agents-cli#_2-📦-манифест-скиллов-l1dder-skills-json-«package-json-для-скиллов»
     linkText: "Подробнее о скиллах →"
   - icon: 🤖
     title: "Мульти-агентная установка за 1 секунду"

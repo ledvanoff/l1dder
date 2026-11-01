@@ -1,0 +1,340 @@
+{
+  "pages": [
+    {
+      "path": "/l1dder/",
+      "h1": "L1DDER Spec-Driven & Roadmap-Gated AI Development",
+      "textLength": 3171,
+      "mermaidCount": 0,
+      "navLinks": [
+        "/l1dder/",
+        "/l1dder/agents-cli",
+        "/l1dder/cheatsheet",
+        "/l1dder/en/",
+        "/l1dder/flows",
+        "/l1dder/methodology",
+        "/l1dder/quickstart",
+        "https://github.com/ledvanoff/l1dder"
+      ]
+    },
+    {
+      "path": "/l1dder/agents-cli",
+      "h1": "🤖 Поддерживаемые ИИ-агенты, Манифест скиллов и Справочник CLI",
+      "textLength": 8588,
+      "mermaidCount": 0,
+      "navLinks": [
+        "/l1dder/",
+        "/l1dder/agents-cli",
+        "/l1dder/cheatsheet",
+        "/l1dder/en/agents-cli",
+        "/l1dder/flows",
+        "/l1dder/glossary",
+        "/l1dder/guide",
+        "/l1dder/methodology",
+        "/l1dder/quickstart",
+        "/l1dder/troubleshooting",
+        "https://github.com/ledvanoff/l1dder"
+      ]
+    },
+    {
+      "path": "/l1dder/cheatsheet",
+      "h1": "📋 3. Шпаргалка на 1 экран и FAQ ( L1DDER )",
+      "textLength": 5316,
+      "mermaidCount": 0,
+      "navLinks": [
+        "/l1dder/",
+        "/l1dder/agents-cli",
+        "/l1dder/cheatsheet",
+        "/l1dder/en/cheatsheet",
+        "/l1dder/flows",
+        "/l1dder/glossary",
+        "/l1dder/guide",
+        "/l1dder/methodology",
+        "/l1dder/quickstart",
+        "/l1dder/troubleshooting",
+        "https://github.com/ledvanoff/l1dder"
+      ]
+    },
+    {
+      "path": "/l1dder/en/",
+      "h1": "L1DDER Spec-Driven & Roadmap-Gated AI Development",
+      "textLength": 3045,
+      "mermaidCount": 0,
+      "navLinks": [
+        "/l1dder/",
+        "/l1dder/en/",
+        "/l1dder/en/agents-cli",
+        "/l1dder/en/cheatsheet",
+        "/l1dder/en/flows",
+        "/l1dder/en/methodology",
+        "/l1dder/en/quickstart",
+        "https://github.com/ledvanoff/l1dder"
+      ]
+    },
+    {
+      "path": "/l1dder/en/agents-cli",
+      "h1": "🤖 Supported AI Agents, Skills Manifest &amp; CLI Reference",
+      "textLength": 7719,
+      "mermaidCount": 0,
+      "navLinks": [
+        "/l1dder/agents-cli",
+        "/l1dder/en/",
+        "/l1dder/en/agents-cli",
+        "/l1dder/en/cheatsheet",
+        "/l1dder/en/flows",
+        "/l1dder/en/glossary",
+        "/l1dder/en/guide",
+        "/l1dder/en/methodology",
+        "/l1dder/en/quickstart",
+        "/l1dder/en/troubleshooting",
+        "https://github.com/ledvanoff/l1dder"
+      ]
+    },
+    {
+      "path": "/l1dder/en/cheatsheet",
+      "h1": "📋 3. One-Page Cheatsheet &amp; FAQ ( L1DDER )",
+      "textLength": 2882,
+      "mermaidCount": 0,
+      "navLinks": [
+        "/l1dder/cheatsheet",
+        "/l1dder/en/",
+        "/l1dder/en/agents-cli",
+        "/l1dder/en/cheatsheet",
+        "/l1dder/en/flows",
+        "/l1dder/en/glossary",
+        "/l1dder/en/guide",
+        "/l1dder/en/methodology",
+        "/l1dder/en/quickstart",
+        "/l1dder/en/troubleshooting",
+        "https://github.com/ledvanoff/l1dder"
+      ]
+    },
+    {
+      "path": "/l1dder/en/flows",
+      "h1": "🔍 2. Deep Dive into All L1DDER Flows",
+      "textLength": 1435,
+      "mermaidCount": 6,
+      "navLinks": [
+        "/l1dder/en/",
+        "/l1dder/en/agents-cli",
+        "/l1dder/en/cheatsheet",
+        "/l1dder/en/flows",
+        "/l1dder/en/glossary",
+        "/l1dder/en/guide",
+        "/l1dder/en/methodology",
+        "/l1dder/en/quickstart",
+        "/l1dder/en/troubleshooting",
+        "/l1dder/flows",
+        "https://github.com/ledvanoff/l1dder"
+      ]
+    },
+    {
+      "path": "/l1dder/en/glossary",
+      "h1": "Glossary (L1DDER)",
+      "textLength": 3897,
+      "mermaidCount": 0,
+      "navLinks": [
+        "/l1dder/en/",
+        "/l1dder/en/agents-cli",
+        "/l1dder/en/cheatsheet",
+        "/l1dder/en/flows",
+        "/l1dder/en/glossary",
+        "/l1dder/en/guide",
+        "/l1dder/en/methodology",
+        "/l1dder/en/quickstart",
+        "/l1dder/en/troubleshooting",
+        "/l1dder/glossary",
+        "https://github.com/ledvanoff/l1dder"
+      ]
+    },
+    {
+      "path": "/l1dder/en/guide",
+      "h1": "🚀 L1DDER — Human Guide (Vibe-Coder Friendly)",
+      "textLength": 3580,
+      "mermaidCount": 2,
+      "navLinks": [
+        "/l1dder/en/",
+        "/l1dder/en/agents-cli",
+        "/l1dder/en/cheatsheet",
+        "/l1dder/en/flows",
+        "/l1dder/en/glossary",
+        "/l1dder/en/guide",
+        "/l1dder/en/methodology",
+        "/l1dder/en/quickstart",
+        "/l1dder/en/troubleshooting",
+        "/l1dder/guide",
+        "https://github.com/ledvanoff/l1dder"
+      ]
+    },
+    {
+      "path": "/l1dder/en/methodology",
+      "h1": "L1DDER — Development Methodology",
+      "textLength": 4822,
+      "mermaidCount": 1,
+      "navLinks": [
+        "/l1dder/en/",
+        "/l1dder/en/agents-cli",
+        "/l1dder/en/cheatsheet",
+        "/l1dder/en/flows",
+        "/l1dder/en/glossary",
+        "/l1dder/en/guide",
+        "/l1dder/en/methodology",
+        "/l1dder/en/quickstart",
+        "/l1dder/en/troubleshooting",
+        "/l1dder/methodology",
+        "https://github.com/ledvanoff/l1dder"
+      ]
+    },
+    {
+      "path": "/l1dder/en/quickstart",
+      "h1": "⚡ 1. Quickstart &amp; Live Walkthrough in L1DDER",
+      "textLength": 3339,
+      "mermaidCount": 0,
+      "navLinks": [
+        "/l1dder/en/",
+        "/l1dder/en/agents-cli",
+        "/l1dder/en/cheatsheet",
+        "/l1dder/en/flows",
+        "/l1dder/en/glossary",
+        "/l1dder/en/guide",
+        "/l1dder/en/methodology",
+        "/l1dder/en/quickstart",
+        "/l1dder/en/troubleshooting",
+        "/l1dder/quickstart",
+        "https://github.com/ledvanoff/l1dder"
+      ]
+    },
+    {
+      "path": "/l1dder/en/troubleshooting",
+      "h1": "🩹 Slash Commands /l1-* Not Showing",
+      "textLength": 2952,
+      "mermaidCount": 0,
+      "navLinks": [
+        "/l1dder/en/",
+        "/l1dder/en/agents-cli",
+        "/l1dder/en/cheatsheet",
+        "/l1dder/en/flows",
+        "/l1dder/en/glossary",
+        "/l1dder/en/guide",
+        "/l1dder/en/methodology",
+        "/l1dder/en/quickstart",
+        "/l1dder/en/troubleshooting",
+        "/l1dder/troubleshooting",
+        "https://github.com/ledvanoff/l1dder"
+      ]
+    },
+    {
+      "path": "/l1dder/flows",
+      "h1": "🔍 2. Подробный разбор всех цепочек L1DDER",
+      "textLength": 4562,
+      "mermaidCount": 6,
+      "navLinks": [
+        "/l1dder/",
+        "/l1dder/agents-cli",
+        "/l1dder/cheatsheet",
+        "/l1dder/en/flows",
+        "/l1dder/flows",
+        "/l1dder/glossary",
+        "/l1dder/guide",
+        "/l1dder/methodology",
+        "/l1dder/quickstart",
+        "/l1dder/troubleshooting",
+        "https://github.com/ledvanoff/l1dder"
+      ]
+    },
+    {
+      "path": "/l1dder/glossary",
+      "h1": "Словарь терминов (L1DDER)",
+      "textLength": 8225,
+      "mermaidCount": 0,
+      "navLinks": [
+        "/l1dder/",
+        "/l1dder/agents-cli",
+        "/l1dder/cheatsheet",
+        "/l1dder/en/glossary",
+        "/l1dder/flows",
+        "/l1dder/glossary",
+        "/l1dder/guide",
+        "/l1dder/methodology",
+        "/l1dder/quickstart",
+        "/l1dder/troubleshooting",
+        "https://github.com/ledvanoff/l1dder"
+      ]
+    },
+    {
+      "path": "/l1dder/guide",
+      "h1": "🚀 L1DDER — Путеводитель для человека (Vibe-Coder Friendly)",
+      "textLength": 4762,
+      "mermaidCount": 2,
+      "navLinks": [
+        "/l1dder/",
+        "/l1dder/agents-cli",
+        "/l1dder/cheatsheet",
+        "/l1dder/en/guide",
+        "/l1dder/flows",
+        "/l1dder/glossary",
+        "/l1dder/guide",
+        "/l1dder/methodology",
+        "/l1dder/quickstart",
+        "/l1dder/troubleshooting",
+        "https://github.com/ledvanoff/l1dder"
+      ]
+    },
+    {
+      "path": "/l1dder/methodology",
+      "h1": "L1DDER — Методология разработки",
+      "textLength": 11153,
+      "mermaidCount": 1,
+      "navLinks": [
+        "/l1dder/",
+        "/l1dder/agents-cli",
+        "/l1dder/cheatsheet",
+        "/l1dder/en/methodology",
+        "/l1dder/flows",
+        "/l1dder/glossary",
+        "/l1dder/guide",
+        "/l1dder/methodology",
+        "/l1dder/quickstart",
+        "/l1dder/troubleshooting",
+        "https://github.com/ledvanoff/l1dder"
+      ]
+    },
+    {
+      "path": "/l1dder/quickstart",
+      "h1": "⚡ 1. Быстрый старт и живой пример работы в L1DDER",
+      "textLength": 7017,
+      "mermaidCount": 0,
+      "navLinks": [
+        "/l1dder/",
+        "/l1dder/agents-cli",
+        "/l1dder/cheatsheet",
+        "/l1dder/en/quickstart",
+        "/l1dder/flows",
+        "/l1dder/glossary",
+        "/l1dder/guide",
+        "/l1dder/methodology",
+        "/l1dder/quickstart",
+        "/l1dder/troubleshooting",
+        "https://github.com/ledvanoff/l1dder"
+      ]
+    },
+    {
+      "path": "/l1dder/troubleshooting",
+      "h1": "🩹 Не видны слэш-команды /l1-*",
+      "textLength": 2946,
+      "mermaidCount": 0,
+      "navLinks": [
+        "/l1dder/",
+        "/l1dder/agents-cli",
+        "/l1dder/cheatsheet",
+        "/l1dder/en/troubleshooting",
+        "/l1dder/flows",
+        "/l1dder/glossary",
+        "/l1dder/guide",
+        "/l1dder/methodology",
+        "/l1dder/quickstart",
+        "/l1dder/troubleshooting",
+        "https://github.com/ledvanoff/l1dder"
+      ]
+    }
+  ]
+}
