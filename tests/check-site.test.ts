@@ -19,11 +19,16 @@ interface PageOptions {
   readonly description?: string | null;
   readonly canonical?: string | null;
   readonly hreflangs?: readonly string[];
+  readonly enHref?: string;
   readonly ogTitle?: string;
   readonly ogDescription?: string;
   readonly ogUrl?: string;
   readonly ogImage?: string;
   readonly twitterCard?: string | null;
+}
+
+function enPath(path: string): string {
+  return path.startsWith("/l1dder/en/") ? path : path.replace("/l1dder/", "/l1dder/en/");
 }
 
 function page({
@@ -35,6 +40,7 @@ function page({
   description = `Description of ${path}`,
   canonical = SITE_ORIGIN + path,
   hreflangs = ["ru", "en", "x-default"],
+  enHref = enPath(path),
   ogTitle = title ?? "",
   ogDescription = description ?? "",
   ogUrl = SITE_ORIGIN + path,
@@ -45,7 +51,10 @@ function page({
     title === null ? "" : `<title>${title}</title>`,
     description === null ? "" : `<meta name="description" content="${description}">`,
     canonical === null ? "" : `<link rel="canonical" href="${canonical}">`,
-    ...hreflangs.map((lang) => `<link rel="alternate" hreflang="${lang}" href="${SITE_ORIGIN + path}">`),
+    ...hreflangs.map((lang) => {
+      const target = lang === "ru" ? path.replace("/l1dder/en/", "/l1dder/") : enHref;
+      return `<link rel="alternate" hreflang="${lang}" href="${SITE_ORIGIN + target}">`;
+    }),
     `<meta property="og:title" content="${ogTitle}">`,
     `<meta property="og:description" content="${ogDescription}">`,
     `<meta property="og:url" content="${ogUrl}">`,
@@ -61,6 +70,7 @@ function page({
 
 function png(width: number, height: number): Buffer {
   const header = Buffer.alloc(24);
+  header.write("\x89PNG\r\n\x1a\n", 0, "latin1");
   header.writeUInt32BE(width, 16);
   header.writeUInt32BE(height, 20);
   return header;
@@ -74,14 +84,19 @@ function llms(...paths: string[]): string {
   return `# L1DDER\n\n${paths.map((path) => `- [Page](${SITE_ORIGIN + path}): About it`).join("\n")}\n\n- [npm](https://www.npmjs.com/package/l1dder)\n`;
 }
 
+const ALL_PATHS = ["/l1dder/", "/l1dder/guide", "/l1dder/en/", "/l1dder/en/guide"];
+
 function validPages(): Record<string, string | Buffer> {
   return {
     "index.html": page({ path: "/l1dder/", h1: "Home" }),
     "guide.html": page(),
+    "en/index.html": page({ path: "/l1dder/en/", h1: "Home EN" }),
+    "en/guide.html": page({ path: "/l1dder/en/guide", h1: "Guide EN" }),
     "style.css": "",
+    "sub/note.txt": "",
     "og-card.png": png(1200, 630),
-    "sitemap.xml": sitemap("/l1dder/", "/l1dder/guide"),
-    "llms.txt": llms("/l1dder/", "/l1dder/guide"),
+    "sitemap.xml": sitemap(...ALL_PATHS),
+    "llms.txt": llms(...ALL_PATHS),
     "404.html": "<html><body>Not found</body></html>",
   };
 }
@@ -120,6 +135,8 @@ describe("check-site: built site structure", () => {
     ["a missing anchor on another page", '<a href="/l1dder/guide#nope">x</a>', "/l1dder/guide#nope"],
     ["a missing anchor on the same page", '<a href="#nope">x</a>', "#nope"],
     ["a link without the base path", '<a href="/guide">x</a>', "outside /l1dder/: /guide"],
+    ["a link to a folder without a page", '<a href="/l1dder/sub#x">x</a>', "broken link: /l1dder/sub#x"],
+    ["a malformed anchor", '<a href="#100%">x</a>', "broken anchor: #100%"],
     ["a broken absolute link to the site", '<a href="https://ledvanoff.github.io/l1dder/missing">x</a>', "/l1dder/missing"],
   ])("fails on %s and names it", (_name, snippet, expected) => {
     const { status, stderr } = run(makeSite({ ...validPages(), "guide.html": page({ body: snippet }) }));
@@ -136,8 +153,6 @@ describe("check-site: built site structure", () => {
       ...validPages(),
       "guide.html": page({ body }),
       "en/index.html": page({ path: "/l1dder/en/", h1: "English", body: '<span id="обзор">Overview</span>' }),
-      "sitemap.xml": sitemap("/l1dder/", "/l1dder/en/", "/l1dder/guide"),
-      "llms.txt": llms("/l1dder/", "/l1dder/en/", "/l1dder/guide"),
     });
 
     const { status, stderr } = run(site);
@@ -163,16 +178,31 @@ describe("check-site: built site structure", () => {
 
 describe("check-site: sitemap.xml and page tags", () => {
   it.each<[string, Record<string, string | Buffer>, string]>([
-    ["a page missing from sitemap.xml", { "sitemap.xml": sitemap("/l1dder/") }, "/l1dder/guide: not in sitemap.xml"],
+    ["a page missing from sitemap.xml", { "sitemap.xml": sitemap("/l1dder/", "/l1dder/en/", "/l1dder/en/guide") }, "/l1dder/guide: not in sitemap.xml"],
+    [
+      "a repeated address in sitemap.xml",
+      { "sitemap.xml": sitemap(...ALL_PATHS, "/l1dder/guide") },
+      "/l1dder/guide: listed twice in sitemap.xml",
+    ],
+    [
+      "an address of another host in sitemap.xml",
+      { "sitemap.xml": sitemap(...ALL_PATHS).replace("</urlset>", "<url><loc>https://example.com/foo</loc></url></urlset>") },
+      "https://example.com/foo: outside the site in sitemap.xml",
+    ],
     [
       "an unknown address in sitemap.xml",
-      { "sitemap.xml": sitemap("/l1dder/", "/l1dder/guide", "/l1dder/old") },
+      { "sitemap.xml": sitemap(...ALL_PATHS, "/l1dder/old") },
       "/l1dder/old: in sitemap.xml but not a page",
     ],
-    ["a page missing from llms.txt", { "llms.txt": llms("/l1dder/") }, "/l1dder/guide: not in llms.txt"],
+    ["a page missing from llms.txt", { "llms.txt": llms("/l1dder/", "/l1dder/en/", "/l1dder/en/guide") }, "/l1dder/guide: not in llms.txt"],
+    [
+      "a page without a description in llms.txt",
+      { "llms.txt": llms(...ALL_PATHS).replace(": About it", "") },
+      "/l1dder/: no description in llms.txt",
+    ],
     [
       "an unknown address in llms.txt",
-      { "llms.txt": llms("/l1dder/", "/l1dder/guide", "/l1dder/old") },
+      { "llms.txt": llms(...ALL_PATHS, "/l1dder/old") },
       "/l1dder/old: in llms.txt but not a page",
     ],
     ["a page without a title", { "guide.html": page({ title: null }) }, "guide.html: no title"],
@@ -191,6 +221,11 @@ describe("check-site: sitemap.xml and page tags", () => {
     ["a page without a canonical address", { "guide.html": page({ canonical: null }) }, "guide.html: canonical is undefined"],
     ["a missing language link", { "guide.html": page({ hreflangs: ["ru", "x-default"] }) }, "guide.html: no hreflang en"],
     [
+      "a language link to another page",
+      { "guide.html": page({ enHref: "/l1dder/en/" }) },
+      "guide.html: hreflang en is https://ledvanoff.github.io/l1dder/en/",
+    ],
+    [
       "an og:title that differs from the title",
       { "guide.html": page({ ogTitle: "Other" }) },
       "guide.html: og:title is Other",
@@ -206,6 +241,7 @@ describe("check-site: sitemap.xml and page tags", () => {
       { "guide.html": page({ ogImage: "https://ledvanoff.github.io/l1dder/missing.png" }) },
       "guide.html: og:image not found",
     ],
+    ["a preview image that is not a PNG", { "og-card.png": "not an image" }, "guide.html: og:image is not a PNG"],
     ["a preview image of the wrong size", { "og-card.png": png(800, 600) }, "guide.html: og:image is 800x600"],
     ["a page without a Twitter card", { "guide.html": page({ twitterCard: null }) }, "guide.html: no twitter:card"],
   ])("fails on %s", (_name, changes, expected) => {
@@ -234,6 +270,30 @@ describe("check-site: sitemap.xml and page tags", () => {
   });
 });
 
+describe("check-site: arguments and malformed input", () => {
+  it.each([
+    ["no pages list", {}],
+    ["a page without numbers", { pages: [{ path: "/l1dder/", h1: "Home", textLength: "x", navLinks: [] }] }],
+  ])("fails on a baseline with %s instead of passing without comparing", (_name, content) => {
+    const site = makeSite(validPages());
+    const baseline = join(site, "baseline.json");
+    writeFileSync(baseline, JSON.stringify(content));
+
+    const { status, stderr } = run(site, "--baseline", baseline);
+
+    expect(status).toBe(1);
+    expect(stderr).toContain("not a valid baseline");
+  });
+});
+
+describe("check-site: flags", () => {
+  it("fails on --baseline without a file instead of skipping the comparison", () => {
+    const { status } = run(makeSite(validPages()), "--baseline");
+
+    expect(status).not.toBe(0);
+  });
+});
+
 describe("check-site: comparison with the baseline", () => {
   function writeBaseline(site: string): string {
     const baseline = join(site, "baseline.json");
@@ -246,7 +306,7 @@ describe("check-site: comparison with the baseline", () => {
 
     const { pages } = JSON.parse(readFileSync(writeBaseline(site), "utf-8"));
 
-    expect(pages.map((entry: { path: string }) => entry.path)).toEqual(["/l1dder/", "/l1dder/en/", "/l1dder/guide"]);
+    expect(pages.map((entry: { path: string }) => entry.path)).toEqual(["/l1dder/", "/l1dder/en/", "/l1dder/en/guide", "/l1dder/guide"]);
   });
 
   it("passes when nothing got worse, including more text and new menu links", () => {

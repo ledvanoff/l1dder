@@ -18,7 +18,7 @@
 - `scripts/check-site.mjs` — проверка готовой сборки без новых зависимостей: ссылки, якоря, файлы и базовый путь, сравнение со снимком и запись снимка.
 - `tests/check-site.test.ts` — 18 тестов на маленьких примерах сборки.
 - `Makefile` — проверка в `make test-e2e`, новая цель `make site-gate`.
-- `docs/sprints/SPRINT-02-seo-foundation/site-baseline.json` — снимок 18 страниц до SEO-правок, совпадает с живым сайтом.
+- `docs/site-baseline.json` — снимок 18 страниц до SEO-правок, совпадает с живым сайтом (позже перенесён сюда из папки спринта).
 - `site/index.md`, `site/en/index.md` — исправлены две битые ссылки на раздел манифеста (не хватало `_` в якоре).
 - `l1dder/rules/30-tech-stack.mdc` и `docs/specs/FEAT-003-seo-foundation/{design,tasks}.md` — описаны новый скрипт и цель `make site-gate`.
 

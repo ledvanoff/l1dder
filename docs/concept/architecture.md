@@ -32,4 +32,5 @@ flowchart LR
 
 ## 3. Локальная разработка и проверка
 
-- Полный цикл проверки: `make ci` (`npm run typecheck && npm run build && npm test && npm run docs:build && node dist/cli.js doctor`).
+- Полный цикл проверки: `make ci` (`npm run typecheck && npm run build && npm test && npm run docs:build && node scripts/check-site.mjs && node dist/cli.js doctor`).
+- Сайт перед релизом: `make site-gate` (сравнение со снимком). SEO-данные страниц, `sitemap.xml` и `llms.txt` собираются из `site/.vitepress/seo.mts`. Корень домена (`robots.txt`, теги подтверждения поисковиков) живёт в отдельном репозитории `ledvanoff/ledvanoff.github.io`.

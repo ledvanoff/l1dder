@@ -9,26 +9,21 @@
  *
  * Runs in `make test-e2e`; the baseline comparison runs in `make site-gate`.
  */
-import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parseArgs } from "node:util";
 
 const SITE_ORIGIN = "https://ledvanoff.github.io";
 const BASE = "/l1dder/";
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-function readArgs(argv) {
-  const args = { dist: join(repoRoot, "site", ".vitepress", "dist") };
-  for (let i = 0; i < argv.length; i++) {
-    if (argv[i] === "--baseline") args.baseline = argv[++i];
-    else if (argv[i] === "--write-baseline") args.writeBaseline = argv[++i];
-    else args.dist = resolve(argv[i]);
-  }
-  return args;
-}
-
-const args = readArgs(process.argv.slice(2));
-const dist = args.dist;
+const { values, positionals } = parseArgs({
+  allowPositionals: true,
+  options: { baseline: { type: "string" }, "write-baseline": { type: "string" } },
+});
+const args = { baseline: values.baseline, writeBaseline: values["write-baseline"] };
+const dist = resolve(positionals[0] ?? join(repoRoot, "site", ".vitepress", "dist"));
 
 const files = existsSync(dist)
   ? readdirSync(dist, { recursive: true })
@@ -44,7 +39,15 @@ if (files.length === 0) {
 function resolveFile(pathname) {
   const path = pathname.slice(BASE.length);
   const candidates = path === "" || path.endsWith("/") ? [`${path}index.html`] : [path, `${path}.html`];
-  return candidates.map((candidate) => join(dist, candidate)).find((candidate) => existsSync(candidate));
+  return candidates.map((candidate) => join(dist, candidate)).find((candidate) => statSync(candidate, { throwIfNoEntry: false })?.isFile());
+}
+
+function decodeAnchor(anchor) {
+  try {
+    return decodeURIComponent(anchor);
+  } catch {
+    return anchor; // a malformed escape cannot match an id and is reported as a broken anchor
+  }
 }
 
 function idsOf(file) {
@@ -61,6 +64,20 @@ function stripTags(html) {
 
 function metaProperty(html, name) {
   return html.match(new RegExp(`<meta property="${name}" content="([^"]*)"`))?.[1];
+}
+
+function readBaseline(file) {
+  const { pages } = JSON.parse(readFileSync(file, "utf-8"));
+  const valid = (page) =>
+    typeof page.path === "string" &&
+    Number.isFinite(page.textLength) &&
+    Number.isFinite(page.mermaidCount) &&
+    Array.isArray(page.navLinks);
+  if (!Array.isArray(pages) || !pages.every(valid)) {
+    console.error(`✗ ${file} is not a valid baseline. Rewrite it with --write-baseline.`);
+    process.exit(1);
+  }
+  return pages;
 }
 
 function menuLink(href) {
@@ -104,10 +121,8 @@ for (const file of files) {
     if (!value) errors.push(`${file}: no ${name}`);
     else if (seen[name].has(value)) errors.push(`${file}: same ${name} as ${seen[name].get(value)}`);
     else seen[name].set(value, file);
-  }
-  for (const name of ["title", "description"]) {
-    const value = metaProperty(html, `og:${name}`);
-    if (value !== tags[name]) errors.push(`${file}: og:${name} is ${value}`);
+    const ogValue = metaProperty(html, `og:${name}`);
+    if (ogValue !== value) errors.push(`${file}: og:${name} is ${ogValue}`);
   }
   const ogImage = metaProperty(html, "og:image");
   const imageFile = ogImage?.startsWith(SITE_ORIGIN + BASE) ? resolveFile(new URL(ogImage).pathname) : undefined;
@@ -115,16 +130,24 @@ for (const file of files) {
     errors.push(`${file}: og:image not found: ${ogImage}`);
   } else {
     const png = readFileSync(imageFile);
-    const size = `${png.readUInt32BE(16)}x${png.readUInt32BE(20)}`;
-    if (size !== "1200x630") errors.push(`${file}: og:image is ${size}, expected 1200x630`);
+    if (png.length < 24 || png.toString("latin1", 0, 8) !== "\x89PNG\r\n\x1a\n") {
+      errors.push(`${file}: og:image is not a PNG`);
+    } else {
+      const size = `${png.readUInt32BE(16)}x${png.readUInt32BE(20)}`;
+      if (size !== "1200x630") errors.push(`${file}: og:image is ${size}, expected 1200x630`);
+    }
   }
   if (!html.includes('<meta name="twitter:card" content="summary_large_image"')) errors.push(`${file}: no twitter:card`);
   const ogUrl = metaProperty(html, "og:url");
   if (ogUrl !== SITE_ORIGIN + pagePath(file)) errors.push(`${file}: og:url is ${ogUrl}`);
   const canonical = html.match(/<link rel="canonical" href="([^"]*)"/)?.[1];
   if (canonical !== SITE_ORIGIN + pagePath(file)) errors.push(`${file}: canonical is ${canonical}`);
-  for (const lang of ["ru", "en", "x-default"]) {
-    if (!html.includes(`<link rel="alternate" hreflang="${lang}"`)) errors.push(`${file}: no hreflang ${lang}`);
+  const ruPath = pagePath(file.replace(/^en\//, ""));
+  const enPath = pagePath(`en/${file.replace(/^en\//, "")}`);
+  for (const [lang, path] of [["ru", ruPath], ["en", enPath], ["x-default", enPath]]) {
+    const href = html.match(new RegExp(`<link rel="alternate" hreflang="${lang}" href="([^"]*)"`))?.[1];
+    if (href === undefined) errors.push(`${file}: no hreflang ${lang}`);
+    else if (href !== SITE_ORIGIN + path) errors.push(`${file}: hreflang ${lang} is ${href}, expected ${SITE_ORIGIN + path}`);
   }
   for (const [, href] of html.matchAll(/\b(?:href|src)="([^"]+)"/g)) {
     const url = new URL(href, SITE_ORIGIN + pagePath(file));
@@ -135,7 +158,7 @@ for (const file of files) {
     }
     const target = resolveFile(url.pathname);
     if (target === undefined) errors.push(`${file}: broken link: ${href}`);
-    else if (url.hash.length > 1 && !idsOf(target).has(decodeURIComponent(url.hash.slice(1)))) errors.push(`${file}: broken anchor: ${href}`);
+    else if (url.hash.length > 1 && !idsOf(target).has(decodeAnchor(url.hash.slice(1)))) errors.push(`${file}: broken anchor: ${href}`);
   }
 }
 for (const [name, listedUrls] of [
@@ -147,19 +170,27 @@ for (const [name, listedUrls] of [
     errors.push(`${name} is missing`);
     continue;
   }
-  const listed = new Set(
-    listedUrls(readFileSync(listing, "utf-8"))
-      .filter((url) => url.startsWith(SITE_ORIGIN))
-      .map((url) => new URL(url).pathname),
-  );
+  const text = readFileSync(listing, "utf-8");
+  const urls = listedUrls(text);
+  if (name === "sitemap.xml") {
+    for (const url of urls) {
+      if (!url.startsWith(SITE_ORIGIN)) errors.push(`${url}: outside the site in ${name}`);
+    }
+  }
+  const ownPaths = urls.filter((url) => url.startsWith(SITE_ORIGIN)).map((url) => new URL(url).pathname);
+  for (const path of new Set(ownPaths.filter((path, i) => ownPaths.indexOf(path) !== i))) {
+    errors.push(`${path}: listed twice in ${name}`);
+  }
+  const listed = new Set(ownPaths);
   for (const page of pages) {
     if (!listed.has(page.path)) errors.push(`${page.path}: not in ${name}`);
+    else if (name === "llms.txt" && !text.includes(`](${SITE_ORIGIN + page.path}): `)) errors.push(`${page.path}: no description in ${name}`);
     listed.delete(page.path);
   }
   for (const path of listed) errors.push(`${path}: in ${name} but not a page`);
 }
 if (args.baseline) {
-  const baselinePages = JSON.parse(readFileSync(args.baseline, "utf-8")).pages;
+  const baselinePages = readBaseline(args.baseline);
   const known = new Set(baselinePages.map((page) => page.path));
   for (const page of pages) {
     if (!known.has(page.path)) errors.push(`${page.path}: page is not in the baseline`);

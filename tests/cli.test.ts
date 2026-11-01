@@ -622,7 +622,7 @@ describe("HOTFIX-004 regression: GitHub release notes are bilingual and cover on
 
 // shortcut: skipped on Windows because the script shells out to `make`; the release runs from macOS/Linux, revisit if that changes
 describe.skipIf(process.platform === "win32")("HOTFIX-005 regression: make release runs to the end", () => {
-  it("commits metadata, merges dev into main, and pushes both branches with the tag", () => {
+  function prepareRepo(gate: string) {
     const base = makeTempDir();
     const remote = join(base, "remote.git");
     const repo = join(base, "repo");
@@ -637,7 +637,7 @@ describe.skipIf(process.platform === "win32")("HOTFIX-005 regression: make relea
     git(repo, "config", "user.email", "test@example.com");
     git(repo, "config", "commit.gpgsign", "false");
     copyFileSync(fileURLToPath(new URL("../scripts/release.mjs", import.meta.url)), join(repo, "scripts/release.mjs"));
-    writeFileSync(join(repo, "Makefile"), "ci:\n\t@true\n", "utf-8");
+    writeFileSync(join(repo, "Makefile"), `ci:\n\t@true\nsite-gate:\n\t@${gate}\n`, "utf-8");
     writeFileSync(join(repo, "assets/releases.json"), JSON.stringify({ releases: [{ version: "9.9.9" }] }), "utf-8");
     git(repo, "add", "-A");
     git(repo, "commit", "-q", "-m", "init");
@@ -645,6 +645,21 @@ describe.skipIf(process.platform === "win32")("HOTFIX-005 regression: make relea
     git(repo, "remote", "add", "origin", remote);
     git(repo, "push", "-q", "origin", "main", "dev");
     writeFileSync(join(repo, "CHANGELOG.md"), "metadata from make ci\n", "utf-8");
+    return { remote, repo, git };
+  }
+
+  it("does not release when the site gate fails", () => {
+    const { remote, repo, git } = prepareRepo("false");
+
+    const { status } = spawnSync(process.execPath, ["scripts/release.mjs"], { cwd: repo, encoding: "utf-8" });
+
+    expect(status).not.toBe(0);
+    expect(git(remote, "tag", "--list")).toBe("");
+    expect(git(remote, "log", "-1", "--format=%s", "main")).toBe("init");
+  });
+
+  it("commits metadata, merges dev into main, and pushes both branches with the tag", () => {
+    const { remote, repo, git } = prepareRepo("true");
 
     const { status, stderr } = spawnSync(process.execPath, ["scripts/release.mjs"], { cwd: repo, encoding: "utf-8" });
 

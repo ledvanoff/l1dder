@@ -9,9 +9,7 @@ import { buildPageSeo, renderLlmsTxt, SITE_URL } from "./seo.mjs";
 export default withMermaid(
   defineConfig({
     title: "L1DDER",
-    description:
-      "Spec-Driven & Roadmap-Gated AI Development Framework for Cursor, Claude Code, Codex, Windsurf, Copilot, OpenCode, and Cline",
-    base: "/l1dder/",
+    base: new URL(SITE_URL).pathname,
     cleanUrls: true,
     sitemap: { hostname: SITE_URL },
     buildEnd(siteConfig) {
@@ -22,15 +20,13 @@ export default withMermaid(
       pageData.title = title;
       pageData.titleTemplate = false;
       pageData.description = description;
-      pageData.frontmatter.head = [...(pageData.frontmatter.head ?? []), ...head];
+      pageData.frontmatter.head = head;
     },
     locales: {
       root: {
         label: "Русский",
         lang: "ru",
         title: "L1DDER",
-        description:
-          "Spec-Driven & Roadmap-Gated фреймворк разработки с ИИ-агентами (Zero Hidden State)",
         themeConfig: {
           nav: [
             { text: "Главная", link: "/" },
@@ -67,8 +63,6 @@ export default withMermaid(
         lang: "en",
         link: "/en/",
         title: "L1DDER",
-        description:
-          "Spec-Driven & Roadmap-Gated AI Development Framework (Zero Hidden State)",
         themeConfig: {
           nav: [
             { text: "Home", link: "/en/" },

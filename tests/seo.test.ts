@@ -102,7 +102,12 @@ describe("renderLlmsTxt", () => {
   });
 
   it("lists every page of the table once", () => {
-    expect(renderLlmsTxt().match(/^- \[.+\]\(https:\/\/ledvanoff\.github\.io\/l1dder\//gm)).toHaveLength(18);
+    const text = renderLlmsTxt();
+
+    for (const [relativePath, { title, description }] of Object.entries(SEO_PAGES)) {
+      const url = buildPageSeo(relativePath).head.find(([, attrs]) => attrs.rel === "canonical")?.[1].href;
+      expect(text.split(`- [${title}](${url}): ${description}`)).toHaveLength(2);
+    }
   });
 
   it("lists pages under a section of their language", () => {
@@ -133,7 +138,6 @@ describe("SEO table", () => {
       .filter((file) => file.endsWith(".md") && !file.startsWith(".vitepress/"));
 
     expect(Object.keys(SEO_PAGES).sort()).toEqual(pages.sort());
-    expect(pages).toHaveLength(18);
   });
 
   it("has unique titles and descriptions of a length that fits search results", () => {

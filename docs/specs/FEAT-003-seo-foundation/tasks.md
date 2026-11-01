@@ -14,9 +14,9 @@
 
 | Статус | ID шага спеки | ID задачи спринта (`SPRINT-02`) | Тип | Название задачи | Ключевые артефакты |
 |:------:|:-------------:|:-------------------------------:|:---:|-----------------|--------------------|
-| [x] | `FEAT-003.01` | `TASK-02.01` | `chore` | Снимок сайта до правок и автоматическая проверка сборки в `make test-e2e` | `docs/sprints/SPRINT-02-seo-foundation/site-baseline.json`, `scripts/check-site.mjs`, `Makefile`, `tests/` |
+| [x] | `FEAT-003.01` | `TASK-02.01` | `chore` | Снимок сайта до правок и автоматическая проверка сборки в `make test-e2e` | `docs/site-baseline.json`, `scripts/check-site.mjs`, `Makefile`, `tests/` |
 | [x] | `FEAT-003.02` | `TASK-02.02` | `feat` | Модуль SEO, `sitemap.xml`, тексты и языковые связи для всех 18 страниц | `site/.vitepress/seo.mts`, `site/.vitepress/config.mts`, `tests/` |
-| [x] | `FEAT-003.03` | `TASK-02.03` | `feat` | Карточка превью, Open Graph и Twitter, теги подтверждения Google и Яндекса | `site/public/`, `site/.vitepress/seo.mts`, `site/.vitepress/config.mts` |
+| [x] | `FEAT-003.03` | `TASK-02.03` | `feat` | Карточка превью, Open Graph и Twitter | `site/public/`, `site/.vitepress/seo.mts`, `site/.vitepress/config.mts` |
 | [x] | `FEAT-003.04` | `TASK-02.04` | `feat` | `llms.txt` из общей таблицы страниц | `site/.vitepress/seo.mts`, `site/.vitepress/config.mts`, `tests/` |
 | [x] | `FEAT-003.05` | `TASK-02.05` | `chore` | Витрины: описание и темы GitHub, начало README, `description` и `keywords` в npm | `README.md`, `package.json`, настройки репозитория на GitHub |
 | [ ] | `FEAT-003.99` | `TASK-02.99` | `chore` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)** *(Обязательная финальная задача)*: браузерный гейт сайта и только после него релиз по отдельному подтверждению | `docs/`, `site/`, `l1dder/rules/` |
@@ -24,7 +24,7 @@
 ### Гейт сайта в `TASK-02.99` (все пункты обязательны до релиза)
 
 1. `make ci` завершается без ошибок, включая `scripts/check-site.mjs`.
-2. `make site-gate`: те же 18 адресов и H1, текст и диаграммы не уменьшились, меню не потеряло ссылок.
+2. `make site-gate` (также запускается внутри `make release`): те же 18 адресов и H1, текст и диаграммы не уменьшились, меню не потеряло ссылок.
 3. В браузере на production-сборке с базовым путём `/l1dder/` пройдены все 18 страниц: нет ошибок консоли, диаграммы отрисованы.
 4. Работают поиск, боковая панель, меню и переключатель языка: он ведёт на ту же страницу другого языка.
 5. Проверены светлая и тёмная темы, на ширине 375 px нет горизонтальной прокрутки.

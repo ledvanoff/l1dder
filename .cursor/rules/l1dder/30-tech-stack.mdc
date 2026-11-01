@@ -40,7 +40,7 @@ L!DDER-REBORN/
 │   ├── sync-release-meta.mjs   # Автосинхронизация version в package.json и генерация CHANGELOG.md из assets/releases.json
 │   ├── sync-root-l1dder.mjs    # Синхронизация догфудинг-инстанса ./l1dder/ и папок агентов
 │   ├── sync-site-docs.mjs      # Синхронизация страниц VitePress сайта ./site/ из assets/i18n/{ru,en}/
-│   ├── check-site.mjs          # Проверка готовой сборки сайта: ссылки, якоря, файлы, sitemap.xml, SEO-теги и сравнение со снимком
+│   ├── check-site.mjs          # Проверка готовой сборки сайта: ссылки, якоря, файлы, sitemap.xml, llms.txt, SEO-теги и сравнение со снимком
 │   ├── render-release-notes.mjs # Заметки GitHub Release (EN + RU) для одной версии из assets/releases.json
 │   └── release.mjs             # Автоматический выпуск релиза (make ci -> merge dev into main -> tag vX.Y.Z -> push)
 ├── l1dder/                     # Догфудинг-инстанс методологии самого проекта L1DDER
@@ -60,8 +60,9 @@ make build          # npm run build (sync-release-meta + tsup + sync-root-l1dder
 make lint           # npm run typecheck (проверка типов tsc --noEmit)
 make typecheck      # npm run typecheck
 make test           # npm test (vitest run)
-make test-e2e       # npm run docs:build + scripts/check-site.mjs (сборка сайта и проверка ссылок, якорей и файлов)
-make site-gate      # make test-e2e + сравнение сайта со снимком (обязательно в задачах SPRINT-02 и перед его релизом)
+make test-e2e       # npm run docs:build + scripts/check-site.mjs (сборка сайта и проверка ссылок, якорей, файлов, sitemap.xml, llms.txt и тегов)
+make site-gate      # make test-e2e + сравнение сайта со снимком docs/site-baseline.json (запускается внутри make release)
+make site-baseline  # make test-e2e + запись нового снимка (только осознанно, с причиной в коммите)
 make doctor         # node dist/cli.js doctor (проверка целостности l1dder/ и docs/)
 make ci             # typecheck + build + test + test-e2e + doctor
 make release        # npm run release (выкатка новой версии из assets/releases.json в main, GitHub Pages и npm)
@@ -81,5 +82,16 @@ make release        # npm run release (выкатка новой версии и
      ```bash
      make release
      ```
-   - Скрипт `scripts/release.mjs` автоматически проверит, что тега `vX.Y.Z` ещё нет, прогонит `make ci` (обновив `package.json` и `CHANGELOG.md`), закоммитит их в `dev`, переключится на `main`, смержит `dev`, поставит тег `vX.Y.Z`, запушит `main`, `dev` и теги в `origin` и вернёт ветку обратно на `dev`.
+   - Скрипт `scripts/release.mjs` автоматически проверит, что тега `vX.Y.Z` ещё нет, прогонит `make ci` (обновив `package.json` и `CHANGELOG.md`) и `make site-gate`, закоммитит их в `dev`, переключится на `main`, смержит `dev`, поставит тег `vX.Y.Z`, запушит `main`, `dev` и теги в `origin` и вернёт ветку обратно на `dev`.
    - На пуш в `main` с тегом `vX.Y.Z` GitHub Actions автоматически деплоит сайт на GitHub Pages (`docs.yml`) и публикует пакет в npmjs через OIDC (`publish.yml`).
+
+---
+
+## 5. Сайт документации и SEO
+
+1. Новая страница сайта добавляется в таблицу `site/.vitepress/seo.mts` со своими заголовком (до 70 символов) и описанием (до 160 символов) на языке страницы. Без записи сборка падает, и это не обходится.
+2. Поисковики могут показывать свой заголовок вместо нашего. Это не баг сайта и не чинится правкой разметки: заголовок должен соответствовать содержанию страницы, а расхождения смотрятся в панелях поисковиков.
+3. Заголовок, описание, канонический адрес, `hreflang`, Open Graph и `llms.txt` собираются из `site/.vitepress/seo.mts`. Во frontmatter страниц их не добавляй: часть страниц перезаписывается из `assets/i18n/`.
+4. `make ci` проверяет готовую сборку через `scripts/check-site.mjs`: ссылки, якоря, файлы, `sitemap.xml`, `llms.txt` и теги.
+5. `make site-gate` сравнивает сайт со снимком `docs/site-baseline.json` и запускается внутри `make release`, поэтому ухудшение сайта останавливает выпуск. Если страница, текст или меню изменились намеренно, обнови снимок через `make site-baseline` и укажи причину в коммите.
+6. Корень `https://ledvanoff.github.io/` живёт в отдельном репозитории `ledvanoff/ledvanoff.github.io`: личная страница автора, теги подтверждения Google и Яндекса, `robots.txt` и корневой `llms.txt`. Теги оттуда не удаляй: поисковики периодически их перепроверяют.

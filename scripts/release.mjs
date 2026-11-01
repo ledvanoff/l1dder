@@ -5,7 +5,7 @@
  * Automated one-command release script (`make release` / `npm run release`):
  *   1. Reads the target version from the top entry of `assets/releases.json`.
  *   2. Verifies that git tag `v<version>` does NOT exist yet (fails fast if you forgot to add a new entry to `assets/releases.json`).
- *   3. Runs `make ci` (which syncs `package.json`, `CHANGELOG.md`, `l1dder/`, `site/`, and runs all tests).
+ *   3. Runs `make ci` (which syncs `package.json`, `CHANGELOG.md`, `l1dder/`, `site/`, and runs all tests) and `make site-gate`.
  *   4. Commits any updated release metadata on `dev` if needed.
  *   5. Merges `dev -> main`, creates annotated tag `v<version>`, pushes `main`, `dev`, and `--tags`, and returns to `dev`.
  */
@@ -56,6 +56,7 @@ if (currentBranch !== "dev") {
 // 3. Run full CI (includes sync-release-meta.mjs -> build -> test -> docs:build -> doctor)
 console.log(`→ Running full CI for release ${tag}...`);
 execFileSync("make", ["ci"], { cwd: repoRoot, stdio: "inherit" });
+execFileSync("make", ["site-gate"], { cwd: repoRoot, stdio: "inherit" });
 
 // 4. Commit any uncommitted changes on `dev`
 const status = git(["status", "--porcelain"]);
