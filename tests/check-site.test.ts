@@ -19,6 +19,11 @@ interface PageOptions {
   readonly description?: string | null;
   readonly canonical?: string | null;
   readonly hreflangs?: readonly string[];
+  readonly ogTitle?: string;
+  readonly ogDescription?: string;
+  readonly ogUrl?: string;
+  readonly ogImage?: string;
+  readonly twitterCard?: string | null;
 }
 
 function page({
@@ -30,12 +35,22 @@ function page({
   description = `Description of ${path}`,
   canonical = SITE_ORIGIN + path,
   hreflangs = ["ru", "en", "x-default"],
+  ogTitle = title ?? "",
+  ogDescription = description ?? "",
+  ogUrl = SITE_ORIGIN + path,
+  ogImage = `${SITE_ORIGIN}/l1dder/og-card.png`,
+  twitterCard = "summary_large_image",
 }: PageOptions = {}): string {
   const head = [
     title === null ? "" : `<title>${title}</title>`,
     description === null ? "" : `<meta name="description" content="${description}">`,
     canonical === null ? "" : `<link rel="canonical" href="${canonical}">`,
     ...hreflangs.map((lang) => `<link rel="alternate" hreflang="${lang}" href="${SITE_ORIGIN + path}">`),
+    `<meta property="og:title" content="${ogTitle}">`,
+    `<meta property="og:description" content="${ogDescription}">`,
+    `<meta property="og:url" content="${ogUrl}">`,
+    `<meta property="og:image" content="${ogImage}">`,
+    twitterCard === null ? "" : `<meta name="twitter:card" content="${twitterCard}">`,
   ].join("");
   return `<!DOCTYPE html><html><head>${head}<link rel="stylesheet" href="/l1dder/style.css"></head><body>
 <header class="VPNav">${nav}</header>
@@ -44,26 +59,34 @@ function page({
 <p id="details">${body}</p></body></html>`;
 }
 
+function png(width: number, height: number): Buffer {
+  const header = Buffer.alloc(24);
+  header.writeUInt32BE(width, 16);
+  header.writeUInt32BE(height, 20);
+  return header;
+}
+
 function sitemap(...paths: string[]): string {
   return `<urlset>${paths.map((path) => `<url><loc>${SITE_ORIGIN + path}</loc></url>`).join("")}</urlset>`;
 }
 
-function validPages(): Record<string, string> {
+function validPages(): Record<string, string | Buffer> {
   return {
     "index.html": page({ path: "/l1dder/", h1: "Home" }),
     "guide.html": page(),
     "style.css": "",
+    "og-card.png": png(1200, 630),
     "sitemap.xml": sitemap("/l1dder/", "/l1dder/guide"),
     "404.html": "<html><body>Not found</body></html>",
   };
 }
 
-function makeSite(pages: Readonly<Record<string, string>>): string {
+function makeSite(pages: Readonly<Record<string, string | Buffer>>): string {
   const dir = mkdtempSync(join(tmpdir(), "l1dder-site-"));
   tempDirs.push(dir);
   for (const [path, html] of Object.entries(pages)) {
     mkdirSync(dirname(join(dir, path)), { recursive: true });
-    writeFileSync(join(dir, path), html, "utf-8");
+    writeFileSync(join(dir, path), html);
   }
   return dir;
 }
@@ -133,7 +156,7 @@ describe("check-site: built site structure", () => {
 });
 
 describe("check-site: sitemap.xml and page tags", () => {
-  it.each<[string, Record<string, string>, string]>([
+  it.each<[string, Record<string, string | Buffer>, string]>([
     ["a page missing from sitemap.xml", { "sitemap.xml": sitemap("/l1dder/") }, "/l1dder/guide: not in sitemap.xml"],
     [
       "an unknown address in sitemap.xml",
@@ -155,6 +178,24 @@ describe("check-site: sitemap.xml and page tags", () => {
     ],
     ["a page without a canonical address", { "guide.html": page({ canonical: null }) }, "guide.html: canonical is undefined"],
     ["a missing language link", { "guide.html": page({ hreflangs: ["ru", "x-default"] }) }, "guide.html: no hreflang en"],
+    [
+      "an og:title that differs from the title",
+      { "guide.html": page({ ogTitle: "Other" }) },
+      "guide.html: og:title is Other",
+    ],
+    [
+      "an og:description that differs from the description",
+      { "guide.html": page({ ogDescription: "Other" }) },
+      "guide.html: og:description is Other",
+    ],
+    ["an og:url of another page", { "guide.html": page({ ogUrl: "https://ledvanoff.github.io/l1dder/" }) }, "guide.html: og:url is"],
+    [
+      "an og:image file that does not exist",
+      { "guide.html": page({ ogImage: "https://ledvanoff.github.io/l1dder/missing.png" }) },
+      "guide.html: og:image not found",
+    ],
+    ["a preview image of the wrong size", { "og-card.png": png(800, 600) }, "guide.html: og:image is 800x600"],
+    ["a page without a Twitter card", { "guide.html": page({ twitterCard: null }) }, "guide.html: no twitter:card"],
   ])("fails on %s", (_name, changes, expected) => {
     const { status, stderr } = run(makeSite({ ...validPages(), ...changes }));
 

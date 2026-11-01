@@ -27,6 +27,50 @@ describe("buildPageSeo", () => {
     expect(buildPageSeo(relativePath).head).toContainEqual(["link", { rel: "canonical", href }]);
   });
 
+  it("repeats the title, description and address in Open Graph", () => {
+    const { head } = buildPageSeo("en/guide.md");
+
+    expect(head).toContainEqual(["meta", { property: "og:title", content: "How L1DDER Works: Overview and Visual Map" }]);
+    expect(head).toContainEqual([
+      "meta",
+      {
+        property: "og:description",
+        content:
+          "A plain-language guide to L1DDER: how work moves from an idea to a finished product and why your AI agent keeps its context between tasks.",
+      },
+    ]);
+    expect(head).toContainEqual(["meta", { property: "og:url", content: "https://ledvanoff.github.io/l1dder/en/guide" }]);
+  });
+
+  it("describes the site and its preview image", () => {
+    const { head } = buildPageSeo("guide.md");
+
+    for (const [property, content] of [
+      ["og:type", "website"],
+      ["og:site_name", "L1DDER"],
+      ["og:image", "https://ledvanoff.github.io/l1dder/og-card.png"],
+      ["og:image:width", "1200"],
+      ["og:image:height", "630"],
+      ["og:image:alt", "L1DDER: Spec-Driven Development with AI Agents"],
+    ]) {
+      expect(head).toContainEqual(["meta", { property, content }]);
+    }
+  });
+
+  it.each([
+    ["guide.md", "ru_RU", "en_US"],
+    ["en/guide.md", "en_US", "ru_RU"],
+  ])("sets the Open Graph locale of %s", (relativePath, locale, alternate) => {
+    const { head } = buildPageSeo(relativePath);
+
+    expect(head).toContainEqual(["meta", { property: "og:locale", content: locale }]);
+    expect(head).toContainEqual(["meta", { property: "og:locale:alternate", content: alternate }]);
+  });
+
+  it("asks for a large Twitter card", () => {
+    expect(buildPageSeo("guide.md").head).toContainEqual(["meta", { name: "twitter:card", content: "summary_large_image" }]);
+  });
+
   it("fails loudly for a page without an entry", () => {
     expect(() => buildPageSeo("new-page.md")).toThrow("new-page.md");
   });

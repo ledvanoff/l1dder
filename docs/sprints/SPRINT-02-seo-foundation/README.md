@@ -32,6 +32,7 @@
 | 7 | **Doctor Checklist & E2E (`TASK-02.99`):** `make ci` + полный E2E-прогон агентом без ошибок | `make ci` + E2E-проверка агентом |
 | 8 | **Living Docs Sync (`TASK-02.99`):** обновлены `docs/concept/`, `docs/specs/FEAT-003-seo-foundation/`, `l1dder/rules/` | Проверка `git diff` по документации и правилам |
 | 9 | **Human UAT (`TASK-02.99`):** ручное тестирование пройдено и подтверждено человеком («ок») | Явный апрув человека в задаче `TASK-02.99` |
+| 10 | **Правила SEO (`TASK-02.99`):** в `l1dder/rules/30-tech-stack.mdc` и `AGENTS.md` закреплены таблица `seo.mts` для новых страниц и отношение к заголовкам в выдаче | Проверка `git diff` по правилам |
 
 ---
 
@@ -40,8 +41,8 @@
 | ID задачи спринта | ID шага спеки | Название задачи | Тип | Статус | Plan | Summary |
 |:-----------------:|:-------------:|-----------------|:---:|--------|------|---------|
 | `TASK-02.01` | `FEAT-003.01` | Снимок сайта до правок и автоматическая проверка сборки в `make test-e2e` | `chore` | ✅ реализована | [plan](tasks/TASK-02.01-site-baseline-check/plan.md) | [summary](tasks/TASK-02.01-site-baseline-check/summary.md) |
-| `TASK-02.02` | `FEAT-003.02` | Модуль SEO, `sitemap.xml`, тексты и языковые связи для всех 18 страниц | `feat` | 🚧 реализация | [plan](tasks/TASK-02.02-seo-module/plan.md) | — |
-| `TASK-02.03` | `FEAT-003.03` | Карточка превью, Open Graph и Twitter, теги подтверждения Google и Яндекса | `feat` | 📋 запланирована | — | — |
+| `TASK-02.02` | `FEAT-003.02` | Модуль SEO, `sitemap.xml`, тексты и языковые связи для всех 18 страниц | `feat` | ✅ реализована | [plan](tasks/TASK-02.02-seo-module/plan.md) | [summary](tasks/TASK-02.02-seo-module/summary.md) |
+| `TASK-02.03` | `FEAT-003.03` | Карточка превью, Open Graph и Twitter, теги подтверждения Google и Яндекса | `feat` | 🚧 реализация | [plan](tasks/TASK-02.03-preview-card/plan.md) | — |
 | `TASK-02.04` | `FEAT-003.04` | `llms.txt` из общей таблицы страниц | `feat` | 📋 запланирована | — | — |
 | `TASK-02.05` | `FEAT-003.05` | Витрины: описание и темы GitHub, начало README, `description` и `keywords` в npm | `chore` | 📋 запланирована | — | — |
 | `TASK-02.99` | `FEAT-003.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)**: браузерный гейт сайта и только после него релиз | `chore` | 📋 запланирована | — | — |

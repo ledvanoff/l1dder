@@ -106,11 +106,25 @@ export function buildPageSeo(relativePath: string) {
   const ruPath = relativePath.replace(/^en\//, "");
   const ru = pageUrl(ruPath);
   const en = pageUrl(`en/${ruPath}`);
+  const url = pageUrl(relativePath);
+  const isEnglish = relativePath.startsWith("en/");
   const head: [string, Record<string, string>][] = [
-    ["link", { rel: "canonical", href: pageUrl(relativePath) }],
+    ["link", { rel: "canonical", href: url }],
     ["link", { rel: "alternate", hreflang: "ru", href: ru }],
     ["link", { rel: "alternate", hreflang: "en", href: en }],
     ["link", { rel: "alternate", hreflang: "x-default", href: en }],
+    ["meta", { property: "og:title", content: page.title }],
+    ["meta", { property: "og:description", content: page.description }],
+    ["meta", { property: "og:url", content: url }],
+    ["meta", { property: "og:locale", content: isEnglish ? "en_US" : "ru_RU" }],
+    ["meta", { property: "og:locale:alternate", content: isEnglish ? "ru_RU" : "en_US" }],
+    ["meta", { property: "og:type", content: "website" }],
+    ["meta", { property: "og:site_name", content: "L1DDER" }],
+    ["meta", { property: "og:image", content: `${SITE_URL}og-card.png` }],
+    ["meta", { property: "og:image:width", content: "1200" }],
+    ["meta", { property: "og:image:height", content: "630" }],
+    ["meta", { property: "og:image:alt", content: "L1DDER: Spec-Driven Development with AI Agents" }],
+    ["meta", { name: "twitter:card", content: "summary_large_image" }],
   ];
   return { ...page, head };
 }

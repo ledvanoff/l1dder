@@ -59,6 +59,10 @@ function stripTags(html) {
   return html.replace(/<(script|style)\b[\s\S]*?<\/\1>/g, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
+function metaProperty(html, name) {
+  return html.match(new RegExp(`<meta property="${name}" content="([^"]*)"`))?.[1];
+}
+
 function menuLink(href) {
   const url = new URL(href, SITE_ORIGIN);
   return url.origin === SITE_ORIGIN ? url.pathname : href;
@@ -101,6 +105,22 @@ for (const file of files) {
     else if (seen[name].has(value)) errors.push(`${file}: same ${name} as ${seen[name].get(value)}`);
     else seen[name].set(value, file);
   }
+  for (const name of ["title", "description"]) {
+    const value = metaProperty(html, `og:${name}`);
+    if (value !== tags[name]) errors.push(`${file}: og:${name} is ${value}`);
+  }
+  const ogImage = metaProperty(html, "og:image");
+  const imageFile = ogImage?.startsWith(SITE_ORIGIN + BASE) ? resolveFile(new URL(ogImage).pathname) : undefined;
+  if (imageFile === undefined) {
+    errors.push(`${file}: og:image not found: ${ogImage}`);
+  } else {
+    const png = readFileSync(imageFile);
+    const size = `${png.readUInt32BE(16)}x${png.readUInt32BE(20)}`;
+    if (size !== "1200x630") errors.push(`${file}: og:image is ${size}, expected 1200x630`);
+  }
+  if (!html.includes('<meta name="twitter:card" content="summary_large_image"')) errors.push(`${file}: no twitter:card`);
+  const ogUrl = metaProperty(html, "og:url");
+  if (ogUrl !== SITE_ORIGIN + pagePath(file)) errors.push(`${file}: og:url is ${ogUrl}`);
   const canonical = html.match(/<link rel="canonical" href="([^"]*)"/)?.[1];
   if (canonical !== SITE_ORIGIN + pagePath(file)) errors.push(`${file}: canonical is ${canonical}`);
   for (const lang of ["ru", "en", "x-default"]) {

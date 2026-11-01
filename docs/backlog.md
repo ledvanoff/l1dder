@@ -76,8 +76,8 @@
 | ID шага спеки | ID задачи спринта | Название задачи | Тип | Статус | Plan | Summary |
 |:-------------:|:-----------------:|-----------------|:---:|--------|------|---------|
 | `FEAT-003.01` | `TASK-02.01` | Снимок сайта до правок и автоматическая проверка сборки в `make test-e2e` | `chore` | ✅ реализована | [plan](./sprints/SPRINT-02-seo-foundation/tasks/TASK-02.01-site-baseline-check/plan.md) | [summary](./sprints/SPRINT-02-seo-foundation/tasks/TASK-02.01-site-baseline-check/summary.md) |
-| `FEAT-003.02` | `TASK-02.02` | Модуль SEO, `sitemap.xml`, тексты и языковые связи для всех 18 страниц | `feat` | 🚧 реализация | [plan](./sprints/SPRINT-02-seo-foundation/tasks/TASK-02.02-seo-module/plan.md) | — |
-| `FEAT-003.03` | `TASK-02.03` | Карточка превью, Open Graph и Twitter, теги подтверждения Google и Яндекса | `feat` | 📋 запланирована | — | — |
+| `FEAT-003.02` | `TASK-02.02` | Модуль SEO, `sitemap.xml`, тексты и языковые связи для всех 18 страниц | `feat` | ✅ реализована | [plan](./sprints/SPRINT-02-seo-foundation/tasks/TASK-02.02-seo-module/plan.md) | [summary](./sprints/SPRINT-02-seo-foundation/tasks/TASK-02.02-seo-module/summary.md) |
+| `FEAT-003.03` | `TASK-02.03` | Карточка превью, Open Graph и Twitter, теги подтверждения Google и Яндекса | `feat` | 🚧 реализация | [plan](./sprints/SPRINT-02-seo-foundation/tasks/TASK-02.03-preview-card/plan.md) | — |
 | `FEAT-003.04` | `TASK-02.04` | `llms.txt` из общей таблицы страниц | `feat` | 📋 запланирована | — | — |
 | `FEAT-003.05` | `TASK-02.05` | Витрины: описание и темы GitHub, начало README, `description` и `keywords` в npm | `chore` | 📋 запланирована | — | — |
 | `FEAT-003.99` | `TASK-02.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)** *(Обязательная)*: браузерный гейт сайта и только после него релиз | `chore` | 📋 запланирована | — | — |

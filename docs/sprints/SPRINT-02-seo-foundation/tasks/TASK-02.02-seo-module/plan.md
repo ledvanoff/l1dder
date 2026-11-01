@@ -8,7 +8,7 @@
 | **ID родительской фичи / спеки** | [`FEAT-003`](../../../../backlog.md#feat-003) ([`docs/specs/FEAT-003-seo-foundation/`](../../../../specs/FEAT-003-seo-foundation/)) |
 | **ID родительской идеи** | [`IDEA-003`](../../../../ideas.md#idea-003) |
 | **Тип задачи** | `feat` |
-| **Статус задачи** | `🚧 реализация` |
+| **Статус задачи** | `✅ реализована` |
 | **Git-ветка** | `dev` (правило ежедневной работы из `30-tech-stack.mdc`) |
 | **Прочитанные скиллы (`40-skills-router.mdc`)** | `ponytail`, `tdd`, исходники VitePress 1.6.4 (`generateSitemap`, `createTitle`) |
 
