@@ -1,7 +1,10 @@
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { defineConfig } from "vitepress";
 import { withMermaid } from "vitepress-plugin-mermaid";
 
-import { buildPageSeo, SITE_URL } from "./seo.mjs";
+import { buildPageSeo, renderLlmsTxt, SITE_URL } from "./seo.mjs";
 
 export default withMermaid(
   defineConfig({
@@ -11,6 +14,9 @@ export default withMermaid(
     base: "/l1dder/",
     cleanUrls: true,
     sitemap: { hostname: SITE_URL },
+    buildEnd(siteConfig) {
+      writeFileSync(join(siteConfig.outDir, "llms.txt"), renderLlmsTxt(), "utf-8");
+    },
     transformPageData(pageData) {
       const { title, description, head } = buildPageSeo(pageData.relativePath);
       pageData.title = title;

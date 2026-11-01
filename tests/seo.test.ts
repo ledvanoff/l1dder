@@ -3,7 +3,7 @@ import { sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-import { buildPageSeo, SEO_PAGES } from "../site/.vitepress/seo.mjs";
+import { buildPageSeo, renderLlmsTxt, SEO_PAGES } from "../site/.vitepress/seo.mjs";
 
 describe("buildPageSeo", () => {
   it("returns the title and description of a page", () => {
@@ -85,6 +85,41 @@ describe("buildPageSeo", () => {
     ]) {
       expect(head).toContainEqual(["link", { rel: "alternate", hreflang, href }]);
     }
+  });
+});
+
+describe("renderLlmsTxt", () => {
+  it("starts with the project name and a short summary", () => {
+    expect(renderLlmsTxt()).toMatch(/^# L1DDER\n\n> L1DDER is a spec-driven development framework for AI coding agents/);
+  });
+
+  it("links the project on GitHub and npm", () => {
+    const text = renderLlmsTxt();
+
+    expect(text).toContain("## Project");
+    expect(text).toContain("- [GitHub](https://github.com/ledvanoff/l1dder)");
+    expect(text).toContain("- [npm](https://www.npmjs.com/package/l1dder)");
+  });
+
+  it("lists every page of the table once", () => {
+    expect(renderLlmsTxt().match(/^- \[.+\]\(https:\/\/ledvanoff\.github\.io\/l1dder\//gm)).toHaveLength(18);
+  });
+
+  it("lists pages under a section of their language", () => {
+    const text = renderLlmsTxt();
+    const russian = text.indexOf("## Документация на русском");
+    const english = text.indexOf("## English documentation");
+    const russianPage = text.indexOf(
+      "- [Как работать с L1DDER: обзор и главная схема](https://ledvanoff.github.io/l1dder/guide): Путеводитель по L1DDER",
+    );
+    const englishPage = text.indexOf(
+      "- [How L1DDER Works: Overview and Visual Map](https://ledvanoff.github.io/l1dder/en/guide): A plain-language guide",
+    );
+
+    expect(russian).toBeGreaterThan(-1);
+    expect(russianPage).toBeGreaterThan(russian);
+    expect(english).toBeGreaterThan(russianPage);
+    expect(englishPage).toBeGreaterThan(english);
   });
 });
 

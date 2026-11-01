@@ -70,6 +70,10 @@ function sitemap(...paths: string[]): string {
   return `<urlset>${paths.map((path) => `<url><loc>${SITE_ORIGIN + path}</loc></url>`).join("")}</urlset>`;
 }
 
+function llms(...paths: string[]): string {
+  return `# L1DDER\n\n${paths.map((path) => `- [Page](${SITE_ORIGIN + path}): About it`).join("\n")}\n\n- [npm](https://www.npmjs.com/package/l1dder)\n`;
+}
+
 function validPages(): Record<string, string | Buffer> {
   return {
     "index.html": page({ path: "/l1dder/", h1: "Home" }),
@@ -77,6 +81,7 @@ function validPages(): Record<string, string | Buffer> {
     "style.css": "",
     "og-card.png": png(1200, 630),
     "sitemap.xml": sitemap("/l1dder/", "/l1dder/guide"),
+    "llms.txt": llms("/l1dder/", "/l1dder/guide"),
     "404.html": "<html><body>Not found</body></html>",
   };
 }
@@ -132,6 +137,7 @@ describe("check-site: built site structure", () => {
       "guide.html": page({ body }),
       "en/index.html": page({ path: "/l1dder/en/", h1: "English", body: '<span id="обзор">Overview</span>' }),
       "sitemap.xml": sitemap("/l1dder/", "/l1dder/en/", "/l1dder/guide"),
+      "llms.txt": llms("/l1dder/", "/l1dder/en/", "/l1dder/guide"),
     });
 
     const { status, stderr } = run(site);
@@ -162,6 +168,12 @@ describe("check-site: sitemap.xml and page tags", () => {
       "an unknown address in sitemap.xml",
       { "sitemap.xml": sitemap("/l1dder/", "/l1dder/guide", "/l1dder/old") },
       "/l1dder/old: in sitemap.xml but not a page",
+    ],
+    ["a page missing from llms.txt", { "llms.txt": llms("/l1dder/") }, "/l1dder/guide: not in llms.txt"],
+    [
+      "an unknown address in llms.txt",
+      { "llms.txt": llms("/l1dder/", "/l1dder/guide", "/l1dder/old") },
+      "/l1dder/old: in llms.txt but not a page",
     ],
     ["a page without a title", { "guide.html": page({ title: null }) }, "guide.html: no title"],
     ["a repeated title", { "guide.html": page({ title: "Title of /l1dder/" }) }, "index.html: same title as guide.html"],
@@ -201,6 +213,15 @@ describe("check-site: sitemap.xml and page tags", () => {
 
     expect(status).toBe(1);
     expect(stderr).toContain(expected);
+  });
+
+  it("fails without llms.txt", () => {
+    const { "llms.txt": _removed, ...pages } = validPages();
+
+    const { status, stderr } = run(makeSite(pages));
+
+    expect(status).toBe(1);
+    expect(stderr).toContain("llms.txt is missing");
   });
 
   it("fails without sitemap.xml", () => {

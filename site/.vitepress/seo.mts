@@ -98,6 +98,34 @@ function pageUrl(relativePath: string): string {
   return SITE_URL + relativePath.replace(/(^|\/)index\.md$/, "$1").replace(/\.md$/, "");
 }
 
+function pageLinks(includes: (relativePath: string) => boolean): string[] {
+  return Object.entries(SEO_PAGES)
+    .filter(([relativePath]) => includes(relativePath))
+    .map(([relativePath, { title, description }]) => `- [${title}](${pageUrl(relativePath)}): ${description}`);
+}
+
+export function renderLlmsTxt(): string {
+  return [
+    "# L1DDER",
+    "",
+    "> L1DDER is a spec-driven development framework for AI coding agents: ideas, specs, roadmap and tasks live in Markdown, and /l1-* slash commands drive the work. Works with Cursor, Claude Code, Codex, Windsurf, Copilot, OpenCode and Cline.",
+    "",
+    "## Документация на русском",
+    "",
+    ...pageLinks((path) => !path.startsWith("en/")),
+    "",
+    "## English documentation",
+    "",
+    ...pageLinks((path) => path.startsWith("en/")),
+    "",
+    "## Project",
+    "",
+    "- [GitHub](https://github.com/ledvanoff/l1dder)",
+    "- [npm](https://www.npmjs.com/package/l1dder)",
+    "",
+  ].join("\n");
+}
+
 export function buildPageSeo(relativePath: string) {
   const page = SEO_PAGES[relativePath];
   if (page === undefined) {

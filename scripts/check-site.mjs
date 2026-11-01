@@ -3,7 +3,7 @@
  * scripts/check-site.mjs
  *
  * Checks the built VitePress site without a browser (no new dependencies):
- *   node scripts/check-site.mjs [distDir]                    links, anchors, files, sitemap.xml and SEO tags are correct
+ *   node scripts/check-site.mjs [distDir]                    links, anchors, files, sitemap.xml, llms.txt and SEO tags are correct
  *   node scripts/check-site.mjs [distDir] --baseline <file>  the above, and no page got worse than the baseline
  *   node scripts/check-site.mjs [distDir] --write-baseline <file>
  *
@@ -138,16 +138,25 @@ for (const file of files) {
     else if (url.hash.length > 1 && !idsOf(target).has(decodeURIComponent(url.hash.slice(1)))) errors.push(`${file}: broken anchor: ${href}`);
   }
 }
-const sitemapFile = join(dist, "sitemap.xml");
-if (existsSync(sitemapFile)) {
-  const listed = new Set([...readFileSync(sitemapFile, "utf-8").matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => new URL(match[1]).pathname));
+for (const [name, listedUrls] of [
+  ["sitemap.xml", (text) => [...text.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1])],
+  ["llms.txt", (text) => [...text.matchAll(/\]\((https?:[^)]+)\)/g)].map((match) => match[1])],
+]) {
+  const listing = join(dist, name);
+  if (!existsSync(listing)) {
+    errors.push(`${name} is missing`);
+    continue;
+  }
+  const listed = new Set(
+    listedUrls(readFileSync(listing, "utf-8"))
+      .filter((url) => url.startsWith(SITE_ORIGIN))
+      .map((url) => new URL(url).pathname),
+  );
   for (const page of pages) {
-    if (!listed.has(page.path)) errors.push(`${page.path}: not in sitemap.xml`);
+    if (!listed.has(page.path)) errors.push(`${page.path}: not in ${name}`);
     listed.delete(page.path);
   }
-  for (const path of listed) errors.push(`${path}: in sitemap.xml but not a page`);
-} else {
-  errors.push("sitemap.xml is missing");
+  for (const path of listed) errors.push(`${path}: in ${name} but not a page`);
 }
 if (args.baseline) {
   const baselinePages = JSON.parse(readFileSync(args.baseline, "utf-8")).pages;
