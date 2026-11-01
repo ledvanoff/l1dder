@@ -5,6 +5,21 @@
 
 ---
 
+## [1.0.2] — 2026-11-01
+
+**RU:** Слэш-команды теперь видны в Claude Code вместе с Codex или OpenCode, заметки к релизам выходят на двух языках, а на сайте появилась инструкция на случай, если команды не отображаются.
+
+**EN:** Slash commands now appear in Claude Code alongside Codex or OpenCode, release notes are bilingual, and the docs explain what to do when commands don't show up.
+
+### Changes (Изменения)
+
+- **[RU]** HOTFIX-003: команды `/l1-*` теперь видны в Claude Code при совместной установке с Codex или OpenCode: скиллы копируются во все папки, которые читают выбранные агенты.
+- **[RU]** HOTFIX-004: заметки к релизам на GitHub теперь описывают одну версию на английском и русском, а на сайте появилась страница о том, что делать, если слэш-команды не видны.
+- **[EN]** HOTFIX-003: `/l1-*` commands now appear in Claude Code when it is installed together with Codex or OpenCode: skills are copied into every folder the selected agents read.
+- **[EN]** HOTFIX-004: GitHub Release notes now cover a single version in English and Russian, and the docs site has a new page on fixing missing slash commands.
+
+---
+
 ## [1.0.1] — 2026-10-21
 
 **RU:** Хотфикс дедупликации скиллов между ИИ-агентами (HOTFIX-002) и улучшение текстов документации (HOTFIX-001).
