@@ -15,9 +15,10 @@ import { fileURLToPath } from "node:url";
 
 const SITE_ORIGIN = "https://ledvanoff.github.io";
 const BASE = "/l1dder/";
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 function readArgs(argv) {
-  const args = { dist: join(dirname(fileURLToPath(import.meta.url)), "..", "site", ".vitepress", "dist") };
+  const args = { dist: join(repoRoot, "site", ".vitepress", "dist") };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--baseline") args.baseline = argv[++i];
     else if (argv[i] === "--write-baseline") args.writeBaseline = argv[++i];
@@ -26,11 +27,28 @@ function readArgs(argv) {
   return args;
 }
 
-function findPages(dist) {
-  return readdirSync(dist, { recursive: true })
-    .map((file) => String(file).split(sep).join("/"))
-    .filter((file) => file.endsWith(".html") && file !== "404.html")
-    .sort();
+const args = readArgs(process.argv.slice(2));
+const dist = args.dist;
+
+const files = existsSync(dist)
+  ? readdirSync(dist, { recursive: true })
+      .map((file) => String(file).split(sep).join("/"))
+      .filter((file) => file.endsWith(".html") && file !== "404.html")
+      .sort()
+  : [];
+if (files.length === 0) {
+  console.error(`✗ No pages in ${dist}. Run \`npm run docs:build\` first.`);
+  process.exit(1);
+}
+
+function resolveFile(pathname) {
+  const path = pathname.slice(BASE.length);
+  const candidates = path === "" || path.endsWith("/") ? [`${path}index.html`] : [path, `${path}.html`];
+  return candidates.map((candidate) => join(dist, candidate)).find((candidate) => existsSync(candidate));
+}
+
+function idsOf(file) {
+  return new Set([...readFileSync(file, "utf-8").matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]));
 }
 
 function pagePath(file) {
@@ -46,7 +64,8 @@ function menuLink(href) {
   return url.origin === SITE_ORIGIN ? url.pathname : href;
 }
 
-function summarizePage(file, html) {
+function summarizePage(file) {
+  const html = readFileSync(join(dist, file), "utf-8");
   const h1 = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/)?.[1].replace(/<a class="header-anchor"[\s\S]*?<\/a>/, "");
   const menu = (html.match(/<header\b[\s\S]*?<\/header>|<aside\b[\s\S]*?<\/aside>/g) ?? []).join("");
   const navLinks = [...menu.matchAll(/<a\b[^>]*\bhref="([^"]+)"/g)].map((match) => menuLink(match[1]));
@@ -59,53 +78,37 @@ function summarizePage(file, html) {
   };
 }
 
-function resolveFile(dist, pathname) {
-  const path = decodeURIComponent(pathname.slice(BASE.length));
-  const candidates = path === "" || path.endsWith("/") ? [`${path}index.html`] : [path, `${path}.html`];
-  return candidates.map((candidate) => join(dist, candidate)).find((candidate) => existsSync(candidate));
+const pages = files.map(summarizePage).sort((a, b) => a.path.localeCompare(b.path));
+
+if (args.writeBaseline) {
+  writeFileSync(args.writeBaseline, `${JSON.stringify({ pages }, null, 2)}\n`, "utf-8");
+  console.log(`✓ Wrote a baseline of ${pages.length} pages to ${args.writeBaseline}`);
+  process.exit(0);
 }
 
-function checkStructure(dist, files) {
-  const errors = [];
-  const ids = new Map();
-  const idsOf = (file) => {
-    if (!ids.has(file)) {
-      ids.set(file, new Set([...readFileSync(file, "utf-8").matchAll(/\sid="([^"]+)"/g)].map((match) => match[1])));
+const errors = [];
+for (const file of files) {
+  const html = readFileSync(join(dist, file), "utf-8");
+  if (summarizePage(file).h1 === null) errors.push(`${file}: no H1`);
+  for (const [, href] of html.matchAll(/\b(?:href|src)="([^"]+)"/g)) {
+    const url = new URL(href, SITE_ORIGIN + pagePath(file));
+    if (url.origin !== SITE_ORIGIN) continue;
+    if (!url.pathname.startsWith(BASE)) {
+      errors.push(`${file}: link outside ${BASE}: ${href}`);
+      continue;
     }
-    return ids.get(file);
-  };
-
-  for (const file of files) {
-    const html = readFileSync(join(dist, file), "utf-8");
-    if (summarizePage(file, html).h1 === null) errors.push(`${file}: no H1`);
-
-    for (const [, raw] of html.matchAll(/\b(?:href|src)="([^"]+)"/g)) {
-      const href = raw.replaceAll("&amp;", "&");
-      const url = new URL(href, SITE_ORIGIN + pagePath(file));
-      if (url.origin !== SITE_ORIGIN) continue;
-      if (!url.pathname.startsWith(BASE)) {
-        errors.push(`${file}: link outside ${BASE}: ${href}`);
-        continue;
-      }
-      const target = resolveFile(dist, url.pathname);
-      if (target === undefined) {
-        errors.push(`${file}: broken link: ${href}`);
-      } else if (url.hash.length > 1 && !idsOf(target).has(decodeURIComponent(url.hash.slice(1)))) {
-        errors.push(`${file}: broken anchor: ${href}`);
-      }
-    }
+    const target = resolveFile(url.pathname);
+    if (target === undefined) errors.push(`${file}: broken link: ${href}`);
+    else if (url.hash.length > 1 && !idsOf(target).has(decodeURIComponent(url.hash.slice(1)))) errors.push(`${file}: broken anchor: ${href}`);
   }
-  return errors;
 }
-
-function compareWithBaseline(baselinePages, currentPages) {
-  const errors = [];
-  const current = new Map(currentPages.map((page) => [page.path, page]));
+if (args.baseline) {
+  const baselinePages = JSON.parse(readFileSync(args.baseline, "utf-8")).pages;
   const known = new Set(baselinePages.map((page) => page.path));
-
-  for (const page of currentPages) {
+  for (const page of pages) {
     if (!known.has(page.path)) errors.push(`${page.path}: page is not in the baseline`);
   }
+  const current = new Map(pages.map((page) => [page.path, page]));
   for (const before of baselinePages) {
     const after = current.get(before.path);
     if (after === undefined) {
@@ -119,29 +122,9 @@ function compareWithBaseline(baselinePages, currentPages) {
       if (!after.navLinks.includes(link)) errors.push(`${before.path}: menu lost a link: ${link}`);
     }
   }
-  return errors;
-}
-
-const args = readArgs(process.argv.slice(2));
-const files = existsSync(args.dist) ? findPages(args.dist) : [];
-if (files.length === 0) {
-  console.error(`✗ No pages in ${args.dist}. Run \`npm run docs:build\` first.`);
-  process.exit(1);
-}
-const pages = files.map((file) => summarizePage(file, readFileSync(join(args.dist, file), "utf-8"))).sort((a, b) => a.path.localeCompare(b.path));
-
-if (args.writeBaseline) {
-  writeFileSync(args.writeBaseline, `${JSON.stringify({ pages }, null, 2)}\n`, "utf-8");
-  console.log(`✓ Wrote a baseline of ${pages.length} pages to ${args.writeBaseline}`);
-  process.exit(0);
-}
-
-const errors = checkStructure(args.dist, files);
-if (args.baseline) {
-  errors.push(...compareWithBaseline(JSON.parse(readFileSync(args.baseline, "utf-8")).pages, pages));
 }
 if (errors.length > 0) {
   console.error(errors.map((error) => `✗ ${error}`).join("\n"));
   process.exit(1);
 }
-console.log(`✓ Site check passed: ${pages.length} pages${args.baseline ? ", no worse than the baseline" : ""}`);
+console.log(`✓ Site check passed: ${files.length} pages${args.baseline ? ", no worse than the baseline" : ""}`);

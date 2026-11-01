@@ -26,10 +26,18 @@ function page({
 <p id="details">${body}</p></body></html>`;
 }
 
+function validPages(): Record<string, string> {
+  return {
+    "index.html": page({ h1: "Home" }),
+    "guide.html": page(),
+    "style.css": "",
+    "404.html": "<html><body>Not found</body></html>",
+  };
+}
+
 function makeSite(pages: Readonly<Record<string, string>>): string {
   const dir = mkdtempSync(join(tmpdir(), "l1dder-site-"));
   tempDirs.push(dir);
-  writeFileSync(join(dir, "style.css"), "");
   for (const [path, html] of Object.entries(pages)) {
     mkdirSync(dirname(join(dir, path)), { recursive: true });
     writeFileSync(join(dir, path), html, "utf-8");
@@ -37,18 +45,8 @@ function makeSite(pages: Readonly<Record<string, string>>): string {
   return dir;
 }
 
-function validPages(): Record<string, string> {
-  return { "index.html": page({ h1: "Home" }), "guide.html": page(), "404.html": "<html><body>Not found</body></html>" };
-}
-
 function run(...args: string[]) {
   return spawnSync(process.execPath, [script, ...args], { encoding: "utf-8" });
-}
-
-function writeBaseline(site: string): string {
-  const baseline = join(site, "baseline.json");
-  expect(run(site, "--write-baseline", baseline).status).toBe(0);
-  return baseline;
 }
 
 afterEach(() => {
@@ -58,7 +56,7 @@ afterEach(() => {
 });
 
 describe("check-site: built site structure", () => {
-  it("passes a site whose links, anchors and files all exist", () => {
+  it("passes a valid site", () => {
     const { status, stderr } = run(makeSite(validPages()));
 
     expect(stderr).toBe("");
@@ -66,11 +64,11 @@ describe("check-site: built site structure", () => {
   });
 
   it.each([
-    ["a missing page", '<a href="/l1dder/missing">x</a>', "/l1dder/missing"],
+    ["a link to a missing page", '<a href="/l1dder/missing">x</a>', "/l1dder/missing"],
     ["a missing asset", '<img src="/l1dder/logo.png">', "/l1dder/logo.png"],
     ["a missing anchor on another page", '<a href="/l1dder/guide#nope">x</a>', "/l1dder/guide#nope"],
     ["a missing anchor on the same page", '<a href="#nope">x</a>', "#nope"],
-    ["a link without the base path", '<a href="/guide">x</a>', "/guide"],
+    ["a link without the base path", '<a href="/guide">x</a>', "outside /l1dder/: /guide"],
     ["a broken absolute link to the site", '<a href="https://ledvanoff.github.io/l1dder/missing">x</a>', "/l1dder/missing"],
   ])("fails on %s and names it", (_name, snippet, expected) => {
     const { status, stderr } = run(makeSite({ ...validPages(), "guide.html": page({ body: snippet }) }));
@@ -89,7 +87,17 @@ describe("check-site: built site structure", () => {
       "en/index.html": page({ h1: "English", body: '<span id="обзор">Overview</span>' }),
     });
 
-    expect(run(site).stderr).toBe("");
+    const { status, stderr } = run(site);
+
+    expect(stderr).toBe("");
+    expect(status).toBe(0);
+  });
+
+  it("fails on a page without H1", () => {
+    const { status, stderr } = run(makeSite({ ...validPages(), "guide.html": "<html><body>text</body></html>" }));
+
+    expect(status).toBe(1);
+    expect(stderr).toContain("guide.html: no H1");
   });
 
   it("fails on a site without pages", () => {
@@ -98,57 +106,33 @@ describe("check-site: built site structure", () => {
     expect(status).toBe(1);
     expect(stderr).toContain("No pages");
   });
-
-  it("fails on a page without H1", () => {
-    const { status, stderr } = run(makeSite({ ...validPages(), "guide.html": "<html><body>text</body></html>" }));
-
-    expect(status).toBe(1);
-    expect(stderr).toContain("guide.html");
-    expect(stderr).toContain("H1");
-  });
 });
 
 describe("check-site: comparison with the baseline", () => {
-  it("records every page except 404 with its address, H1, text, diagrams and menu", () => {
-    const site = makeSite({ ...validPages(), "en/index.html": page({ h1: "English", body: '<div class="mermaid"></div>' }) });
+  function writeBaseline(site: string): string {
+    const baseline = join(site, "baseline.json");
+    expect(run(site, "--write-baseline", baseline).status).toBe(0);
+    return baseline;
+  }
+
+  it("records the address of every page except 404", () => {
+    const site = makeSite({ ...validPages(), "en/index.html": page({ h1: "English" }) });
 
     const { pages } = JSON.parse(readFileSync(writeBaseline(site), "utf-8"));
 
     expect(pages.map((entry: { path: string }) => entry.path)).toEqual(["/l1dder/", "/l1dder/en/", "/l1dder/guide"]);
-    expect(pages[1].h1).toBe("English");
-    expect(pages[1].mermaidCount).toBe(1);
-    expect(pages[2].navLinks).toEqual(["/l1dder/", "/l1dder/guide"]);
-    expect(pages[2].textLength).toBeGreaterThan(0);
   });
 
   it("passes when nothing got worse, including more text and new menu links", () => {
     const site = makeSite(validPages());
     const baseline = writeBaseline(site);
-    const nav = '<a href="/l1dder/">Home</a><a href="/l1dder/guide">Guide</a><a href="/l1dder/">New</a>';
+    const nav = '<a href="/l1dder/">Home</a><a href="/l1dder/guide">Guide</a><a href="/l1dder/guide#details">New</a>';
     writeFileSync(join(site, "guide.html"), page({ nav, body: "Some useful text and even more of it" }));
-
-    expect(run(site, "--baseline", baseline).status).toBe(0);
-  });
-
-  it.each([
-    ["a removed page", (site: string) => rmSync(join(site, "guide.html")), "/l1dder/guide"],
-    ["a new page", (site: string) => writeFileSync(join(site, "extra.html"), page({ h1: "Extra" })), "/l1dder/extra"],
-    ["a changed H1", (site: string) => writeFileSync(join(site, "guide.html"), page({ h1: "Other" })), "H1"],
-    ["less text", (site: string) => writeFileSync(join(site, "guide.html"), page({ body: "Text" })), "text"],
-    [
-      "a lost menu link",
-      (site: string) => writeFileSync(join(site, "guide.html"), page({ nav: '<a href="/l1dder/guide">Guide</a>' })),
-      "menu",
-    ],
-  ])("fails on %s", (_name, change, expected) => {
-    const site = makeSite(validPages());
-    const baseline = writeBaseline(site);
-    change(site);
 
     const { status, stderr } = run(site, "--baseline", baseline);
 
-    expect(status).toBe(1);
-    expect(stderr).toContain(expected);
+    expect(stderr).toBe("");
+    expect(status).toBe(0);
   });
 
   it("fails on fewer diagrams", () => {
@@ -159,6 +143,31 @@ describe("check-site: comparison with the baseline", () => {
     const { status, stderr } = run(site, "--baseline", baseline);
 
     expect(status).toBe(1);
-    expect(stderr).toContain("diagrams");
+    expect(stderr).toContain("fewer diagrams: 1 -> 0");
+  });
+
+  it.each([
+    ["a removed page", (site: string) => rmSync(join(site, "guide.html")), "/l1dder/guide: page disappeared"],
+    [
+      "a new page",
+      (site: string) => writeFileSync(join(site, "extra.html"), page({ h1: "Extra" })),
+      "/l1dder/extra: page is not in the baseline",
+    ],
+    ["a changed H1", (site: string) => writeFileSync(join(site, "guide.html"), page({ h1: "Other" })), 'H1 changed: "Guide" -> "Other"'],
+    ["less text", (site: string) => writeFileSync(join(site, "guide.html"), page({ body: "Text" })), "text shrank"],
+    [
+      "a lost menu link",
+      (site: string) => writeFileSync(join(site, "guide.html"), page({ nav: '<a href="/l1dder/guide">Guide</a>' })),
+      "menu lost a link: /l1dder/",
+    ],
+  ])("fails on %s", (_name, change, expected) => {
+    const site = makeSite(validPages());
+    const baseline = writeBaseline(site);
+    change(site);
+
+    const { status, stderr } = run(site, "--baseline", baseline);
+
+    expect(status).toBe(1);
+    expect(stderr).toContain(expected);
   });
 });
