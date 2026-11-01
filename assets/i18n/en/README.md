@@ -38,13 +38,15 @@ npx l1dder init --lang en --agents cursor,claude --yes
 
 Supported AI agents (`--agents`):
 - `cursor` — Cursor IDE (`.cursor/rules/l1dder/*.mdc` + `.cursor/skills/*` + `AGENTS.md`)
-- `claude` — Claude Code (`CLAUDE.md` + `.claude/rules/l1dder/*.md` + `.claude/commands/*` + `.claude/skills/*`)
+- `claude` — Claude Code (`CLAUDE.md` + `.claude/rules/l1dder/*.md` + `.claude/skills/*`)
 - `codex` — OpenAI Codex (`AGENTS.md` + `.agents/skills/*`)
 - `windsurf` — Windsurf (`.windsurf/rules/l1dder.md` + `.windsurf/workflows/*`)
 - `copilot` — GitHub Copilot / VS Code (`.github/copilot-instructions.md` + `.github/prompts/*.prompt.md`)
-- `opencode` — OpenCode (`AGENTS.md` + `.opencode/commands/*` + `.agents/skills/*`)
+- `opencode` — OpenCode (`AGENTS.md` + `.agents/skills/*`)
 - `cline` — Cline / Roo Code (`.clinerules/l1dder.md` + `.roo/rules/l1dder.md`)
 - `all` — configure all supported AI agents at once
+
+`l1dder/skills/` is the single source of truth: `npx l1dder sync` copies it into the skills folders of the selected agents, so edit skills there rather than in agent folders. Cursor always reads `.agents/skills/` and reads `.claude/skills/` only with Third-Party Imports enabled, so `cursor` + `claude` installs both; `.cursor/skills/` is used only when Cursor is the only agent with a skills folder.
 
 ### Step 2. Run Onboarding in Your Agent Chat
 

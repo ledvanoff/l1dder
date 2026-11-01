@@ -38,13 +38,15 @@ npx l1dder init --lang ru --agents cursor,claude --yes
 
 Поддерживаемые агенты (`--agents`):
 - `cursor` — Cursor IDE (`.cursor/rules/l1dder/*.mdc` + `.cursor/skills/*` + `AGENTS.md`)
-- `claude` — Claude Code (`CLAUDE.md` + `.claude/rules/l1dder/*.md` + `.claude/commands/*` + `.claude/skills/*`)
+- `claude` — Claude Code (`CLAUDE.md` + `.claude/rules/l1dder/*.md` + `.claude/skills/*`)
 - `codex` — OpenAI Codex (`AGENTS.md` + `.agents/skills/*`)
 - `windsurf` — Windsurf (`.windsurf/rules/l1dder.md` + `.windsurf/workflows/*`)
 - `copilot` — GitHub Copilot / VS Code (`.github/copilot-instructions.md` + `.github/prompts/*.prompt.md`)
-- `opencode` — OpenCode (`AGENTS.md` + `.opencode/commands/*` + `.agents/skills/*`)
+- `opencode` — OpenCode (`AGENTS.md` + `.agents/skills/*`)
 - `cline` — Cline / Roo Code (`.clinerules/l1dder.md` + `.roo/rules/l1dder.md`)
 - `all` — установить сразу для всех популярных агентов
+
+`l1dder/skills/` — единственный первоисточник: `npx l1dder sync` копирует его в папки скиллов выбранных агентов, поэтому правь скиллы там, а не в папках агентов. Cursor всегда читает `.agents/skills/`, а `.claude/skills/` — только с включённым Third-Party Imports, поэтому `cursor` + `claude` получает обе папки; `.cursor/skills/` используется, только если папка скиллов нужна одному Cursor.
 
 ### Шаг 2. Запустить онбординг в чате агента
 

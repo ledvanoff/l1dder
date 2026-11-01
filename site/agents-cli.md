@@ -42,7 +42,7 @@ npx l1dder@latest update
 npx l1dder@latest update --skills
 # (или: npx l1dder@latest update skills / npx l1dder@latest skills update)
 ```
-Команда обновит только `l1dder/skills/**` и папки скиллов/команд в твоих ИИ-агентах (`.cursor/skills/`, `.claude/skills/`, `.claude/commands/`, `.agents/skills/` и т.д.).
+Команда обновит только `l1dder/skills/**` и папки скиллов/команд в твоих ИИ-агентах (`.cursor/skills/`, `.claude/skills/`, `.agents/skills/` и т.д.).
 
 ### `npx l1dder skills` (`list | add | install | update`)
 Управляет скиллами проекта по манифесту **`l1dder/skills.json`** (аналог `package.json` для скиллов ИИ-агентов):
@@ -116,11 +116,13 @@ npx l1dder skills update
 | ИИ-Агент | Флаг `--agents` | Какие файлы создаются в проекте |
 |----------|:---------------:|---------------------------------|
 | **Cursor** | `cursor` | • `.cursor/rules/l1dder/*.mdc` (5 правил с `alwaysApply: true`)<br/>• `.cursor/skills/<skill>/*` (все 20+ скиллов `/l1-*`, `ponytail*`, `mattpocock/skills` и `stack`)<br/>• `AGENTS.md` (управляемый блок `<!-- l1dder:begin -->`) |
-| **Claude Code** | `claude` | • `CLAUDE.md` (управляемый блок `<!-- l1dder:begin -->`)<br/>• `.claude/rules/l1dder/*.md` (модульные правила проекта)<br/>• `.claude/commands/<skill>.md` (слэш-команды)<br/>• `.claude/skills/<skill>/*` (полные папки всех скиллов) |
+| **Claude Code** | `claude` | • `CLAUDE.md` (управляемый блок `<!-- l1dder:begin -->`)<br/>• `.claude/rules/l1dder/*.md` (модульные правила проекта)<br/>• `.claude/skills/<skill>/*` (полные папки всех скиллов) |
 | **OpenAI Codex** | `codex` | • `AGENTS.md` (точка входа Codex)<br/>• `.agents/skills/<skill>/*` (полные папки всех 20+ скиллов) |
 | **Windsurf** | `windsurf` | • `.windsurf/rules/l1dder.md` (сводные правила)<br/>• `.windsurf/workflows/<skill>.md` (слэш-воркфлоу)<br/>• `AGENTS.md` |
 | **GitHub Copilot** | `copilot` | • `.github/copilot-instructions.md` (управляемый блок инструкций)<br/>• `.github/prompts/<skill>.prompt.md` (промт-команды) |
-| **OpenCode** | `opencode` | • `AGENTS.md`<br/>• `.opencode/commands/<skill>.md`<br/>• `.agents/skills/<skill>/*` |
+| **OpenCode** | `opencode` | • `AGENTS.md`<br/>• `.agents/skills/<skill>/*` |
 | **Cline / Roo Code** | `cline` | • `.clinerules/l1dder.md`<br/>• `.roo/rules/l1dder.md`<br/>• `AGENTS.md` |
+
+> 💡 `l1dder/skills/` — единственный первоисточник: `npx l1dder sync` копирует его в папки скиллов выбранных агентов, поэтому правь скиллы там, а не в папках агентов. Cursor всегда читает `.agents/skills/`, а `.claude/skills/` — только с включённым Third-Party Imports, поэтому `cursor` + `claude` получает обе папки; `.cursor/skills/` используется, только если папка скиллов нужна одному Cursor.
 
 > 💡 **Безопасное слияние (`Marker Block`):** Если у тебя в проекте уже были свои `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md` или `.gitignore`, `L1DDER` **никогда не затирает** твой текст — он аккуратно обновляет только блок внутри маркеров `<!-- l1dder:begin --> ... <!-- l1dder:end -->`.

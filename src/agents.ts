@@ -291,26 +291,31 @@ export function buildEntryPointSummary(lang: Language, rootDir: string): string 
 }
 
 /**
- * Resolve AT MOST ONE canonical `skills/` directory for the selected agents so
- * editors that scan multiple folders (like Cursor, which scans `.cursor/skills`,
- * `.claude/skills`, and `.agents/skills`) NEVER show duplicate slash commands:
+ * Resolve the skills folders the selected agents read from. `<rootDir>/skills/` is the single
+ * source of truth and these folders hold plain copies of it (symlinks break on Windows and in
+ * mixed Mac + Windows repositories):
  *
- * - If `codex` or `opencode` is enabled → `.agents/skills` (read natively by Codex, OpenCode, and Cursor).
- * - Else if `claude` is enabled → `.claude/skills` (read natively by Claude Code and Cursor).
- * - Else if `cursor` is enabled → `.cursor/skills` (read natively by Cursor).
- * - Else → `null` (Windsurf/Copilot/Cline use their own folders).
+ * - `codex` / `opencode` → `.agents/skills` (Claude Code does not read it).
+ * - `claude` → `.claude/skills` (Codex does not read it).
+ * - `cursor` → always reads `.agents/skills`, and `.claude/skills` only with Third-Party Imports
+ *   enabled, without showing duplicates. So `cursor` + `claude` also gets `.agents/skills`, and
+ *   `.cursor/skills` appears only when Cursor is the only agent with a skills folder.
+ *
+ * Windsurf, Copilot and Cline get converted formats and have no skills folder here.
  */
-export function resolveCanonicalSkillsDir(selected: ReadonlySet<AgentId>): string | null {
-  if (selected.has("codex") || selected.has("opencode")) {
-    return ".agents/skills";
+export function resolveSkillDirs(selected: ReadonlySet<AgentId>): readonly string[] {
+  const dirs: string[] = [];
+  const cursorWithClaude = selected.has("cursor") && selected.has("claude");
+  if (selected.has("codex") || selected.has("opencode") || cursorWithClaude) {
+    dirs.push(".agents/skills");
   }
   if (selected.has("claude")) {
-    return ".claude/skills";
+    dirs.push(".claude/skills");
   }
-  if (selected.has("cursor")) {
-    return ".cursor/skills";
+  if (dirs.length === 0 && selected.has("cursor")) {
+    dirs.push(".cursor/skills");
   }
-  return null;
+  return dirs;
 }
 
 function addSkillFolderToMap(
@@ -342,8 +347,8 @@ function addMergedMarkerFileToMap(
 
 /**
  * Pure computation of agent files (`relPath -> content`) for the selected AI agents.
- * Guarantees zero duplicate skill/command definitions across `.cursor/`, `.claude/`,
- * `.agents/`, and `.opencode/`.
+ * Skills go only into the folders from `resolveSkillDirs`; `.opencode/commands` and
+ * `.claude/commands` are never generated.
  */
 export function renderAgentFilesMap(options: {
   readonly projectDir: string;
@@ -393,11 +398,10 @@ export function renderAgentFilesMap(options: {
     }
   }
 
-  // 4. Single deduplicated skills folder for Cursor / Claude Code / Codex / OpenCode
-  const canonicalSkillsDir = resolveCanonicalSkillsDir(selected);
-  if (canonicalSkillsDir !== null) {
+  // 4. Skills folders for Cursor / Claude Code / Codex / OpenCode
+  for (const skillDir of resolveSkillDirs(selected)) {
     for (const skill of skills) {
-      addSkillFolderToMap(outMap, canonicalSkillsDir, skill);
+      addSkillFolderToMap(outMap, skillDir, skill);
     }
   }
 
@@ -439,7 +443,7 @@ export function renderAgentFilesMap(options: {
 function pruneDuplicateAndLegacySkillFiles(
   projectDir: string,
   managedSkillNames: readonly string[],
-  activeSkillsDir: string | null,
+  activeSkillDirs: readonly string[],
 ): void {
   // 1. Remove legacy .claude/commands and .opencode/commands directories
   for (const legacyCmdDir of [".claude/commands", ".opencode/commands"]) {
@@ -456,7 +460,7 @@ function pruneDuplicateAndLegacySkillFiles(
   }
 
   // 2. Remove legacy v0.2 skill folders from all skill directories, and remove managed
-  //    skills from non-active skill directories so only `activeSkillsDir` has them.
+  //    skills from skill directories no selected agent reads.
   for (const skillDir of ALL_SKILL_DIRS) {
     const absSkillDir = join(projectDir, skillDir);
     if (!existsSync(absSkillDir)) continue;
@@ -468,7 +472,7 @@ function pruneDuplicateAndLegacySkillFiles(
       }
     }
 
-    if (skillDir !== activeSkillsDir) {
+    if (!activeSkillDirs.includes(skillDir)) {
       for (const skillName of managedSkillNames) {
         const dupFolder = join(absSkillDir, skillName);
         if (existsSync(dupFolder)) {
@@ -507,12 +511,12 @@ export function syncAgentIntegrations(options: {
 }): readonly string[] {
   const { projectDir, rootDir, agents } = options;
   const { skills } = loadProjectRulesAndSkills(projectDir, rootDir);
-  const activeSkillsDir = resolveCanonicalSkillsDir(new Set(agents));
+  const activeSkillDirs = resolveSkillDirs(new Set(agents));
 
   pruneDuplicateAndLegacySkillFiles(
     projectDir,
     skills.map((s) => s.name),
-    activeSkillsDir,
+    activeSkillDirs,
   );
 
   const rendered = renderAgentFilesMap(options);

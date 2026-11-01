@@ -1,10 +1,19 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { parseFrontmatter, renderAgentFilesMap } from "../src/agents.js";
 import { parseArgv, runCli } from "../src/cli.js";
+import type { AgentId } from "../src/types.js";
 import {
   DEFAULT_AGENTS,
   detectExistingAgents,
@@ -99,7 +108,7 @@ describe("L1DDER CLI — Cursor, Claude Code & OpenAI Codex Installation", () =>
     const parsedPonytail = parseFrontmatter(ponytailSkill);
     expect(parsedPonytail.data["description"]?.length).toBeGreaterThan(20);
 
-    // 3. Combined Cursor + Claude + Codex verification (deduplicated into .agents/skills)
+    // 3. Combined Cursor + Claude + Codex verification (.agents/skills for Codex, .claude/skills for Claude Code)
     const rendered = renderAgentFilesMap({
       projectDir: dir,
       rootDir: "l1dder",
@@ -115,9 +124,9 @@ describe("L1DDER CLI — Cursor, Claude Code & OpenAI Codex Installation", () =>
     expect(rendered.has(".agents/skills/codebase-design/SKILL.md")).toBe(true);
     expect(rendered.has(".agents/skills/codebase-design/DESIGN-IT-TWICE.md")).toBe(true);
     expect(rendered.has(".agents/skills/domain-modeling/GLOSSARY-FORMAT.md")).toBe(true);
-    // Must not duplicate skills into .cursor/skills or .claude/skills when .agents/skills is active
+    expect(rendered.has(".claude/skills/l1-onboard/SKILL.md")).toBe(true);
+    // Cursor reads both folders, so .cursor/skills must not add a third entry
     expect(rendered.has(".cursor/skills/l1-onboard/SKILL.md")).toBe(false);
-    expect(rendered.has(".claude/skills/l1-onboard/SKILL.md")).toBe(false);
   });
 
   it("installs RU methodology into l1dder/, bundles all 20 skills (including mattpocock/skills + companions), and configures agents", async () => {
@@ -460,7 +469,6 @@ describe("L1DDER CLI — Cursor, Claude Code & OpenAI Codex Installation", () =>
       ["codex"],
       ["opencode"],
       ["cursor", "codex"],
-      ["cursor", "claude"],
     ] as const) {
       const map = renderAgentFilesMap({
         projectDir: dir,
@@ -471,5 +479,83 @@ describe("L1DDER CLI — Cursor, Claude Code & OpenAI Codex Installation", () =>
       const l1TaskEntries = [...map.keys()].filter((k) => k.includes("l1-task"));
       expect(l1TaskEntries.length).toBe(1);
     }
+  });
+
+  describe("HOTFIX-003 regression: every selected agent gets skills in the folder it reads", () => {
+    const CASES: ReadonlyArray<{
+      readonly agents: readonly AgentId[];
+      readonly present: readonly string[];
+      readonly absent: readonly string[];
+    }> = [
+      { agents: ["cursor"], present: [".cursor/skills"], absent: [".claude/skills", ".agents/skills"] },
+      { agents: ["claude"], present: [".claude/skills"], absent: [".cursor/skills", ".agents/skills"] },
+      { agents: ["codex"], present: [".agents/skills"], absent: [".cursor/skills", ".claude/skills"] },
+      { agents: ["opencode"], present: [".agents/skills"], absent: [".cursor/skills", ".claude/skills"] },
+      // Cursor reads .claude/skills only with Third-Party Imports enabled, .agents/skills always
+      { agents: ["cursor", "claude"], present: [".agents/skills", ".claude/skills"], absent: [".cursor/skills"] },
+      { agents: ["cursor", "codex"], present: [".agents/skills"], absent: [".cursor/skills", ".claude/skills"] },
+      { agents: ["claude", "codex"], present: [".agents/skills", ".claude/skills"], absent: [".cursor/skills"] },
+      { agents: ["claude", "opencode"], present: [".agents/skills", ".claude/skills"], absent: [".cursor/skills"] },
+      { agents: ["cursor", "claude", "codex"], present: [".agents/skills", ".claude/skills"], absent: [".cursor/skills"] },
+    ];
+
+    function syncProject(dir: string, agents: readonly AgentId[]): void {
+      runProjectSync({
+        projectDir: dir,
+        rootDir: "l1dder",
+        language: "ru",
+        agents,
+        force: false,
+        updateGitignore: true,
+      });
+    }
+
+    for (const { agents, present, absent } of CASES) {
+      it(`${agents.join(",")} sees commands in ${present.join(" + ")} with no other copies`, () => {
+        const dir = makeTempDir();
+        syncProject(dir, agents);
+        const source = readFileSync(join(dir, "l1dder/skills/l1-task/SKILL.md"), "utf-8");
+
+        for (const skillDir of present) {
+          const entry = join(dir, skillDir, "l1-task");
+          // Plain copies only: symlinks break on Windows and in mixed Mac + Windows repositories
+          expect(lstatSync(entry).isDirectory()).toBe(true);
+          expect(readFileSync(join(entry, "SKILL.md"), "utf-8")).toBe(source);
+          expect(existsSync(join(dir, skillDir, "codebase-design/DEEPENING.md"))).toBe(true);
+        }
+        for (const skillDir of absent) {
+          expect(existsSync(join(dir, skillDir, "l1-task"))).toBe(false);
+        }
+      });
+    }
+
+    it("sync refreshes stale copies and keeps the user's own skills and files", () => {
+      const dir = makeTempDir();
+      const agents: readonly AgentId[] = ["claude", "codex"];
+      syncProject(dir, agents);
+      const source = readFileSync(join(dir, "l1dder/skills/l1-task/SKILL.md"), "utf-8");
+
+      writeFileSync(join(dir, ".claude/skills/l1-task/SKILL.md"), "stale", "utf-8");
+      writeFileSync(join(dir, ".claude/skills/l1-task/my-notes.md"), "notes", "utf-8");
+      mkdirSync(join(dir, ".claude/skills/my-own-skill"), { recursive: true });
+      writeFileSync(join(dir, ".claude/skills/my-own-skill/SKILL.md"), "mine", "utf-8");
+
+      syncProject(dir, agents);
+
+      expect(readFileSync(join(dir, ".claude/skills/l1-task/SKILL.md"), "utf-8")).toBe(source);
+      expect(readFileSync(join(dir, ".claude/skills/l1-task/my-notes.md"), "utf-8")).toBe("notes");
+      expect(readFileSync(join(dir, ".claude/skills/my-own-skill/SKILL.md"), "utf-8")).toBe("mine");
+    });
+
+    it("removing an agent removes its skill folder but keeps the source", () => {
+      const dir = makeTempDir();
+      syncProject(dir, ["cursor", "claude", "codex"]);
+      syncProject(dir, ["cursor"]);
+
+      expect(existsSync(join(dir, ".cursor/skills/l1-task/SKILL.md"))).toBe(true);
+      expect(existsSync(join(dir, ".claude/skills"))).toBe(false);
+      expect(existsSync(join(dir, ".agents/skills"))).toBe(false);
+      expect(existsSync(join(dir, "l1dder/skills/l1-task/SKILL.md"))).toBe(true);
+    });
   });
 });

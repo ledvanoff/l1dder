@@ -41,7 +41,7 @@ If you want to update **only the skills** from a new `l1dder` release (`/l1-*`, 
 npx l1dder@latest update --skills
 # (or: npx l1dder@latest update skills / npx l1dder@latest skills update)
 ```
-This updates only `l1dder/skills/**` and the skill/command folders in your configured AI agents (`.cursor/skills/`, `.claude/skills/`, `.claude/commands/`, `.agents/skills/`, etc.).
+This updates only `l1dder/skills/**` and the skill/command folders in your configured AI agents (`.cursor/skills/`, `.claude/skills/`, `.agents/skills/`, etc.).
 
 ### `npx l1dder skills` (`list | add | install | update`)
 Manages project skills declaratively via **`l1dder/skills.json`** (`package.json` for AI Agent Skills):
@@ -113,9 +113,11 @@ Inside `l1dder/` sits **`l1dder/skills.json`**, organizing all skills into 3 cle
 | AI Agent | `--agents` Flag | Files Generated in Your Repository |
 |----------|:---------------:|------------------------------------|
 | **Cursor** | `cursor` | • `.cursor/rules/l1dder/*.mdc` (5 rules with `alwaysApply: true`)<br/>• `.cursor/skills/<skill>/*` (all 20+ skills `/l1-*`, `ponytail*`, `mattpocock/skills` & `stack`)<br/>• `AGENTS.md` (managed `<!-- l1dder:begin -->` block) |
-| **Claude Code** | `claude` | • `CLAUDE.md` (managed `<!-- l1dder:begin -->` block)<br/>• `.claude/rules/l1dder/*.md` (modular rules)<br/>• `.claude/commands/<skill>.md` (slash commands)<br/>• `.claude/skills/<skill>/*` (complete skill folders) |
+| **Claude Code** | `claude` | • `CLAUDE.md` (managed `<!-- l1dder:begin -->` block)<br/>• `.claude/rules/l1dder/*.md` (modular rules)<br/>• `.claude/skills/<skill>/*` (complete skill folders) |
 | **OpenAI Codex** | `codex` | • `AGENTS.md`<br/>• `.agents/skills/<skill>/*` (complete folders for all 20+ skills) |
 | **Windsurf** | `windsurf` | • `.windsurf/rules/l1dder.md`<br/>• `.windsurf/workflows/<skill>.md` (slash workflows)<br/>• `AGENTS.md` |
 | **GitHub Copilot** | `copilot` | • `.github/copilot-instructions.md` (managed marker block)<br/>• `.github/prompts/<skill>.prompt.md` (prompt files) |
-| **OpenCode** | `opencode` | • `AGENTS.md`<br/>• `.opencode/commands/<skill>.md`<br/>• `.agents/skills/<skill>/*` |
+| **OpenCode** | `opencode` | • `AGENTS.md`<br/>• `.agents/skills/<skill>/*` |
 | **Cline / Roo Code** | `cline` | • `.clinerules/l1dder.md`<br/>• `.roo/rules/l1dder.md`<br/>• `AGENTS.md` |
+
+> 💡 `l1dder/skills/` is the single source of truth: `npx l1dder sync` copies it into the skills folders of the selected agents, so edit skills there rather than in agent folders. Cursor always reads `.agents/skills/` and reads `.claude/skills/` only with Third-Party Imports enabled, so `cursor` + `claude` installs both; `.cursor/skills/` is used only when Cursor is the only agent with a skills folder.

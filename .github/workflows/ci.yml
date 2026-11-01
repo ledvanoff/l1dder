@@ -37,3 +37,25 @@ jobs:
 
       - name: Build documentation site
         run: npm run docs:build
+
+  test-windows:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Keep LF line endings
+        run: git config --global core.autocrlf false
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run CLI tests
+        run: npm test

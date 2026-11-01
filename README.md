@@ -49,13 +49,15 @@ Then open your AI agent chat and run `/l1-onboard`.
 | Agent | Flag | Configured Files |
 |-------|:----:|------------------|
 | **Cursor** | `cursor` | `.cursor/rules/l1dder/*.mdc` + `.cursor/skills/*` + `AGENTS.md` |
-| **Claude Code** | `claude` | `CLAUDE.md` + `.claude/rules/l1dder/*.md` + `.claude/commands/*` + `.claude/skills/*` |
+| **Claude Code** | `claude` | `CLAUDE.md` + `.claude/rules/l1dder/*.md` + `.claude/skills/*` |
 | **OpenAI Codex** | `codex` | `AGENTS.md` + `.agents/skills/*` |
 | **Windsurf** | `windsurf` | `.windsurf/rules/l1dder.md` + `.windsurf/workflows/*` + `AGENTS.md` |
 | **GitHub Copilot** | `copilot` | `.github/copilot-instructions.md` + `.github/prompts/*.prompt.md` |
-| **OpenCode** | `opencode` | `AGENTS.md` + `.opencode/commands/*` + `.agents/skills/*` |
+| **OpenCode** | `opencode` | `AGENTS.md` + `.agents/skills/*` |
 | **Cline / Roo Code** | `cline` | `.clinerules/l1dder.md` + `.roo/rules/l1dder.md` + `AGENTS.md` |
 | **All Agents** | `all` | Installs for all supported agents at once |
+
+`l1dder/skills/` is the single source of truth: `npx l1dder sync` copies it into the skills folders of the selected agents, so edit skills there rather than in agent folders. Cursor always reads `.agents/skills/` and reads `.claude/skills/` only with Third-Party Imports enabled, so `cursor` + `claude` installs both; `.cursor/skills/` is used only when Cursor is the only agent with a skills folder.
 
 ---
 

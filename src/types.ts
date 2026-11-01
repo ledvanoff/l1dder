@@ -27,11 +27,11 @@ export const SUPPORTED_AGENTS: readonly AgentId[] = [
 
 export const AGENT_LABELS: Readonly<Record<AgentId, string>> = {
   cursor: "Cursor (.cursor/rules/l1dder/ + .cursor/skills/ + AGENTS.md)",
-  claude: "Claude Code (CLAUDE.md + .claude/rules/l1dder/ + .claude/commands/ + .claude/skills/)",
+  claude: "Claude Code (CLAUDE.md + .claude/rules/l1dder/ + .claude/skills/)",
   codex: "OpenAI Codex (AGENTS.md + .agents/skills/)",
   windsurf: "Windsurf (.windsurf/rules/l1dder.md + .windsurf/workflows/)",
   copilot: "GitHub Copilot (.github/copilot-instructions.md + .github/prompts/)",
-  opencode: "OpenCode (AGENTS.md + .opencode/commands/ + .agents/skills/)",
+  opencode: "OpenCode (AGENTS.md + .agents/skills/)",
   cline: "Cline & Roo Code (.clinerules/l1dder.md + .roo/rules/l1dder.md)",
 };
 
