@@ -1,4 +1,4 @@
-# L1DDER — Spec-Driven & Roadmap-Gated AI Development Framework
+# L1DDER — Spec-Driven Development Framework for AI Coding Agents
 
 [![npm version](https://img.shields.io/npm/v/l1dder.svg)](https://www.npmjs.com/package/l1dder)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages%20(RU%20%2F%20EN)-blue)](https://ledvanoff.github.io/l1dder/)
@@ -6,7 +6,7 @@
 
 > 🌍 **Documentation Site (with visual diagrams):** [Русская версия](https://ledvanoff.github.io/l1dder/) | [English Version](https://ledvanoff.github.io/l1dder/en/)
 
-**L1DDER** is a self-contained Spec-Driven & Roadmap-Gated AI development framework for **Cursor, Claude Code, OpenAI Codex, Windsurf, GitHub Copilot, OpenCode, and Cline**.
+**L1DDER** (pronounced "leader" or "l'oneder") is a spec-driven development framework for AI coding agents: **Cursor, Claude Code, OpenAI Codex, Windsurf, GitHub Copilot, OpenCode, and Cline**. Ideas, specs, roadmap and tasks live in plain Markdown, `/l1-*` slash commands drive the work, and nothing moves forward without your `"ok"`.
 
 - **Transparent Markdown Control:** Your Markdown documents in `docs/` (`ideas.md`, `backlog.md`, `roadmap.md`) with end-to-end linked **ID Passports** are the single source of truth.
 - **6 Slash Commands (`/l1-*`):** Control the entire product lifecycle with `/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, and `/l1-hotfix` + `"ok"` approvals.

@@ -1,13 +1,17 @@
 {
   "name": "l1dder",
   "version": "1.0.2",
-  "description": "L1DDER — Spec-Driven & Roadmap-Gated AI Development Framework (Zero Hidden State, 6 Slash Commands, Multi-Agent Installer for Cursor, Claude Code, Codex, Windsurf, Copilot, OpenCode, Cline).",
+  "description": "Spec-driven development framework for AI coding agents (Cursor, Claude Code, Codex, Windsurf, Copilot, OpenCode, Cline): ideas, specs and roadmap in Markdown, driven by /l1-* slash commands.",
   "keywords": [
-    "ai",
-    "aidd",
-    "spec-driven",
     "l1dder",
-    "l1-method",
+    "spec-driven",
+    "spec-driven-development",
+    "ai",
+    "ai-agents",
+    "ai-coding",
+    "agentic-coding",
+    "coding-agents",
+    "vibe-coding",
     "cursor",
     "claude-code",
     "codex",
@@ -16,7 +20,8 @@
     "opencode",
     "cline",
     "workflow",
-    "developer-tools"
+    "developer-tools",
+    "cli"
   ],
   "license": "MIT",
   "author": "Oleg Ledvanov",
