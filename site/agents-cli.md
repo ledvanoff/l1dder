@@ -125,4 +125,6 @@ npx l1dder skills update
 
 > 💡 `l1dder/skills/` — единственный первоисточник: `npx l1dder sync` копирует его в папки скиллов выбранных агентов, поэтому правь скиллы там, а не в папках агентов. Cursor всегда читает `.agents/skills/`, а `.claude/skills/` — только с включённым Third-Party Imports, поэтому `cursor` + `claude` получает обе папки; `.cursor/skills/` используется, только если папка скиллов нужна одному Cursor.
 
+> 🩹 Команды не появились в меню `/`? Смотри [пошаговую инструкцию](/troubleshooting).
+
 > 💡 **Безопасное слияние (`Marker Block`):** Если у тебя в проекте уже были свои `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md` или `.gitignore`, `L1DDER` **никогда не затирает** твой текст — он аккуратно обновляет только блок внутри маркеров `<!-- l1dder:begin --> ... <!-- l1dder:end -->`.

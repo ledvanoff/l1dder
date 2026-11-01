@@ -26,3 +26,10 @@
 - **Ideas (`docs/ideas.md`):** `📋 unrealized` → `🚧 in-progress` → `✅ realized` | `❌ rejected`
 - **Features (`docs/backlog.md`):** `📝 drafting` → `📋 in-backlog` → `🗓 scheduled` → `🚧 in-progress` → `✅ realized` | `❌ rejected`
 - **Sprints & Tasks (`docs/roadmap.md`, `docs/backlog.md`):** `📋 planned` → `🚧 in-progress` → `✅ realized` | `⏸ paused`
+
+---
+
+## ❓ FAQ
+
+### I type `/l1-` but the commands aren't in the menu. What should I do?
+Run `npx l1dder@latest update` and open a new agent session. If that doesn't help, follow the [step-by-step guide](https://ledvanoff.github.io/l1dder/en/troubleshooting).

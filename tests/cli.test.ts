@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import {
   existsSync,
   lstatSync,
@@ -9,6 +10,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { parseFrontmatter, renderAgentFilesMap } from "../src/agents.js";
@@ -557,5 +559,62 @@ describe("L1DDER CLI — Cursor, Claude Code & OpenAI Codex Installation", () =>
       expect(existsSync(join(dir, ".agents/skills"))).toBe(false);
       expect(existsSync(join(dir, "l1dder/skills/l1-task/SKILL.md"))).toBe(true);
     });
+  });
+});
+
+describe("HOTFIX-004 regression: GitHub release notes are bilingual and cover one version", () => {
+  const script = fileURLToPath(new URL("../scripts/render-release-notes.mjs", import.meta.url));
+
+  function renderNotes(...args: string[]) {
+    return spawnSync(process.execPath, [script, ...args], { encoding: "utf-8" });
+  }
+
+  it("renders English, then Russian, for the requested version only", () => {
+    const { status, stdout } = renderNotes("v1.0.1");
+
+    expect(status).toBe(0);
+    expect(stdout).toContain("## 🇬🇧 English");
+    expect(stdout).toContain("## 🇷🇺 Русский");
+    expect(stdout.indexOf("Skill deduplication hotfix")).toBeGreaterThan(-1);
+    expect(stdout.indexOf("Skill deduplication hotfix")).toBeLessThan(stdout.indexOf("## 🇷🇺 Русский"));
+    expect(stdout.indexOf("Хотфикс дедупликации")).toBeGreaterThan(stdout.indexOf("## 🇷🇺 Русский"));
+    expect(stdout).toContain("- HOTFIX-001: Refined documentation site copy");
+    expect(stdout).toContain("- HOTFIX-001: Обновлены формулировки");
+    expect(stdout).toContain("compare/v1.0.0...v1.0.1");
+    expect(stdout).not.toContain("Zero Hidden State");
+    expect(stdout).not.toContain("⚠️");
+    expect(stdout).not.toContain("[RU]");
+  });
+
+  it("puts breaking changes first in each language and omits the diff link for the oldest entry", () => {
+    const { status, stdout } = renderNotes("v1.0.0");
+
+    expect(status).toBe(0);
+    expect(stdout.indexOf("### ⚠️ Breaking changes")).toBeGreaterThan(-1);
+    expect(stdout.indexOf("### ⚠️ Breaking changes")).toBeLessThan(stdout.indexOf("### ✨ What's changed"));
+    expect(stdout.indexOf("### ⚠️ Ломающие изменения")).toBeGreaterThan(-1);
+    expect(stdout.indexOf("### ⚠️ Ломающие изменения")).toBeLessThan(stdout.indexOf("### ✨ Что изменилось"));
+    expect(stdout).not.toContain("/compare/");
+  });
+
+  it("fails for a tag without an entry in the catalog", () => {
+    const { status, stderr } = renderNotes("v9.9.9");
+
+    expect(status).not.toBe(0);
+    expect(stderr).toContain("v9.9.9");
+  });
+
+  it.each([
+    ["a missing English summary", { summary: { ru: "Сводка" }, changes: { ru: ["а"], en: ["a"] } }],
+    ["a change translated into one language only", { summary: { ru: "Сводка", en: "Summary" }, changes: { ru: ["а"], en: [] } }],
+    ["a breaking change translated into one language only", { summary: { ru: "Сводка", en: "Summary" }, breaking: { ru: ["а"] } }],
+  ])("fails for %s", (_name, entry) => {
+    const catalog = join(makeTempDir(), "releases.json");
+    writeFileSync(catalog, JSON.stringify({ releases: [{ version: "2.0.0", date: "2026-11-01", ...entry }] }), "utf-8");
+
+    const { status, stderr } = renderNotes("v2.0.0", catalog);
+
+    expect(status).not.toBe(0);
+    expect(stderr).toContain("2.0.0");
   });
 });

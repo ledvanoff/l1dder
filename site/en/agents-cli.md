@@ -121,3 +121,5 @@ Inside `l1dder/` sits **`l1dder/skills.json`**, organizing all skills into 3 cle
 | **Cline / Roo Code** | `cline` | • `.clinerules/l1dder.md`<br/>• `.roo/rules/l1dder.md`<br/>• `AGENTS.md` |
 
 > 💡 `l1dder/skills/` is the single source of truth: `npx l1dder sync` copies it into the skills folders of the selected agents, so edit skills there rather than in agent folders. Cursor always reads `.agents/skills/` and reads `.claude/skills/` only with Third-Party Imports enabled, so `cursor` + `claude` installs both; `.cursor/skills/` is used only when Cursor is the only agent with a skills folder.
+
+> 🩹 Commands didn't appear in the `/` menu? See the [step-by-step guide](/en/troubleshooting).

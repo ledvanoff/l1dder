@@ -35,6 +35,11 @@ jobs:
           npm run build
           npm test
 
+      - name: Render release notes (stops here if the tag has no complete RU + EN entry)
+        env:
+          TAG: ${{ github.ref_name }}
+        run: node scripts/render-release-notes.mjs "${TAG}" > "${RUNNER_TEMP}/release-notes.md"
+
       - name: Publish to npm (OIDC + provenance)
         run: npm publish --provenance --access public
 
@@ -42,9 +47,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.ref_name }}
-        run: |
-          if [ -f CHANGELOG.md ]; then
-            gh release create "${TAG}" --title "${TAG}" --notes-file CHANGELOG.md
-          else
-            gh release create "${TAG}" --title "${TAG}" --generate-notes
-          fi
+        run: gh release create "${TAG}" --title "${TAG}" --notes-file "${RUNNER_TEMP}/release-notes.md"

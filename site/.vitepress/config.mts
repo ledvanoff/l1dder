@@ -32,6 +32,7 @@ export default withMermaid(
                 { text: "Быстрый старт за 3 минуты", link: "/quickstart" },
                 { text: "Разбор 6 кнопок /l1-*", link: "/flows" },
                 { text: "Шпаргалка и FAQ", link: "/cheatsheet" },
+                { text: "Не видны слэш-команды", link: "/troubleshooting" },
               ],
             },
             {
@@ -69,6 +70,7 @@ export default withMermaid(
                 { text: "3-Minute Quickstart", link: "/en/quickstart" },
                 { text: "Deep Dive into /l1-*", link: "/en/flows" },
                 { text: "One-Page Cheatsheet & FAQ", link: "/en/cheatsheet" },
+                { text: "Slash Commands Not Showing", link: "/en/troubleshooting" },
               ],
             },
             {
