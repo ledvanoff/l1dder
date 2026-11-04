@@ -32,7 +32,7 @@ L!DDER-REBORN/
 │   ├── releases.json           # ЕДИНСТВЕННЫЙ источник истины по версиям, чейнджлогу и BREAKING CHANGES (RU + EN)
 │   └── i18n/{ru,en}/           # Эталонные шаблоны, правила, 20 скиллов и документация
 ├── scripts/
-│   ├── sync-release-meta.mjs   # Автосинхронизация version в package.json и генерация CHANGELOG.md из assets/releases.json
+│   ├── sync-release-meta.mjs   # Автосинхронизация version в package.json и package-lock.json, генерация CHANGELOG.md из assets/releases.json
 │   ├── sync-root-l1dder.mjs    # Синхронизация догфудинг-инстанса ./l1dder/ и папок агентов
 │   ├── sync-site-docs.mjs      # Синхронизация страниц VitePress сайта ./site/ из assets/i18n/{ru,en}/
 │   ├── check-site.mjs          # Проверка готовой сборки сайта: ссылки, якоря, файлы, sitemap.xml, llms.txt, SEO-теги и сравнение со снимком

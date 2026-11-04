@@ -4,7 +4,7 @@
  *
  * Makes `assets/releases.json` the Single Source of Truth for versioning and changelogs:
  *   1. Reads the top release entry (`releases[0]`) from `assets/releases.json`.
- *   2. Synchronizes `"version"` in `package.json` to `releases[0].version`.
+ *   2. Synchronizes `"version"` in `package.json` and `package-lock.json` to `releases[0].version`.
  *   3. Auto-generates `CHANGELOG.md` (with `### ⚠️ BREAKING CHANGES` and RU/EN changes).
  *
  * Invoked automatically at the start of `npm run build`.
@@ -38,7 +38,17 @@ if (pkg.version !== targetVersion) {
   console.log(`✓ Synced package.json version -> ${targetVersion}`);
 }
 
-// 2. Render CHANGELOG.md from assets/releases.json
+// 2. Sync package-lock.json, otherwise `npm install` leaves it modified in every new clone
+const lockPath = join(repoRoot, "package-lock.json");
+const lock = JSON.parse(readFileSync(lockPath, "utf-8"));
+if (lock.version !== targetVersion || lock.packages[""].version !== targetVersion) {
+  lock.version = targetVersion;
+  lock.packages[""].version = targetVersion;
+  writeFileSync(lockPath, `${JSON.stringify(lock, null, 2)}\n`, "utf-8");
+  console.log(`✓ Synced package-lock.json version -> ${targetVersion}`);
+}
+
+// 3. Render CHANGELOG.md from assets/releases.json
 const lines = [
   "# Changelog",
   "",
