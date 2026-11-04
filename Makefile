@@ -1,6 +1,6 @@
 # Makefile — L1DDER Framework Repository (Dogfooding Contract)
 
-.PHONY: dev build lint format typecheck test test-e2e site-gate site-baseline site-check doctor ci release
+.PHONY: dev build lint format typecheck test test-e2e site-gate site-baseline site-check hooks-update doctor ci release
 
 REF ?= HEAD
 
@@ -34,6 +34,9 @@ site-baseline: test-e2e
 
 site-check: site-gate
 	node scripts/check-site-ref.mjs $(REF)
+
+hooks-update:
+	node scripts/install-hooks.mjs --force
 
 doctor:
 	node dist/cli.js doctor

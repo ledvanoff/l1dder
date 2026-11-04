@@ -1,0 +1,25 @@
+#!/bin/sh
+# Local guard against accidental npm releases. Installed from scripts/hooks/pre-push by scripts/install-hooks.mjs.
+# A pushed v* tag triggers .github/workflows/publish.yml; main updates the public docs site.
+# Intended release: L1DDER_RELEASE_CONFIRM=vX.Y.Z make release
+status=0
+while read -r local_ref local_sha remote_ref remote_sha; do
+  # Deleting a remote ref publishes nothing.
+  case "$local_sha" in *[!0]*) ;; *) continue ;; esac
+  case "$remote_ref" in
+    refs/tags/v*)
+      tag=${remote_ref#refs/tags/}
+      if [ "$L1DDER_RELEASE_CONFIRM" != "$tag" ]; then
+        echo "BLOCKED: pushing tag $tag would publish to npm. Set L1DDER_RELEASE_CONFIRM=$tag to release on purpose." >&2
+        status=1
+      fi
+      ;;
+    refs/heads/main)
+      if [ -z "$L1DDER_RELEASE_CONFIRM" ]; then
+        echo "BLOCKED: main is the release branch (deploys the public docs site). Set L1DDER_RELEASE_CONFIRM to push it on purpose." >&2
+        status=1
+      fi
+      ;;
+  esac
+done
+exit $status

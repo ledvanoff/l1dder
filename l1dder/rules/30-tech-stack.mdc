@@ -42,6 +42,8 @@ L!DDER-REBORN/
 │   ├── sync-site-docs.mjs      # Синхронизация страниц VitePress сайта ./site/ из assets/i18n/{ru,en}/
 │   ├── check-site.mjs          # Проверка готовой сборки сайта: ссылки, якоря, файлы, sitemap.xml, llms.txt, SEO-теги и сравнение со снимком
 │   ├── check-site-ref.mjs      # Остановка деплоя сайта без релиза, если в ветке есть невыпущенные продуктовые правки
+│   ├── install-hooks.mjs       # Установка защиты от случайного релиза при npm install
+│   ├── hooks/pre-push          # Хук: блокирует пуш тегов v* и ветки main без L1DDER_RELEASE_CONFIRM
 │   ├── render-release-notes.mjs # Заметки GitHub Release (EN + RU) для одной версии из assets/releases.json
 │   └── release.mjs             # Автоматический выпуск релиза (make ci -> merge dev into main -> tag vX.Y.Z -> push)
 ├── l1dder/                     # Догфудинг-инстанс методологии самого проекта L1DDER
@@ -65,6 +67,7 @@ make test-e2e       # npm run docs:build + scripts/check-site.mjs (сборка 
 make site-gate      # make test-e2e + сравнение сайта со снимком docs/site-baseline.json (запускается внутри make release)
 make site-baseline  # make test-e2e + запись нового снимка (только осознанно, с причиной в коммите)
 make site-check     # make site-gate + проверка ветки REF перед деплоем сайта без релиза (раздел 4)
+make hooks-update   # заменить .git/hooks/pre-push версией из репозитория, старый файл сохраняется как pre-push.bak
 make doctor         # node dist/cli.js doctor (проверка целостности l1dder/ и docs/)
 make ci             # typecheck + build + test + test-e2e + doctor
 make release        # npm run release (выкатка новой версии из assets/releases.json в main, GitHub Pages и npm)
@@ -80,9 +83,9 @@ make release        # npm run release (выкатка новой версии и
 2. **Как выпустить новую версию пакета (`make release`):**
    - **`assets/releases.json` — единственный файл, где задаётся версия и пишется чейнджлог.** Никогда не правь `"version"` в `package.json` и `CHANGELOG.md` руками — их автоматически перезаписывает `scripts/sync-release-meta.mjs` при `npm run build`!
    - Шаг 1: Добавь новый объект релиза на самый верх массива `"releases"` в `assets/releases.json` (`version`, `date`, `summary`, `changes`, `breaking` на `ru` и `en`).
-   - Шаг 2: Запусти в терминале (находясь на ветке `dev`):
+   - Шаг 2: Покажи пользователю версию, изменения и `breaking` и запусти в терминале (находясь на ветке `dev`) только после его прямой просьбы с названной версией:
      ```bash
-     make release
+     L1DDER_RELEASE_CONFIRM=vX.Y.Z make release
      ```
    - Скрипт `scripts/release.mjs` автоматически проверит, что тега `vX.Y.Z` ещё нет, прогонит `make ci` (обновив `package.json` и `CHANGELOG.md`) и `make site-gate`, закоммитит их в `dev`, переключится на `main`, смержит `dev`, поставит тег `vX.Y.Z`, запушит `main`, `dev` и теги в `origin` и вернёт ветку обратно на `dev`.
    - На пуш в `main` с тегом `vX.Y.Z` GitHub Actions автоматически деплоит сайт на GitHub Pages (`docs.yml`) и публикует пакет в npmjs через OIDC (`publish.yml`).
@@ -102,6 +105,11 @@ make release        # npm run release (выкатка новой версии и
    - **После деплоя:** дождись завершения запуска, проверь живой сайт и убедись, что версия в npm и список тегов не изменились.
    - **Откат:** тот же запуск с прежним коммитом или тегом в `-f ref=...`.
    - **Что этим путём не обновляется:** README на GitHub и описание в npm, они меняются с релизом. Новый `docs.yml` тоже начинает работать только после попадания в `main`.
+4. **Защита от случайного релиза:**
+   - Пуш тега `v*` сразу публикует пакет в npm, откатить публикацию нельзя. Просьбы «закоммить», «запушь», «доделай» релизом не считаются.
+   - Хук `scripts/hooks/pre-push` блокирует пуш тегов `v*` и ветки `main` без `L1DDER_RELEASE_CONFIRM`. Он ставится сам при `npm install`. Не обходи его (`--no-verify`, `core.hooksPath`) и не ставь эту переменную по своей инициативе.
+   - Существующий `pre-push`, другие хуки и настройки git установка не меняет. Если `pre-push` отличается от версии в репозитории, `npm install` только предупредит. Если в нём нет своих проверок, обнови его через `make hooks-update` после подтверждения пользователя.
+   - Если задан `core.hooksPath`, хук не ставится: добавить его в ту папку нужно вручную.
 
 ---
 

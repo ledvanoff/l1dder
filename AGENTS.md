@@ -22,7 +22,7 @@
      1. Добавь новый объект релиза **первым элементом** в массив `releases` файла **`assets/releases.json`** (заполнив `version`, `date`, `summary` (`ru`/`en`), `changes` (`ru`/`en`) и `breaking` (`ru`/`en`) — именно поле `breaking` CLI проверяет при `npx l1dder@latest update`, запрашивая подтверждение у пользователя).
      2. Запусти одну команду:
         ```bash
-        make release
+        L1DDER_RELEASE_CONFIRM=vX.Y.Z make release
         ```
         Скрипт `scripts/release.mjs` сам прогонит `make ci` (автоматически обновив `package.json` и `CHANGELOG.md`), закоммитит метаданные в `dev`, сольёт `dev → main`, создаст тег `vX.Y.Z`, запушит `main`, `dev` и теги в GitHub и вернёт ветку обратно на `dev`. GitHub Actions автоматически опубликует пакет в npm (OIDC) и обновит сайт на GitHub Pages.
 
@@ -40,6 +40,8 @@
    - Пиши их только в `AGENTS.md` выше блока `l1dder:begin` и в `l1dder/rules/30-tech-stack.mdc`. Правки других файлов в `l1dder/rules/` и внутри этого блока сборка затирает.
    - Правила для пользователей фреймворка лежат в `assets/i18n/{ru,en}/` и выходят с релизом.
    - `dev` вливается в `main` целиком при релизе, вместе с техническими правками. Между релизами `main` не меняется.
+
+7. **Защита от случайного релиза ставится при `npm install`:** хук `scripts/hooks/pre-push` блокирует пуш тегов `v*` и `main` без `L1DDER_RELEASE_CONFIRM`. Подробности в разделе 4 файла `l1dder/rules/30-tech-stack.mdc`.
 
 <!-- l1dder:begin -->
 # Методология проекта: L1DDER (`l1dder/`)
