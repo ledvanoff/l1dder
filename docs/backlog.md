@@ -84,13 +84,17 @@
 
 #### После следующего релиза (`SPRINT-02` закрыт без релиза)
 
-Пока `dev` не попал в `main`, изменения `FEAT-003` не видны на сайте L1DDER, в README на GitHub и в npm, а `sitemap.xml` из корневого `robots.txt` отвечает 404. После релиза:
+2026-11-04 `dev` влит в `main` без тега: сайт L1DDER и README на GitHub обновлены, браузерный гейт на живом сайте пройден. В npm остаются `1.0.2` и старое описание пакета.
 
-- Описать изменения сайта и `package.json` в записи `assets/releases.json`.
-- Повторить браузерный гейт на живом сайте, включая `sitemap.xml`, `llms.txt` и `og-card.png`. При сбое откат согласуется с пользователем.
-- Проверить `npm view`, README на GitHub и в npm.
+Сейчас:
+
 - Пользователю: отправить `https://ledvanoff.github.io/l1dder/sitemap.xml` в Google Search Console и Яндекс Вебмастер.
 - Проверить настоящее превью ссылки.
+
+При следующем релизе:
+
+- Описать новые `description` и `keywords` в записи `assets/releases.json`.
+- Проверить `npm view` и README в npm.
 
 ---
 
