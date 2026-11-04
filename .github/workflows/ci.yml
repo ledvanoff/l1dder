@@ -35,8 +35,8 @@ jobs:
       - name: Run CLI tests
         run: npm test
 
-      - name: Build documentation site
-        run: npm run docs:build
+      - name: Build and check documentation site
+        run: make site-gate
 
   test-windows:
     runs-on: windows-latest
