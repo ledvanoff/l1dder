@@ -100,3 +100,16 @@
 | `HOTFIX-003` | `FEAT-001` | 2026-11-01 | Слэш-команды `/l1-*` не видны в Claude Code при совместной установке с Codex или OpenCode: скиллы лежали только в `.agents/skills`, которую Claude Code не читает | `resolveSkillDirs` раскладывает копии из `l1dder/skills/` во все папки, которые читают выбранные агенты (`.agents/skills` и `.claude/skills`); `cursor` + `claude` тоже получает `.agents/skills`, потому что `.claude/skills` Cursor читает только с включённым Third-Party Imports; `.cursor/skills` остаётся, только если папка скиллов нужна одному Cursor; добавлен прогон тестов на `windows-latest` | ✅ реализована | `fix(agents): install skills into every folder selected agents read` |
 | `HOTFIX-004` | `FEAT-001` | 2026-11-01 | В GitHub Release попадал весь `CHANGELOG.md`: вся история версий, в `v1.0.1` только на русском; на сайте не было инструкции на случай, когда слэш-команды не видны | `scripts/render-release-notes.mjs` собирает заметки одной версии из `assets/releases.json` (EN, затем RU) и падает на неполной записи; `publish.yml` запускает его до `npm publish`; на сайт добавлена страница `troubleshooting` (RU + EN) со ссылками из шпаргалки и `agents-cli` | ✅ реализована | `fix(release): render bilingual notes for one version and add slash command troubleshooting` |
 | `HOTFIX-005` | `FEAT-002` | 2026-11-01 | `make release` падал с `TypeError` на первом `git add`: при `stdio: "inherit"` вызов `execFileSync` возвращает `null`, а хелпер вызывал `.trim()` | В `scripts/release.mjs` `.trim()` заменён на `?.trim()`; добавлен тест полного прогона скрипта на временном локальном remote | ✅ реализована | `fix(release): keep make release from crashing on inherited git output` |
+
+---
+
+## 4. Журнал служебных правок (`CHORE-NNN`)
+
+Внутренняя кухня репозитория, релиз не нужен. Порядок действий: раздел 6 файла `l1dder/rules/30-tech-stack.mdc`.
+
+| ID правки | Дата | Что и зачем | Коммит |
+|:---------:|------|-------------|:------:|
+| `CHORE-001` | 2026-11-04 | Деплой сайта с выбором ветки без релиза: `main` меняется только через `make release`; деплой останавливается на невыпущенных продуктовых правках и на сайте хуже снимка; гейт сайта добавлен в CI | `731f210`, `d571e79` |
+| `CHORE-002` | 2026-11-04 | Защита от случайного релиза перенесена в репозиторий: хук `scripts/hooks/pre-push` ставится при `npm install`, чужие хуки и настройки git не меняются, обновление через `make hooks-update` | `144e6ff` |
+| `CHORE-003` | 2026-11-04 | `package-lock.json` держит версию релиза: раньше оставался на `1.0.0` и менялся при `npm install` в каждом новом клоне | `b1ba0f7` |
+| `CHORE-004` | 2026-11-04 | Порядок служебных правок и этот журнал | `a42ff98` |
