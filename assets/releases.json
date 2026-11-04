@@ -1,6 +1,28 @@
 {
   "releases": [
     {
+      "version": "1.0.3",
+      "date": "2026-11-04",
+      "summary": {
+        "ru": "Обновлены описание пакета и README, чтобы L1DDER проще находился в поиске. Поведение CLI, правила и скиллы не менялись.",
+        "en": "Updated the package description and README so L1DDER is easier to find in search. CLI behavior, rules and skills are unchanged."
+      },
+      "changes": {
+        "ru": [
+          "Новые описание и ключевые слова пакета в npm, новое начало README.",
+          "На сайте у каждой страницы свои заголовок и описание, появились `sitemap.xml`, `llms.txt` и карточка превью."
+        ],
+        "en": [
+          "New npm package description and keywords, new README opening.",
+          "Every docs page now has its own title and description, plus `sitemap.xml`, `llms.txt` and a preview card."
+        ]
+      },
+      "breaking": {
+        "ru": [],
+        "en": []
+      }
+    },
+    {
       "version": "1.0.2",
       "date": "2026-11-01",
       "summary": {

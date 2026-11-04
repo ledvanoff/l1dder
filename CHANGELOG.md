@@ -5,6 +5,21 @@
 
 ---
 
+## [1.0.3] — 2026-11-04
+
+**RU:** Обновлены описание пакета и README, чтобы L1DDER проще находился в поиске. Поведение CLI, правила и скиллы не менялись.
+
+**EN:** Updated the package description and README so L1DDER is easier to find in search. CLI behavior, rules and skills are unchanged.
+
+### Changes (Изменения)
+
+- **[RU]** Новые описание и ключевые слова пакета в npm, новое начало README.
+- **[RU]** На сайте у каждой страницы свои заголовок и описание, появились `sitemap.xml`, `llms.txt` и карточка превью.
+- **[EN]** New npm package description and keywords, new README opening.
+- **[EN]** Every docs page now has its own title and description, plus `sitemap.xml`, `llms.txt` and a preview card.
+
+---
+
 ## [1.0.2] — 2026-11-01
 
 **RU:** Слэш-команды теперь видны в Claude Code вместе с Codex или OpenCode, заметки к релизам выходят на двух языках, а на сайте появилась инструкция на случай, если команды не отображаются.
