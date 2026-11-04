@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag or commit to build the site from"
+        required: true
+        default: dev
 
 permissions:
   contents: read
@@ -20,12 +25,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
           cache: "npm"
+
+      # The check comes from main, so the deployed ref cannot change or skip it.
+      - name: Stop on unreleased product changes
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git show "$GITHUB_SHA:scripts/check-site-ref.mjs" > "$RUNNER_TEMP/check-site-ref.mjs"
+          node "$RUNNER_TEMP/check-site-ref.mjs"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -35,6 +50,13 @@ jobs:
 
       - name: Build VitePress documentation site
         run: npm run docs:build
+
+      # Older releases have no baseline, so a rollback to them skips this check.
+      - name: Check the site against the baseline
+        run: |
+          if [ -f docs/site-baseline.json ]; then
+            node scripts/check-site.mjs --baseline docs/site-baseline.json
+          fi
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
