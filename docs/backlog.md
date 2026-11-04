@@ -82,19 +82,12 @@
 | `FEAT-003.05` | `TASK-02.05` | Витрины: описание и темы GitHub, начало README, `description` и `keywords` в npm | `chore` | ✅ реализована | [plan](./sprints/SPRINT-02-seo-foundation/tasks/TASK-02.05-showcases/plan.md) | [summary](./sprints/SPRINT-02-seo-foundation/tasks/TASK-02.05-showcases/summary.md) |
 | `FEAT-003.99` | `TASK-02.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)** *(Обязательная)*: браузерный гейт сайта и только после него релиз | `chore` | ✅ реализована | [plan](./sprints/SPRINT-02-seo-foundation/tasks/TASK-02.99-doctor/plan.md) | [summary](./sprints/SPRINT-02-seo-foundation/tasks/TASK-02.99-doctor/summary.md) |
 
-#### После следующего релиза (`SPRINT-02` закрыт без релиза)
+#### Что осталось после релиза `v1.0.3`
 
-2026-11-04 `dev` влит в `main` без тега: сайт L1DDER и README на GitHub обновлены, браузерный гейт на живом сайте пройден. В npm остаются `1.0.2` и старое описание пакета.
-
-Сейчас:
+Спринт закрыт без релиза, затем отдельным решением пользователя выпущен `v1.0.3`: сайт, README и npm обновлены, `main` совпадает с тегом, браузерный гейт на живом сайте пройден.
 
 - Пользователю: отправить `https://ledvanoff.github.io/l1dder/sitemap.xml` в Google Search Console и Яндекс Вебмастер.
 - Проверить настоящее превью ссылки.
-
-При следующем релизе:
-
-- Описать новые `description` и `keywords` в записи `assets/releases.json`.
-- Проверить `npm view` и README в npm.
 
 ---
 
