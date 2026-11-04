@@ -6,8 +6,8 @@
 | **ID родительской фичи / спеки** | [`FEAT-003`](../../backlog.md#feat-003) ([`docs/specs/FEAT-003-seo-foundation/`](../../specs/FEAT-003-seo-foundation/)) |
 | **ID родительской идеи** | [`IDEA-003`](../../ideas.md#idea-003) |
 | **Позиция в Роадмапе** | [`docs/roadmap.md`](../../roadmap.md) |
-| **Статус спринта** | `🚧 реализация` |
-| **Дата открытия / закрытия** | 2026-11-01 / — |
+| **Статус спринта** | `✅ реализована` |
+| **Дата открытия / закрытия** | 2026-11-01 / 2026-11-04 |
 
 ---
 
@@ -45,12 +45,12 @@
 | `TASK-02.03` | `FEAT-003.03` | Карточка превью, Open Graph и Twitter | `feat` | ✅ реализована | [plan](tasks/TASK-02.03-preview-card/plan.md) | [summary](tasks/TASK-02.03-preview-card/summary.md) |
 | `TASK-02.04` | `FEAT-003.04` | `llms.txt` из общей таблицы страниц | `feat` | ✅ реализована | [plan](tasks/TASK-02.04-llms-txt/plan.md) | [summary](tasks/TASK-02.04-llms-txt/summary.md) |
 | `TASK-02.05` | `FEAT-003.05` | Витрины: описание и темы GitHub, начало README, `description` и `keywords` в npm | `chore` | ✅ реализована | [plan](tasks/TASK-02.05-showcases/plan.md) | [summary](tasks/TASK-02.05-showcases/summary.md) |
-| `TASK-02.99` | `FEAT-003.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)**: браузерный гейт сайта и только после него релиз | `chore` | 🚧 реализация | [plan](tasks/TASK-02.99-doctor/plan.md) | — |
+| `TASK-02.99` | `FEAT-003.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)**: браузерный гейт сайта и только после него релиз | `chore` | ✅ реализована | [plan](tasks/TASK-02.99-doctor/plan.md) | [summary](tasks/TASK-02.99-doctor/summary.md) |
 
 ---
 
-## 4. Итог спринта (заполняется после закрытия `TASK-02.99`)
+## 4. Итог спринта
 
-- **Что поставлено по `FEAT-003` (`IDEA-003`):** —
-- **Обновления в долгосрочной доке (`concept` / `rules` / `specs`):** —
-- **Новые идеи / техдолг, вынесенные в `docs/ideas.md` или `docs/backlog.md`:** —
+- **Что поставлено по `FEAT-003` (`IDEA-003`):** в `dev` готовы заголовки и описания всех 18 страниц, `sitemap.xml`, канонические адреса и `hreflang`, карточка превью, `llms.txt`, новые `README.md` и метаданные npm, автоматическая проверка сборки и гейт сайта внутри `make release`. Уже работают: описание и темы на GitHub, корневой сайт и подтверждение в Google и Яндексе. Сайт L1DDER, npm и README получат изменения только со следующим релизом: `v1.0.3` не выпускался по решению пользователя.
+- **Обновления в долгосрочной доке (`concept` / `rules` / `specs`):** `l1dder/rules/30-tech-stack.mdc` (раздел 5), `AGENTS.md`, `docs/concept/architecture.md`, `docs/specs/FEAT-003-seo-foundation/`. ADR не понадобился.
+- **Новые идеи / техдолг, вынесенные в `docs/ideas.md` или `docs/backlog.md`:** критерии 3, 4 и 6 из таблицы готовности выполнены частично, остаток записан как [шаги после следующего релиза](../../backlog.md#feat-003).
