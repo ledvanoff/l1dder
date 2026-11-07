@@ -4,6 +4,7 @@ import {
   collectBreakingChanges,
   compareSemver,
   detectInstalledVersion,
+  formatAgentUpdateSteps,
   formatUpdateChangelogReport,
   getPendingReleases,
   isAffirmativeAnswer,
@@ -426,6 +427,8 @@ export async function runCli(
           ? parseAgentsFlag(flags.agents)
           : (existingConfig?.agents ?? detectExistingAgents(flags.cwd));
 
+      // Read before the sync: runProjectSync writes the new version into config.json.
+      const fromVersion = detectInstalledVersion(flags.cwd, activeRootDir);
       const allowed = await checkAndConfirmBreakingUpdate({
         projectDir: flags.cwd,
         rootDir: activeRootDir,
@@ -457,6 +460,12 @@ export async function runCli(
       }
 
       printOutcome("update", outcome, flags.skillsOnly);
+
+      const toVersion = deps?.targetVersion ?? PACKAGE_VERSION;
+      if (fromVersion !== null && compareSemver(fromVersion, toVersion) < 0) {
+        const pendingReleases = getPendingReleases(fromVersion, toVersion, deps?.releasesCatalog ?? loadReleasesCatalog());
+        process.stdout.write(formatAgentUpdateSteps({ fromVersion, toVersion, pendingReleases, lang: language }));
+      }
       return 0;
     }
 

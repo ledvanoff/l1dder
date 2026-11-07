@@ -20,6 +20,8 @@ export interface ReleaseEntry {
   readonly summary: LocalizedText;
   readonly changes: LocalizedList;
   readonly breaking: LocalizedList;
+  /** Steps the AI agent must carry out in the project after updating to this version. */
+  readonly agent?: LocalizedList | undefined;
 }
 
 export interface ReleasesCatalog {
@@ -174,6 +176,47 @@ export function formatUpdateChangelogReport(options: {
     lines.push("");
   }
 
+  return `${lines.join("\n")}\n`;
+}
+
+/**
+ * Format the instruction the AI agent must carry out after updating across `pendingReleases`.
+ */
+export function formatAgentUpdateSteps(options: {
+  readonly fromVersion: string;
+  readonly toVersion: string;
+  readonly pendingReleases: readonly ReleaseEntry[];
+  readonly lang: Language;
+}): string {
+  const { fromVersion, toVersion, pendingReleases, lang } = options;
+  const isRu = lang === "ru";
+  const lines: string[] = [
+    "",
+    isRu
+      ? `🤖 Инструкция для ИИ-агента после обновления L1DDER v${fromVersion} → v${toVersion}:`
+      : `🤖 AI Agent Instruction after updating L1DDER v${fromVersion} → v${toVersion}:`,
+  ];
+  for (const rel of pendingReleases) {
+    const version = isRu ? `  Версия v${rel.version}:` : `  Version v${rel.version}:`;
+    if (rel.agent === undefined) {
+      lines.push(`${version} ${isRu ? "для этой версии инструкции нет" : "no instruction for this version"}`);
+      continue;
+    }
+    const steps = rel.agent[lang];
+    if (steps.length === 0) {
+      lines.push(`${version} ${isRu ? "ручных шагов нет" : "no manual steps"}`);
+      continue;
+    }
+    lines.push(version);
+    for (const step of steps) {
+      lines.push(`    • ${step}`);
+    }
+  }
+  lines.push(
+    isRu
+      ? "  Выполни эти шаги в проекте и сообщи пользователю, что сделано."
+      : "  Carry out these steps in the project and tell the user what was done.",
+  );
   return `${lines.join("\n")}\n`;
 }
 

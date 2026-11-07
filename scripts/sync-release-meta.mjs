@@ -29,6 +29,31 @@ if (typeof targetVersion !== "string" || targetVersion.trim() === "") {
   throw new Error("Top entry in assets/releases.json is missing a valid `version` string.");
 }
 
+// Every release after 1.1.0 tells the agent what to do in the project after `npx l1dder update`.
+// shortcut: the rule starts after 1.1.0, drop the threshold if agent steps are ever backfilled for older releases
+const FIRST_RELEASE_WITHOUT_AGENT_RULE = [1, 1, 0];
+const parseVersion = (version) => version.replace(/^v/u, "").split("-")[0].split(".").map((part) => Number.parseInt(part, 10) || 0);
+const isNewerThan = (version, base) => {
+  const parts = parseVersion(version);
+  for (let i = 0; i < base.length; i += 1) {
+    if ((parts[i] ?? 0) !== base[i]) return (parts[i] ?? 0) > base[i];
+  }
+  return false;
+};
+if (isNewerThan(targetVersion, FIRST_RELEASE_WITHOUT_AGENT_RULE)) {
+  const agent = latestRelease.agent;
+  if (!agent || !Array.isArray(agent.ru) || !Array.isArray(agent.en)) {
+    throw new Error(
+      `Release ${targetVersion} in assets/releases.json needs an \`agent\` field: { "ru": [...], "en": [...] } with the steps the AI agent must carry out after \`npx l1dder update\` ([] means no manual steps).`,
+    );
+  }
+  if (agent.ru.length !== agent.en.length) {
+    throw new Error(
+      `Release ${targetVersion}: \`agent\` has ${agent.ru.length} RU and ${agent.en.length} EN steps; RU and EN must list the same steps.`,
+    );
+  }
+}
+
 // 1. Sync package.json version if needed
 const pkgRaw = readFileSync(pkgPath, "utf-8");
 const pkg = JSON.parse(pkgRaw);

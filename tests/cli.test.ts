@@ -12,10 +12,11 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { buildEntryPointSummary, parseFrontmatter, renderAgentFilesMap } from "../src/agents.js";
 import { parseArgv, runCli } from "../src/cli.js";
+import type { ReleaseEntry } from "../src/changelog.js";
 import type { AgentId } from "../src/types.js";
 import {
   DEFAULT_AGENTS,
@@ -145,6 +146,16 @@ describe("L1DDER CLI — Cursor, Claude Code & OpenAI Codex Installation", () =>
     expect(rendered.has(".claude/skills/l1-chore/SKILL.md")).toBe(true);
     expect(rendered.has(".windsurf/workflows/l1-chore.md")).toBe(true);
     expect(rendered.has(".github/prompts/l1-chore.prompt.md")).toBe(true);
+  });
+
+  it.each([
+    ["ru", "🤖"],
+    ["en", "🤖"],
+  ] as const)("tells the agent in the %s summary to carry out the %s block after npx l1dder update", (language, marker) => {
+    const update = buildEntryPointSummary(language, "l1dder")
+      .split("\n")
+      .find((line) => line.includes("npx l1dder@latest update`") && line.includes(marker));
+    expect(update).toBeDefined();
   });
 
   it.each(["ru", "en"] as const)("lists /l1-chore and names it in the Roadmap Gate rule of the %s summary", (language) => {
@@ -705,5 +716,67 @@ describe.skipIf(process.platform === "win32")("HOTFIX-005 regression: make relea
     expect(git(remote, "log", "-1", "--format=%s", "dev")).toBe("chore(release): v9.9.9");
     expect(git(repo, "branch", "--show-current")).toBe("dev");
     expect(git(repo, "status", "--porcelain")).toBe("");
+  });
+});
+
+describe("agent steps after npx l1dder update", () => {
+  const release = (version: string, agent?: { ru: string[]; en: string[] }): ReleaseEntry => ({
+    version,
+    date: "2026-12-01",
+    summary: { ru: `Релиз ${version}`, en: `Release ${version}` },
+    changes: { ru: [], en: [] },
+    breaking: { ru: [], en: [] },
+    ...(agent ? { agent } : {}),
+  });
+
+  async function updateOutput(language: "ru" | "en", catalog: readonly ReleaseEntry[], targetVersion: string, extra: string[] = []) {
+    const dir = makeTempDir();
+    await runCli(["node", "l1dder", "init", "--cwd", dir, "--lang", language, "--agents", "codex", "--yes"]);
+    let output = "";
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+      output += String(chunk);
+      return true;
+    });
+    try {
+      const code = await runCli(["node", "l1dder", "update", "--cwd", dir, ...extra], { targetVersion, releasesCatalog: catalog });
+      expect(code).toBe(0);
+    } finally {
+      spy.mockRestore();
+    }
+    return output;
+  }
+
+  it("prints the agent steps of the new version after the update report", async () => {
+    const output = await updateOutput("en", [release("2.0.0", { ru: ["Шаг А", "Шаг Б"], en: ["Step A", "Step B"] })], "2.0.0");
+    const block = output.slice(output.indexOf("🤖 AI Agent Instruction after updating"));
+    expect(block).toContain("v1.1.0 → v2.0.0");
+    expect(block.indexOf("Step A")).toBeGreaterThan(-1);
+    expect(block.indexOf("Step B")).toBeGreaterThan(block.indexOf("Step A"));
+    expect(block).toContain("tell the user what was done");
+    expect(output.indexOf("🤖 AI Agent Instruction after updating")).toBeGreaterThan(output.lastIndexOf("✓"));
+  });
+
+  it("says there are no manual steps when the version's agent list is empty", async () => {
+    const output = await updateOutput("ru", [release("2.0.0", { ru: [], en: [] })], "2.0.0");
+    const block = output.slice(output.indexOf("🤖 Инструкция для ИИ-агента после обновления"));
+    expect(block).toContain("Версия v2.0.0: ручных шагов нет");
+  });
+
+  it("lists skipped versions from old to new and flags old versions that have no instruction", async () => {
+    const catalog = [release("2.1.0", { ru: [], en: ["Step of 2.1.0"] }), release("2.0.0")];
+    const output = await updateOutput("en", catalog, "2.1.0");
+    const block = output.slice(output.indexOf("🤖 AI Agent Instruction after updating"));
+    expect(block).toContain("Version v2.0.0: no instruction for this version");
+    expect(block.indexOf("Step of 2.1.0")).toBeGreaterThan(block.indexOf("Version v2.0.0"));
+  });
+
+  it("prints no agent block when the version does not change", async () => {
+    const output = await updateOutput("en", [release("1.1.0", { ru: ["Шаг"], en: ["Step"] })], "1.1.0");
+    expect(output).not.toContain("🤖 AI Agent Instruction after updating");
+  });
+
+  it("prints the agent block after a skills-only update too, since it also moves the project to the new version", async () => {
+    const output = await updateOutput("en", [release("2.0.0", { ru: ["Шаг"], en: ["Step"] })], "2.0.0", ["--skills"]);
+    expect(output).toContain("🤖 AI Agent Instruction after updating");
   });
 });

@@ -77,7 +77,7 @@ make release        # npm run release (выкатка новой версии и
    - Внутренние изменения репозитория, не меняющие поведение опубликованного пакета `l1dder`, **не требуют** добавления новой версии в `assets/releases.json` — они просто коммитятся в `dev`.
 2. **Как выпустить новую версию пакета (`make release`):**
    - **`assets/releases.json` — единственный файл, где задаётся версия и пишется чейнджлог.** Никогда не правь `"version"` в `package.json` и `CHANGELOG.md` руками — их автоматически перезаписывает `scripts/sync-release-meta.mjs` при `npm run build`!
-   - Шаг 1: Добавь новый объект релиза на самый верх массива `"releases"` в `assets/releases.json` (`version`, `date`, `summary`, `changes`, `breaking` на `ru` и `en`).
+   - Шаг 1: Добавь новый объект релиза на самый верх массива `"releases"` в `assets/releases.json` (`version`, `date`, `summary`, `changes`, `breaking` и `agent` на `ru` и `en`). `agent` — чёткие шаги, которые агент выполнит в проекте пользователя после `npx l1dder update` (например, правки защищённых `30-tech-stack.mdc` и `40-skills-router.mdc`); `[]` значит «ручных шагов нет». Без `agent` сборка падает. Готовые шаги для ближайшего релиза лежат в `docs/specs/` в `design.md` фичи.
    - Шаг 2: Покажи пользователю версию, изменения и `breaking` и запусти в терминале (находясь на ветке `dev`) только после его прямой просьбы с названной версией:
      ```bash
      L1DDER_RELEASE_CONFIRM=vX.Y.Z make release

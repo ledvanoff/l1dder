@@ -12,13 +12,15 @@ afterEach(() => {
   for (const dir of tempDirs.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
-function prepareRepo(lockText: string) {
+const RELEASE = { version: "2.0.0", date: "2026-01-01", summary: { ru: "ru", en: "en" }, agent: { ru: [], en: [] } };
+const IN_SYNC_LOCK = '{"version":"2.0.0","packages":{"":{"version":"2.0.0"}}}\n';
+
+function prepareRepo(lockText: string, release: object = RELEASE) {
   const repo = mkdtempSync(join(tmpdir(), "l1dder-release-meta-"));
   tempDirs.push(repo);
   mkdirSync(join(repo, "scripts"));
   mkdirSync(join(repo, "assets"));
   copyFileSync(script, join(repo, "scripts/sync-release-meta.mjs"));
-  const release = { version: "2.0.0", date: "2026-01-01", summary: { ru: "ru", en: "en" } };
   writeFileSync(join(repo, "assets/releases.json"), JSON.stringify({ releases: [release] }));
   writeFileSync(join(repo, "package.json"), `${JSON.stringify({ name: "l1dder", version: "2.0.0" }, null, 2)}\n`);
   writeFileSync(join(repo, "CHANGELOG.md"), "");
@@ -53,9 +55,21 @@ describe("sync-release-meta", () => {
   });
 
   it("does not rewrite a lockfile that is already in sync", () => {
-    const text = '{"version":"2.0.0","packages":{"":{"version":"2.0.0"}}}\n';
-    const repo = prepareRepo(text);
+    const repo = prepareRepo(IN_SYNC_LOCK);
     expect(sync(repo).status).toBe(0);
-    expect(readFileSync(join(repo, "package-lock.json"), "utf-8")).toBe(text);
+    expect(readFileSync(join(repo, "package-lock.json"), "utf-8")).toBe(IN_SYNC_LOCK);
+  });
+
+  it("fails the build when a release newer than 1.1.0 has no agent instruction", () => {
+    const { agent: _agent, ...withoutAgent } = RELEASE;
+    const result = sync(prepareRepo(IN_SYNC_LOCK, withoutAgent));
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("`agent`");
+  });
+
+  it("fails the build when RU and EN agent steps differ in number", () => {
+    const result = sync(prepareRepo(IN_SYNC_LOCK, { ...RELEASE, agent: { ru: ["Шаг 1", "Шаг 2"], en: ["Step 1"] } }));
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("RU and EN");
   });
 });
