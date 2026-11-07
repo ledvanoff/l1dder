@@ -21,6 +21,7 @@ import type { AgentId } from "../src/types.js";
 import {
   DEFAULT_AGENTS,
   detectExistingAgents,
+  PACKAGE_VERSION,
   parseAgentsFlag,
   runProjectDoctor,
   runProjectSync,
@@ -749,7 +750,7 @@ describe("agent steps after npx l1dder update", () => {
   it("prints the agent steps of the new version after the update report", async () => {
     const output = await updateOutput("en", [release("2.0.0", { ru: ["Шаг А", "Шаг Б"], en: ["Step A", "Step B"] })], "2.0.0");
     const block = output.slice(output.indexOf("🤖 AI Agent Instruction after updating"));
-    expect(block).toContain("v1.1.0 → v2.0.0");
+    expect(block).toContain(`v${PACKAGE_VERSION} → v2.0.0`);
     expect(block.indexOf("Step A")).toBeGreaterThan(-1);
     expect(block.indexOf("Step B")).toBeGreaterThan(block.indexOf("Step A"));
     expect(block).toContain("tell the user what was done");
@@ -771,7 +772,7 @@ describe("agent steps after npx l1dder update", () => {
   });
 
   it("prints no agent block when the version does not change", async () => {
-    const output = await updateOutput("en", [release("1.1.0", { ru: ["Шаг"], en: ["Step"] })], "1.1.0");
+    const output = await updateOutput("en", [release(PACKAGE_VERSION, { ru: ["Шаг"], en: ["Step"] })], PACKAGE_VERSION);
     expect(output).not.toContain("🤖 AI Agent Instruction after updating");
   });
 
