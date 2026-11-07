@@ -25,16 +25,16 @@ description: Onboards a new (from-scratch) or existing (existing-code) project o
 
 | Этап | Файлы этапа | О чём вопросы | Скиллы (прочитай через `Read` в начале этапа) |
 |------|-------------|---------------|-----------------------------------------------|
-| 1. Идея | `docs/concept/idea.md` | Суть продукта, для кого он, какую задачу решает, границы MVP | `grilling`, `domain-modeling`, `prototype` (если поведение непонятно на словах) |
+| 1. Идея | `docs/concept/idea.md` | Суть продукта, для кого он, какую задачу решает, границы MVP, примеры действий пользователя | `grilling`, `domain-modeling`, `prototype` (если поведение непонятно на словах) |
 | 2. Видение | `docs/concept/vision.md` | Система в целом, роли, сценарии, принципы | `grilling`, `domain-modeling`, `prototype` (если нужен набросок экрана или потока) |
 | 3. Архитектура | `docs/concept/architecture.md`; `docs/concept/integrations.md` и `docs/concept/api-contracts.md`, только если нужны | Компоненты и слои, потоки данных, глубокие модули и швы, внешние системы и API | `codebase-design` (и его `DESIGN-IT-TWICE.md`), `domain-modeling` (и его `ADR-FORMAT.md`), `ponytail` |
 | 4. Модель данных | `docs/concept/data-model.md` | Сущности, связи, хранение и схемы конфигов | `domain-modeling`, `codebase-design` |
-| 5. Стек | `l1dder/rules/30-tech-stack.mdc`, `l1dder/rules/40-skills-router.mdc`, `l1dder/skills.json` (секция `"stack"`), `Makefile` | Язык и платформа, фреймворки, хранение данных, тесты и линтер, цели `make` | `ponytail`, `tdd`, `writing-for-agents` и стек-скиллы, которые предлагаешь |
+| 5. Стек | `l1dder/rules/30-tech-stack.mdc`, `l1dder/rules/40-skills-router.mdc`, `l1dder/skills.json` (секция `"stack"`), `Makefile` | Язык и платформа, фреймворки, хранение данных, структура папок, тесты и линтер, цели `make` | `ponytail`, `tdd`, `writing-for-agents` и стек-скиллы, которые предлагаешь |
 | 6. Банк идей и роадмап | `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md`, `docs/README.md` | Первые идеи `IDEA-NNN`, их приоритеты и порядок проработки | `grilling` |
 
 Особенности этапов:
 - **Этап 3:** спроси, есть ли у системы внешние интеграции и API. Если нет, `integrations.md` и `api-contracts.md` не создавай. Значимые решения оформи как `docs/adrs/ADR-NNNN-<slug>.md`.
-- **Этап 5:** стек выводи из `architecture.md` и `data-model.md`: сначала платформа и то, что уже есть в проекте. После «ок» запусти `npx l1dder skills install` и `npx l1dder sync`.
+- **Этап 5:** стек выводи из `architecture.md` и `data-model.md`: сначала платформа и то, что уже есть в проекте. В режиме `existing-code` стек — это факт: выпиши его из конфигов (`package.json`, `tsconfig.json`, `pyproject.toml`, `go.mod`, `Makefile`) и структуры папок, а не выбирай заново. После «ок» заполни колонку «Технологии» в `architecture.md` и запусти `npx l1dder skills install` и `npx l1dder sync`.
 - **Этап 6:** идеи оформи по шаблону `l1dder/templates/ideas/ideas-template.md` со статусом `📋 нереализована`. В режиме `existing-code` уже работающее можно отметить `✅ реализована`. Бэклог, роадмап и навигатор `docs/README.md` создай по шаблонам `l1dder/templates/`.
 
 ---
