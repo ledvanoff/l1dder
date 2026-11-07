@@ -14,7 +14,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { parseFrontmatter, renderAgentFilesMap } from "../src/agents.js";
+import { buildEntryPointSummary, parseFrontmatter, renderAgentFilesMap } from "../src/agents.js";
 import { parseArgv, runCli } from "../src/cli.js";
 import type { AgentId } from "../src/types.js";
 import {
@@ -132,7 +132,30 @@ describe("L1DDER CLI — Cursor, Claude Code & OpenAI Codex Installation", () =>
     expect(rendered.has(".cursor/skills/l1-onboard/SKILL.md")).toBe(false);
   });
 
-  it("installs RU methodology into l1dder/, bundles all 20 skills (including mattpocock/skills + companions), and configures agents", async () => {
+  it("ships /l1-chore as a slash command to every agent", () => {
+    const dir = makeTempDir();
+    runProjectSync({ projectDir: dir, rootDir: "l1dder", language: "en", agents: ["codex"], force: false, updateGitignore: false });
+    const rendered = renderAgentFilesMap({
+      projectDir: dir,
+      rootDir: "l1dder",
+      language: "en",
+      agents: ["codex", "claude", "windsurf", "copilot"],
+    });
+    expect(rendered.has(".agents/skills/l1-chore/SKILL.md")).toBe(true);
+    expect(rendered.has(".claude/skills/l1-chore/SKILL.md")).toBe(true);
+    expect(rendered.has(".windsurf/workflows/l1-chore.md")).toBe(true);
+    expect(rendered.has(".github/prompts/l1-chore.prompt.md")).toBe(true);
+  });
+
+  it.each(["ru", "en"] as const)("lists /l1-chore and names it in the Roadmap Gate rule of the %s summary", (language) => {
+    const lines = buildEntryPointSummary(language, "l1dder").split("\n");
+    const roadmapGate = lines.find((line) => line.includes("**Roadmap Gate:**")) ?? "";
+    expect(roadmapGate).toContain("/l1-hotfix");
+    expect(roadmapGate).toContain("/l1-chore");
+    expect(lines.some((line) => line.startsWith("- `/l1-chore`") && line.includes("l1dder/skills/l1-chore/SKILL.md"))).toBe(true);
+  });
+
+  it("installs RU methodology into l1dder/, bundles all 21 skills (including mattpocock/skills + companions), and configures agents", async () => {
     const dir = makeTempDir();
     const code = await runCli([
       "node",
@@ -151,6 +174,7 @@ describe("L1DDER CLI — Cursor, Claude Code & OpenAI Codex Installation", () =>
     expect(existsSync(join(dir, "l1dder/METHODOLOGY.md"))).toBe(true);
     expect(existsSync(join(dir, "l1dder/skills.json"))).toBe(true);
     expect(existsSync(join(dir, "l1dder/skills/l1-onboard/SKILL.md"))).toBe(true);
+    expect(existsSync(join(dir, "l1dder/skills/l1-chore/SKILL.md"))).toBe(true);
     expect(existsSync(join(dir, "l1dder/skills/grilling/SKILL.md"))).toBe(true);
     expect(existsSync(join(dir, "l1dder/skills/codebase-design/SKILL.md"))).toBe(true);
     expect(existsSync(join(dir, "l1dder/skills/codebase-design/DEEPENING.md"))).toBe(true);
@@ -166,7 +190,7 @@ describe("L1DDER CLI — Cursor, Claude Code & OpenAI Codex Installation", () =>
     expect(existsSync(join(dir, ".roo/rules/l1dder.md"))).toBe(true);
 
     const declared = listDeclaredSkills(dir);
-    expect(declared.length).toBe(20);
+    expect(declared.length).toBe(21);
     expect(declared.every((row) => row.installed)).toBe(true);
   });
 
@@ -306,6 +330,17 @@ describe("L1DDER CLI — Cursor, Claude Code & OpenAI Codex Installation", () =>
     const withDocs = runProjectDoctor(dir);
     expect(withDocs.ok).toBe(true);
     expect(withDocs.checks.every((c) => c.status === "pass")).toBe(true);
+  });
+
+  it("doctor fails when the /l1-chore skill is missing", () => {
+    const dir = makeTempDir();
+    runProjectSync({ projectDir: dir, rootDir: "l1dder", language: "en", agents: ["codex"], force: false, updateGitignore: false });
+    rmSync(join(dir, "l1dder/skills/l1-chore"), { recursive: true, force: true });
+
+    const report = runProjectDoctor(dir);
+    const frameworkFiles = report.checks.find((c) => c.id === "framework-files");
+    expect(frameworkFiles?.status).toBe("fail");
+    expect(frameworkFiles?.message).toContain("skills/l1-chore/SKILL.md");
   });
 
   it("supports updating ONLY skills (update --skills) vs updating the ENTIRE framework (update)", async () => {

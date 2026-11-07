@@ -299,6 +299,7 @@ export function runProjectDoctor(projectDir: string, rootDir = "l1dder"): Doctor
     "skills/l1-planning/SKILL.md",
     "skills/l1-task/SKILL.md",
     "skills/l1-hotfix/SKILL.md",
+    "skills/l1-chore/SKILL.md",
     "skills/l1-evo/SKILL.md",
     "skills/ponytail/SKILL.md",
     "skills/grilling/SKILL.md",
@@ -314,8 +315,8 @@ export function runProjectDoctor(projectDir: string, rootDir = "l1dder"): Doctor
       status: "pass",
       message:
         language === "ru"
-          ? `Все ключевые правила и 20 базовых скиллов в ${rootDir}/ на месте`
-          : `All core rules and 20 bundled skills in ${rootDir}/ are present`,
+          ? `Все ключевые правила и 21 базовый скилл в ${rootDir}/ на месте`
+          : `All core rules and 21 bundled skills in ${rootDir}/ are present`,
     });
   } else {
     checks.push({

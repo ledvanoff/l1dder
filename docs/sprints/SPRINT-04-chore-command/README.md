@@ -6,7 +6,7 @@
 | **ID родительской фичи / спеки** | [`FEAT-005`](../../backlog.md#feat-005) ([`docs/specs/FEAT-005-chore-command/`](../../specs/FEAT-005-chore-command/)) |
 | **ID родительской идеи** | [`IDEA-004`](../../ideas.md#idea-004) |
 | **Позиция в Роадмапе** | [`docs/roadmap.md`](../../roadmap.md) |
-| **Статус спринта** | `📋 запланирована` |
+| **Статус спринта** | `🚧 реализация` |
 | **Дата открытия / закрытия** | 2026-11-07 / — |
 
 ---
@@ -40,9 +40,9 @@
 
 | ID задачи спринта | ID шага спеки | Название задачи | Тип | Статус | Plan | Summary |
 |:-----------------:|:-------------:|-----------------|:---:|--------|------|---------|
-| `TASK-04.01` | `FEAT-005.01` | Скилл `/l1-chore` на RU и EN, регистрация в `skills.json`, `src/agents.ts` и `src/installer.ts`, контрактные и CLI-тесты | `feat` | 📋 запланирована | — | — |
+| `TASK-04.01` | `FEAT-005.01` | Скилл `/l1-chore` на RU и EN, регистрация в `skills.json`, `src/agents.ts` и `src/installer.ts`, контрактные и CLI-тесты | `feat` | ✅ реализована | [plan](./tasks/TASK-04.01-chore-skill/plan.md) | [summary](./tasks/TASK-04.01-chore-skill/summary.md) |
 | `TASK-04.02` | `FEAT-005.02` | Раздел `CHORE-NNN` в шаблоне `backlog-template.md`, правила `00-methodology.mdc`, `20-workflow.mdc`, `40-skills-router.mdc`, `GLOSSARY.md` и ссылка в `30-tech-stack.mdc` | `feat` | 📋 запланирована | — | — |
-| `TASK-04.03` | `FEAT-005.03` | Описание `/l1-chore` и обновление счётчиков (`21 скилл`, `7 команд`) в `README.md`, `METHODOLOGY.md`, `user-guide/*`, `onboarding/continue-project.md`, `site/*` и `seo.mts` | `docs` | 📋 запланирована | — | — |
+| `TASK-04.03` | `FEAT-005.03` | Описание `/l1-chore` простым языком (для чего команда, примеры правок самого репозитория) и обновление счётчиков (`21 скилл`, `7 команд`) в `README.md`, `METHODOLOGY.md`, `user-guide/*`, `onboarding/continue-project.md`, `site/*` и `seo.mts` | `docs` | 📋 запланирована | — | — |
 | `TASK-04.99` | `FEAT-005.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)**: живой E2E-прогон `/l1-chore` субагентом в песочнице | `chore` | 📋 запланирована | — | — |
 
 ---

@@ -4,7 +4,7 @@
 Этот проект работает по Spec-Driven & Roadmap-Gated методологии **L1DDER**. Все правила, шаблоны, манифест скиллов (`l1dder/skills.json`) и скиллы находятся в папке `l1dder/`.
 
 ## Железные правила для любого ИИ-агента (Cursor, Claude Code, Codex и др.)
-1. **Roadmap Gate:** Запрещено брать в работу (`/l1-task`) фичу или задачу, которая не стоит на строке `1 (CURRENT)` в `docs/roadmap.md` (единственное исключение — `/l1-hotfix`).
+1. **Roadmap Gate:** Запрещено брать в работу (`/l1-task`) фичу или задачу, которая не стоит на строке `1 (CURRENT)` в `docs/roadmap.md` (исключения: `/l1-hotfix` для срочного бага и `/l1-chore` для правок самого проекта, которые не меняют продукт).
 2. **Правило двух СТОПов:** На каждой задаче обязательно останавливайся дважды и жди явного слова **«ок»** от пользователя: после создания `plan.md` (`⛔ СТОП №1`) и после самопроверки DoD (`⛔ СТОП №2`).
 3. **Сквозная цепочка ID (`ID Passport`):** Каждый документ хранит все родительские ID: `IDEA-NNN` (`docs/ideas.md`) → `FEAT-NNN` (`docs/backlog.md` + `docs/specs/FEAT-NNN-<slug>/`) → `SPRINT-NN` (`docs/roadmap.md` + `docs/sprints/SPRINT-NN-<slug>/`) → `TASK-NN.MM` (и обязательный финал спринта `TASK-NN.99` Doctor Checklist).
 
@@ -15,6 +15,7 @@
 - `/l1-planning` (`$l1-planning`) → `l1dder/skills/l1-planning/SKILL.md` (планирование `docs/roadmap.md` и создание `SPRINT-NN`)
 - `/l1-task` (`$l1-task`) → `l1dder/skills/l1-task/SKILL.md` (выполнение очередной задачи `TASK-NN.MM` и финального `TASK-NN.99` Doctor Checklist)
 - `/l1-hotfix` (`$l1-hotfix`) → `l1dder/skills/l1-hotfix/SKILL.md` (срочный багфикс `RED → GREEN` и запись `HOTFIX-NNN`)
+- `/l1-chore` (`$l1-chore`) → `l1dder/skills/l1-chore/SKILL.md` (правки самого проекта, а не продукта: правила git, CI, библиотеки, `Makefile`, правила агента; запись `CHORE-NNN`)
 - `/l1-evo` (`$l1-evo`) → `l1dder/skills/l1-evo/SKILL.md` (эволюция методологии и обновление `HANDOFF.md`)
 
 ## Обновление фреймворка и скиллов по просьбе пользователя
