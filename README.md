@@ -9,7 +9,7 @@
 **L1DDER** (pronounced "leader" or "l'oneder") is a spec-driven development framework for AI coding agents: **Cursor, Claude Code, OpenAI Codex, Windsurf, GitHub Copilot, OpenCode, and Cline**. Ideas, specs, roadmap and tasks live in plain Markdown, `/l1-*` slash commands drive the work, and nothing moves forward without your `"ok"`.
 
 - **Transparent Markdown Control:** Your Markdown documents in `docs/` (`ideas.md`, `backlog.md`, `roadmap.md`) with end-to-end linked **ID Passports** are the single source of truth.
-- **Slash Commands (`/l1-*`):** Control the entire product lifecycle with `/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-hotfix`, and `/l1-chore` + `"ok"` approvals.
+- **Slash Commands (`/l1-*`):** Control the entire product lifecycle with `/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-hotfix`, `/l1-chore`, and `/l1-fast` + `"ok"` approvals.
 - **Mandatory Sprint Doctor (`TASK-NN.99`):** Every sprint ends with a 4-block `Doctor Checklist` (CI, 2-axis code review, Agent E2E verification, mandatory Living Docs Sync, and Human UAT).
 - **Built-in Engineering Discipline:** Ships with **[DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)** (*Lazy Senior Dev* mode, `shortcut:` ledger, 2-line `Skipped / Risk` footer) and **[mattpocock/skills](https://github.com/mattpocock/skills)** (`grilling`, `domain-modeling`, `codebase-design` Deep Modules, vertical `tdd` at seams, `diagnosing-bugs`).
 
@@ -68,10 +68,11 @@ Then open your AI agent chat and run `/l1-onboard`.
 | **`/l1-onboard`** | Onboarding | Works out the concept stage by stage, then configures `30-tech-stack.mdc` & `Makefile` and initializes `docs/`. |
 | **`/l1-idea`** | Idea Bank | Refines an idea (`grilling`) and records `IDEA-NNN` in `docs/ideas.md`. |
 | **`/l1-feature`** | Feature Spec | Creates `docs/specs/FEAT-NNN-<slug>/`, slices `FEAT-NNN.01..99`, updates `docs/backlog.md`. |
-| **`/l1-planning`** | Roadmap | Updates `docs/roadmap.md` (`Delivery Queue` & `Discovery Queue`) and creates `SPRINT-NN`. |
+| **`/l1-planning`** | Roadmap | Updates `docs/roadmap.md` (`Delivery Queue` & `Discovery Queue`), creates `SPRINT-NN`, or rejects the current sprint with rollback (`git revert`). |
 | **`/l1-task`** | Task & Doctor | Executes the next task from `docs/roadmap.md` (Two-Approval Rule) and mandatory `TASK-NN.99` (`Doctor Checklist`). |
 | **`/l1-hotfix`** | Hotfix | Reproduces a bug (`RED → GREEN`), applies minimal fix (`ponytail`), logs `HOTFIX-NNN` in `docs/backlog.md`. |
 | **`/l1-chore`** | Chore | Changes to the project itself, not the product (git rules, CI, libraries, `Makefile`, agent rules): a single `"ok"` stop, `make ci`, logs `CHORE-NNN` in `docs/backlog.md`. |
+| **`/l1-fast`** | Fast Mode | Builds a small product feature when no sprint is active (**strictly human-invoked, forbidden for the agent on its own**): two `"ok"` stops, full verification before acceptance, records the full document chain marked `mode: /l1-fast` after the code. |
 
 ---
 

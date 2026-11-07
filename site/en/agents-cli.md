@@ -74,7 +74,7 @@ Inside `l1dder/` sits **`l1dder/skills.json`**, organizing all skills into 3 cle
 ```json
 {
   "l1dder": [
-    "l1-onboard", "l1-idea", "l1-feature", "l1-planning", "l1-task", "l1-hotfix", "l1-chore", "l1-evo"
+    "l1-onboard", "l1-idea", "l1-feature", "l1-planning", "l1-task", "l1-hotfix", "l1-chore", "l1-fast", "l1-evo"
   ],
   "core": [
     {
@@ -100,7 +100,7 @@ Inside `l1dder/` sits **`l1dder/skills.json`**, organizing all skills into 3 cle
 }
 ```
 
-1. **`l1dder` (workflow control skills):** built-in slash commands (`/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-hotfix`, `/l1-chore`, `/l1-evo`).
+1. **`l1dder` (workflow control skills):** built-in slash commands (`/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-hotfix`, `/l1-chore`, `/l1-fast`, `/l1-evo`).
 2. **`core` (core engineering skills — bundled out of the box `bundled: true`):**
    - **[DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)**: `ponytail`, `ponytail-review`, `ponytail-audit`, `ponytail-debt`.
    - **[mattpocock/skills](https://github.com/mattpocock/skills)** (`Model-invoked` engineering primitives): `grilling`, `domain-modeling`, `codebase-design`, `tdd`, `diagnosing-bugs`, `code-review`, `retro`, `prototype`, `writing-for-agents` (along with all companion reference files `DEEPENING.md`, `DESIGN-IT-TWICE.md`, `tests.md`, `mocking.md`, `LOGIC.md`, `UI.md`, `GLOSSARY-FORMAT.md`, `ADR-FORMAT.md`).

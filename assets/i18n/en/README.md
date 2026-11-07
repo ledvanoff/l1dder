@@ -65,10 +65,11 @@ The agent automatically detects whether the repo is empty (`from-scratch`) or al
 | **`/l1-onboard`** | Project Onboarding | Works out the concept (`docs/concept/`) stage by stage, then the tech stack (`30-tech-stack.mdc`), and creates `docs/ideas.md`, `docs/backlog.md`, and `docs/roadmap.md`. |
 | **`/l1-idea`** | Idea Flow | Refines an idea (`grilling`) and saves it to the **Idea Bank** (`docs/ideas.md`) with `IDEA-NNN`, priority, and `📋 unrealized` status. |
 | **`/l1-feature`** | Feature & Spec Flow | Takes `IDEA-NNN`, writes a full spec (`docs/specs/FEAT-NNN-<slug>/`), slices steps `FEAT-NNN.01..99`, and adds to **Backlog** (`docs/backlog.md`). |
-| **`/l1-planning`** | Planning Flow | Updates the **Roadmap** (`docs/roadmap.md` — Single Source of Truth): schedules sprints (`Delivery Queue`) and idea grooming (`Discovery Queue`). |
+| **`/l1-planning`** | Planning Flow | Updates the **Roadmap** (`docs/roadmap.md` — Single Source of Truth): schedules sprints (`Delivery Queue`), idea grooming (`Discovery Queue`), or rejects the current sprint with rollback (`git revert`). |
 | **`/l1-task`** | Task & Doctor Flow | Executes the next scheduled task from the Roadmap (`Plan → Implement → Self-check → Summary`), ending every sprint with mandatory **`TASK-NN.99` (`Doctor Checklist`)**. |
 | **`/l1-hotfix`** | Hotfix Flow | The Roadmap exception for urgent bugs: reproduces a critical bug (`RED → GREEN`), fixes it with minimal diff (`ponytail`), and logs `HOTFIX-NNN` in `docs/backlog.md`. |
 | **`/l1-chore`** | Project Maintenance | Changes to the project itself, not the product: git rules, CI, libraries, `Makefile`, agent rules. No idea, spec or sprint: a single "ok" stop, `make ci`, and a `CHORE-NNN` row in `docs/backlog.md`. |
+| **`/l1-fast`** | Fast Mode | Builds a small product feature when no sprint is active (**strictly human-invoked**, forbidden for the agent on its own): two "ok" stops, full verification before acceptance, and records the full document chain marked `mode: /l1-fast` after the code. |
 | **`/l1-evo`** | Framework Evolution | Dogfoods improvements to `L1DDER` itself following [`evolution/METHODOLOGY-RULES.md`](evolution/METHODOLOGY-RULES.md), updating [`WORKLOG-CHANGELOG.md`](evolution/WORKLOG-CHANGELOG.md) and [`HANDOFF.md`](evolution/HANDOFF.md). |
 
 ---

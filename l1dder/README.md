@@ -65,10 +65,11 @@ npx l1dder init --lang ru --agents cursor,claude --yes
 | **`/l1-onboard`** | Старт проекта | По этапам прорабатывает концепт (`docs/concept/`), затем стек (`30-tech-stack.mdc`) и создаёт Банк Идей (`docs/ideas.md`), Бэклог (`docs/backlog.md`) и Роадмап (`docs/roadmap.md`). |
 | **`/l1-idea`** | Флоу «Идея» | Помогает развить идею (`grilling`) и сохраняет её в **Банк Идей** (`docs/ideas.md`) с кодом `IDEA-NNN`, приоритетом и статусом `📋 нереализована`. |
 | **`/l1-feature`** | Флоу «Фича» | Берёт идею `IDEA-NNN`, создаёт полную спеку (`docs/specs/FEAT-NNN-<slug>/`), грумит фичу на шаги `FEAT-NNN.01..99` и кладёт в **Бэклог** (`docs/backlog.md`). |
-| **`/l1-planning`** | Флоу «Планирование» | Формирует и обновляет **Роадмап** (`docs/roadmap.md` — Единый источник истины): планирует спринты (`Delivery Queue`) и очередь идей (`Discovery Queue`). |
+| **`/l1-planning`** | Флоу «Планирование» | Формирует и обновляет **Роадмап** (`docs/roadmap.md` — Единый источник истины): планирует спринты (`Delivery Queue`), очередь идей (`Discovery Queue`) или отклоняет текущий спринт с откатом изменений. |
 | **`/l1-task`** | Флоу «Задача» | Берёт строго следующую задачу из Роадмапа (`Plan → Implement → Self-check → Summary`), а в конце каждого спринта проводит обязательную задачу **`TASK-NN.99` (`Doctor Checklist`)**. |
 | **`/l1-hotfix`** | Флоу «Хотфикс» | Исключение из Роадмапа для срочных багов: быстрая починка критического бага (`RED → GREEN`) и запись `HOTFIX-NNN` в `docs/backlog.md`. |
 | **`/l1-chore`** | Правка самого проекта | Правки не продукта, а самого проекта: правила git, CI, библиотеки, `Makefile`, правила агента. Без идеи, спеки и спринта: одна остановка «ок», `make ci` и строка `CHORE-NNN` в `docs/backlog.md`. |
+| **`/l1-fast`** | Быстрый режим | Небольшая фича продукта без начатого спринта (**вызывает строго только человек**, для агента по своей инициативе запрещено): две остановки «ок», все проверки до приёмки и полная запись документов с пометкой `режим: /l1-fast` после кода. |
 | **`/l1-evo`** | Эволюция `L1DDER` | Доработка самой методологии по правилам [`evolution/METHODOLOGY-RULES.md`](evolution/METHODOLOGY-RULES.md), ведение [`WORKLOG-CHANGELOG.md`](evolution/WORKLOG-CHANGELOG.md) и [`HANDOFF.md`](evolution/HANDOFF.md). |
 
 ---
@@ -78,7 +79,7 @@ npx l1dder init --lang ru --agents cursor,claude --yes
 Начни с папки **[`user-guide/`](user-guide/README.md)**:
 - **[`user-guide/README.md`](user-guide/README.md)** — Главная визуальная схема всех цепочек и связки ID за 3 минуты.
 - **[`user-guide/01-QUICKSTART.md`](user-guide/01-QUICKSTART.md)** — Установка `npx l1dder init` и живой пример диалога от идеи до спринта.
-- **[`user-guide/02-FLOWS-IN-DETAIL.md`](user-guide/02-FLOWS-IN-DETAIL.md)** — Разбор каждой кнопки (`/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-hotfix`, `/l1-chore`) и `Doctor Checklist`.
+- **[`user-guide/02-FLOWS-IN-DETAIL.md`](user-guide/02-FLOWS-IN-DETAIL.md)** — Разбор каждой кнопки (`/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-hotfix`, `/l1-chore`, `/l1-fast`) и `Doctor Checklist`.
 - **[`user-guide/03-CHEATSHEET.md`](user-guide/03-CHEATSHEET.md)** — Шпаргалка на 1 экран «Что нажать, если...» и FAQ.
 
 ---

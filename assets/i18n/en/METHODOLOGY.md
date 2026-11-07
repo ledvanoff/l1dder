@@ -1,7 +1,7 @@
 # L1DDER — Development Methodology
 
 > **Philosophy:** The AI agent handles execution mechanics and self-verification. The human owns intent, priorities, and quality acceptance.
-> **Core Invariant:** The Roadmap (`docs/roadmap.md`) is the Single Source of Truth. Nothing is built outside the Roadmap (except `/l1-hotfix` for urgent bugs and `/l1-chore` for changes to the project itself).
+> **Core Invariant:** The Roadmap (`docs/roadmap.md`) is the Single Source of Truth. Nothing is built outside the Roadmap (except `/l1-hotfix` for urgent bugs, `/l1-chore` for changes to the project itself, and `/l1-fast` — strictly human-invoked for a small product feature while position `1 (CURRENT)` is empty).
 
 **L1DDER** defines a closed-loop Spec-driven development lifecycle with AI coding agents: from onboarding (`/l1-onboard`) and raw ideas in the Idea Bank (`/l1-idea`) to specifications in the Backlog (`/l1-feature`), scheduling in the Roadmap (`/l1-planning`), step-by-step sprint execution (`/l1-task`), and mandatory sprint hygiene (`Doctor Checklist`) at the end of every sprint.
 
@@ -42,7 +42,11 @@ flowchart TB
         CHORE["Git rules, CI, libraries, Makefile, agent rules — product unchanged<br/>Single 'ok' stop → make ci → log CHORE-NNN in docs/backlog.md"]
     end
 
-    subgraph flow6["7. Meta Loop: Evolution & Dogfooding (/l1-evo)"]
+    subgraph flowFast["7. Exception: Fast Mode (/l1-fast)"]
+        FAST["Small product feature when no sprint is active (strictly human-invoked)<br/>Clarify (STOP #1) → reserve in roadmap.md → code + all checks (STOP #2) → registries (mode: /l1-fast)"]
+    end
+
+    subgraph flow6["8. Meta Loop: Evolution & Dogfooding (/l1-evo)"]
         EVO["Evolving L1DDER by Its Own Rules<br/>l1dder/evolution/{METHODOLOGY-RULES,WORKLOG-CHANGELOG,HANDOFF}.md"]
     end
 
@@ -101,6 +105,7 @@ The single entry point after `npx l1dder init`. It runs six stages, one file eac
 1. Invoked via **`/l1-planning`**.
 2. Proposes the `Delivery Queue` (sprints `SPRINT-NN`) and `Discovery Queue` (ideas `IDEA-NNN`).
 3. After `"ok"`, updates `docs/roadmap.md`, assigns `SPRINT-NN` and `TASK-NN.01..99` in `docs/backlog.md` (`🗓 scheduled`), and creates `docs/sprints/SPRINT-NN-<slug>/README.md`.
+4. **Rejecting the current sprint:** if the team decides to abandon the active sprint at `1 (CURRENT)`, `/l1-planning` shows its commits and uncommitted changes (`⛔ STOP`), and after `"ok"` rolls back the code with `git revert` without rewriting history, keeps the sprint and task documents as a record with status `❌ rejected`, and frees `1 (CURRENT)`.
 
 ### Flow 4: Task & Sprint Hygiene Flow (`/l1-task`)
 - **Regular tasks (`TASK-NN.01 .. TASK-NN.K`)** follow the **Two-Approval Rule**:
@@ -119,3 +124,9 @@ Reproduces an urgent bug first (`RED Gate` — `diagnosing-bugs`), gets `"ok"` o
 
 ### Flow 6: Chore Exception — Changes to the Project Itself (`/l1-chore`)
 For changes to the project itself, not to what its users see: git rules (branch and commit names, pre-push checks), automatic checks in CI, library updates, the `Makefile`, build scripts, tests, rules for the AI agent. No idea, spec or sprint: the agent checks that the product stays unchanged (otherwise it changes no files and suggests `/l1-task` or `/l1-hotfix`), computes `CHORE-NNN`, gets a single `"ok"` on the options, makes the minimal change (`make ci`), and logs `CHORE-NNN` in the Chore Log of `docs/backlog.md` (adding the section if it is missing).
+
+### Flow 7: Fast Mode Exception for a Small Feature (`/l1-fast`)
+For a small product feature (up to three tasks in one sprint, with no new data model, external integration, ADR, or breaking changes) while position `1 (CURRENT)` in `docs/roadmap.md` is empty. This command is **strictly human-invoked — the agent is forbidden from running `/l1-fast` on its own initiative.** If `1 (CURRENT)` is occupied by a regular sprint, `/l1-fast` refuses without changing any file and points to `/l1-task` or sprint rejection via `/l1-planning`. Otherwise the agent clarifies via `grilling`, checks four size signs, and stops at `⛔ STOP #1` (`"ok"`), reserves `IDEA-NNN`, `FEAT-NNN`, `SPRINT-NN` at `1 (CURRENT)` marked `mode: /l1-fast`, implements via TDD slices (committing each finished task), runs every check from the regular flow and `TASK-NN.99` (`make ci`, `ponytail-review`, two-axis `code-review`, `ponytail-audit`, `ponytail-debt`, E2E, docs sync, and `retro`), stops at `⛔ STOP #2` for manual testing (`"ok"`), and then records the full registry chain with `| **Mode** | \`/l1-fast\` |` in every document passport.
+
+### Flow 8: Meta Loop — Evolution & Dogfooding (`/l1-evo` → `l1dder/evolution/`)
+`L1DDER` evolves by 100% dogfooding following [`l1dder/evolution/METHODOLOGY-RULES.md`](evolution/METHODOLOGY-RULES.md), logging in [`WORKLOG-CHANGELOG.md`](evolution/WORKLOG-CHANGELOG.md), and updating [`HANDOFF.md`](evolution/HANDOFF.md).

@@ -11,7 +11,7 @@ This guide is written in plain language. Even if you don't write code by hand an
 |----------|----------------|:---------:|
 | **[0. Main Map (You are here)](./README.md)** | Core idea, **visual map of all flows**, nested ID chain, and the 3 control screens | 3 min |
 | **[1. Quickstart & Live Walkthrough](./01-QUICKSTART.md)** | One-command setup `npx l1dder init` + real chat walkthrough from idea to finished sprint | 5 min |
-| **[2. Deep Dive into `/l1-*` Commands](./02-FLOWS-IN-DETAIL.md)** | Inside `/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task` (`Doctor Checklist`), `/l1-hotfix`, and `/l1-chore` | 7 min |
+| **[2. Deep Dive into `/l1-*` Commands](./02-FLOWS-IN-DETAIL.md)** | Inside `/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task` (`Doctor Checklist`), `/l1-hotfix`, `/l1-chore`, and `/l1-fast` | 7 min |
 | **[3. One-Page Cheatsheet & FAQ](./03-CHEATSHEET.md)** | "What to press when..." table, all statuses, and FAQ | 2 min |
 
 ---
@@ -28,10 +28,11 @@ You control the entire lifecycle with a few **slash commands**:
 0. `/l1-onboard` — run once at project start to work out the concept stage by stage, then the tech stack and `docs/`.
 1. `/l1-idea` — capture and refine an idea into the Idea Bank.
 2. `/l1-feature` — turn an idea into a technical specification and slice it into Backlog tasks.
-3. `/l1-planning` — order the Roadmap queue (what we build now vs. next).
+3. `/l1-planning` — order the Roadmap queue (what we build now vs. next), or reject the current sprint and roll back its changes.
 4. `/l1-task` — tell the agent "Execute the next task on the Roadmap!".
 5. `/l1-hotfix` — emergency button "Fix this bug right now bypassing the queue!".
 6. `/l1-chore` — changes to the project itself, not to what your users see: git rules (how branches and commits are named, what is checked before a push), automatic checks in CI, library updates, the `Makefile`, rules for the AI agent. No idea, spec or sprint needed: the agent suggests, you say "ok".
+7. `/l1-fast` — quickly build **a small product feature** when no sprint is active (**strictly human-invoked — the agent is forbidden from running `/l1-fast` on its own initiative**). You reply "ok" only twice (before the code and after every check and manual testing), and the agent writes the code, runs every check, and then records the idea, spec, sprint, and tasks marked `mode: /l1-fast`.
 *(Plus `/l1-evo` to evolve the methodology itself or save `HANDOFF.md`).*
 
 ---
@@ -48,6 +49,7 @@ flowchart TB
     classDef doctorFlow fill:#F3E8FF,stroke:#9333EA,stroke-width:2px,color:#3B0764
     classDef hotfixFlow fill:#FEE2E2,stroke:#DC2626,stroke-width:2px,color:#7F1D1D
     classDef choreFlow fill:#E5E7EB,stroke:#4B5563,stroke-width:2px,color:#111827
+    classDef fastFlow fill:#FEF9C3,stroke:#CA8A04,stroke-width:2px,color:#713F12
 
     YOU(["👤 YOU (Product Owner)<br/>Control via /l1-* commands & 'ok'"]):::human
 
@@ -86,6 +88,11 @@ flowchart TB
         C1["Change git rules, CI,<br/>libraries, Makefile"]:::choreFlow --> C2["Agent checks the product stays unchanged,<br/>suggests an option (You: 'ok'),<br/>makes the change & logs CHORE-001"]:::choreFlow
     end
 
+    subgraph CHAIN7["⚡ 7. FAST MODE (when no sprint is active) — /l1-fast"]
+        direction LR
+        FM1["Small product feature<br/>(strictly human-invoked)"]:::fastFlow --> FM2["Clarify (You: 'ok') → reserve in Roadmap →<br/>code + all checks (You: 'ok') →<br/>all documents marked mode: /l1-fast"]:::fastFlow
+    end
+
     YOU -->|"/l1-idea"| CHAIN1
     I3 -->|"/l1-feature"| CHAIN2
     F3 -->|"/l1-planning"| CHAIN3
@@ -94,6 +101,7 @@ flowchart TB
     T2 -->|"Cascades closure:<br/>SPRINT-01 ✅ → FEAT-001 ✅ → IDEA-001 ✅"| P3
     YOU -->|"/l1-hotfix"| CHAIN5
     YOU -->|"/l1-chore"| CHAIN6
+    YOU -->|"/l1-fast"| CHAIN7
 ```
 
 ---
@@ -117,9 +125,9 @@ flowchart LR
 
 | File | Plain-Language Purpose | Managed By |
 |------|------------------------|------------|
-| **`docs/ideas.md`** | **💡 Idea Bank.** All your ideas with priorities (`P0..P3`) and statuses (`📋 unrealized`, `🚧 in-progress`, `✅ realized`, `❌ rejected`). | `/l1-idea` |
-| **`docs/backlog.md`** | **📋 Backlog & Task Tracker.** All specified features (`FEAT-001`), their sprints, tasks, the emergency hotfix log (`HOTFIX-001`), and the chore log (`CHORE-001`). | `/l1-feature`, `/l1-task`, `/l1-hotfix`, `/l1-chore` |
-| **`docs/roadmap.md`** | **🔒 Roadmap (Source of Truth).** Which sprint is active right now (`1 CURRENT`), which is `2 NEXT`, and which idea is next for spec grooming. | `/l1-planning` |
+| **`docs/ideas.md`** | **💡 Idea Bank.** All your ideas with priorities (`P0..P3`) and statuses (`📋 unrealized`, `🚧 in-progress`, `✅ realized`, `❌ rejected`). | `/l1-idea`, `/l1-fast` |
+| **`docs/backlog.md`** | **📋 Backlog & Task Tracker.** All specified features (`FEAT-001`), their sprints, tasks, the emergency hotfix log (`HOTFIX-001`), and the chore log (`CHORE-001`). | `/l1-feature`, `/l1-task`, `/l1-fast`, `/l1-hotfix`, `/l1-chore` |
+| **`docs/roadmap.md`** | **🔒 Roadmap (Source of Truth).** Which sprint is active right now (`1 CURRENT`), which is `2 NEXT`, and which idea is next for spec grooming. | `/l1-planning`, `/l1-fast` |
 
 ---
 

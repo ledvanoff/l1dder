@@ -26,7 +26,7 @@ Then open your agent chat and run:
 ```text
 /l1-onboard
 ```
-The agent walks you through six stages: idea, vision, architecture, data model, stack, Idea Bank and roadmap. At each stage it asks up to 7 questions with ready recommendations and asks whether to move on or discuss more. It proposes the stack only after the architecture and records it in `l1dder/rules/30-tech-stack.mdc`.
+The agent walks you through six stages: idea, vision, architecture, data model, stack, Idea Bank and roadmap. At each stage it asks up to 7 questions with ready recommendations and asks whether to move on or discuss more. It proposes the stack only after the architecture and records it in `l1dder/rules/30-tech-stack.mdc`. All slash commands (`/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-hotfix`, `/l1-chore`, `/l1-fast`, `/l1-evo`) are ready in your chat.
 
 ---
 

@@ -299,3 +299,69 @@ describe.each(["ru", "en"] as const)("/l1-fast in glossary, roadmap template and
     expect(glossary).toContain(phrases[language].rejected);
   });
 });
+
+describe.each(["ru", "en"] as const)("/l1-fast and sprint rejection in the human guide (%s)", (language) => {
+  it.each([
+    "user-guide/README.md",
+    "user-guide/01-QUICKSTART.md",
+    "user-guide/02-FLOWS-IN-DETAIL.md",
+    "user-guide/03-CHEATSHEET.md",
+  ])("mentions /l1-fast in %s", (path) => {
+    expect(asset(language, path)).toContain("/l1-fast");
+  });
+
+  it("gives /l1-fast its own section in 02-FLOWS-IN-DETAIL with the human-only rule and covers sprint rejection", () => {
+    const guide = asset(language, "user-guide/02-FLOWS-IN-DETAIL.md");
+    const start = guide.search(/^## .*`\/l1-fast`/m);
+    expect(start).toBeGreaterThan(-1);
+    const end = guide.indexOf("\n## ", start + 1);
+    const section = guide.slice(start, end === -1 ? undefined : end);
+    for (const part of ["1 (CURRENT)", "/l1-fast", phrases[language].humanOnly, phrases[language].agentForbidden]) {
+      expect(section).toContain(part);
+    }
+    expect(guide).toContain("git revert");
+    expect(guide).toContain(phrases[language].rejected);
+  });
+
+  it("lists /l1-fast, sprint rejection and the rejected status in 03-CHEATSHEET", () => {
+    const sheet = asset(language, "user-guide/03-CHEATSHEET.md");
+    expect(sheet).toContain("/l1-fast");
+    expect(sheet).toContain(phrases[language].humanOnly);
+    expect(sheet).toContain("git revert");
+    expect(sheet).toContain(phrases[language].rejected);
+  });
+
+  it.each(["README.md", "onboarding/continue-project.md"])(
+    "mentions /l1-fast and the human-only rule in %s",
+    (path) => {
+      const text = asset(language, path);
+      expect(text).toContain("/l1-fast");
+      expect(text).toContain(phrases[language].humanOnly);
+    },
+  );
+
+  it("describes the /l1-fast flow (human-only) and sprint rejection in METHODOLOGY.md", () => {
+    const methodology = asset(language, "METHODOLOGY.md");
+    const start = methodology.search(/^### .*`\/l1-fast`/m);
+    expect(start).toBeGreaterThan(-1);
+    const end = methodology.indexOf("\n### ", start + 1);
+    const flow = methodology.slice(start, end === -1 ? undefined : end);
+    for (const part of ["1 (CURRENT)", "/l1-fast", phrases[language].humanOnly, phrases[language].agentForbidden]) {
+      expect(flow).toContain(part);
+    }
+    expect(methodology).toContain("git revert");
+    expect(methodology).toContain(phrases[language].rejected);
+  });
+});
+
+describe("/l1-fast in root README and site files", () => {
+  it.each([
+    "README.md",
+    "site/agents-cli.md",
+    "site/en/agents-cli.md",
+    "site/.vitepress/seo.mts",
+  ])("includes /l1-fast in %s", (path) => {
+    const text = readFileSync(fileURLToPath(new URL(`../${path}`, import.meta.url)), "utf-8");
+    expect(text).toContain("/l1-fast");
+  });
+});

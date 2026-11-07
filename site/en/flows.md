@@ -62,6 +62,8 @@ flowchart LR
     P -->|"Creates sprint"| SP["📁 docs/sprints/SPRINT-NN-.../README.md<br/>with TASK-NN.01 .. TASK-NN.99"]
 ```
 
+**Rejecting the current sprint:** If you decide to abandon the sprint at `1 (CURRENT)`, ask `/l1-planning` to reject it. The agent shows the sprint commits and uncommitted changes (`⛔ STOP`), and after your `"ok"` rolls back the sprint code via `git revert` without rewriting history, keeps the sprint documents with status `❌ rejected` as a record, and frees `1 (CURRENT)`.
+
 ---
 
 ## ⚙️ Button 4: `/l1-task` — Task Execution & Mandatory `Doctor Checklist`
@@ -130,3 +132,29 @@ flowchart LR
 ```
 
 **How it differs from `/l1-hotfix`:** `/l1-hotfix` fixes what broke for the product's users. `/l1-chore` changes what you and the agent use while building the product.
+
+---
+
+## ⚡ Button 7: `/l1-fast` — Fast Mode for a Small Product Feature
+
+**When to use:** When **no sprint is active** (row `1 (CURRENT)` in `docs/roadmap.md` is empty) and you want to build **a small product feature** without stepping through `/l1-idea` → `/l1-feature` → `/l1-planning` → `/l1-task` separately.
+
+> ⚠️ **Core rule:** `/l1-fast` is **strictly human-invoked** — the agent is **forbidden** from running or picking `/l1-fast` on its own initiative. Unless you explicitly type `/l1-fast`, the agent always follows the regular path.
+
+- **When a sprint is already active (`1 (CURRENT)` is occupied):** the agent refuses outright without changing any file, and asks you to either finish the current sprint via `/l1-task` or reject it with rollback via `/l1-planning`.
+- **Size check:** if the feature is too large (more than three tasks or more than one sprint; a new data model, external integration, or ADR; breaking changes; needs a separate requirements review), the agent warns you and suggests `/l1-idea` → `/l1-feature`.
+- **Two stops instead of four, zero skipped checks:** you reply "ok" twice — on the decision card before any code (`⛔ STOP #1`) and after manual testing of the finished result (`⛔ STOP #2`). In between, the agent reserves the IDs at `1 (CURRENT)` in the roadmap, writes code via TDD slices, commits each task, and runs **every** check from the regular flow and `TASK-NN.99` (`make ci`, `ponytail-review`, two-axis `code-review`, `ponytail-audit`, `ponytail-debt`, E2E, docs sync, and `retro`).
+- **Honest registries after the code:** after your second "ok", the agent records `docs/ideas.md`, `docs/backlog.md`, the spec in `docs/specs/`, and the sprint and tasks marked `Mode | /l1-fast`, and moves the sprint to `Completed Sprints`.
+
+```mermaid
+flowchart LR
+    F1["You type:<br/>/l1-fast [small feature]"] --> F2["1. Check 1 (CURRENT)<br/>+ clarify & size check<br/>⛔ STOP #1: You reply 'ok'"]
+    F2 --> F3["2. Reserve in docs/roadmap.md<br/>+ code & tests via TDD slices"]
+    F3 --> F4["3. All checks & Doctor Checklist<br/>+ manual testing guide<br/>⛔ STOP #2: You reply 'ok'"]
+    F4 --> F5["4. Record all documents<br/>marked mode: /l1-fast"]
+```
+
+**How the three fast buttons differ:**
+- `/l1-chore` — change **the project itself** (git rules, CI, libraries, `Makefile`) while the product stays unchanged;
+- `/l1-hotfix` — urgently fix **a bug** in the product;
+- `/l1-fast` — build **a small new product feature** when no sprint is active (strictly human-invoked).
