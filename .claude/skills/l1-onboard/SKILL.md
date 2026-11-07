@@ -1,70 +1,58 @@
 ---
 name: l1-onboard
-description: Initializes a new (from-scratch) or existing (existing-code) project on L1DDER: configures the project tech stack in l1dder/rules/30-tech-stack.mdc and 40-skills-router.mdc, syncs agent rules, and step-by-step creates docs/concept/, docs/ideas.md, docs/backlog.md, and docs/roadmap.md with human "ок" approvals. Use when the user invokes /l1-onboard or starts a project after npx l1dder init.
+description: Onboards a new (from-scratch) or existing (existing-code) project on L1DDER stage by stage, one file per stage: idea, vision, architecture, data model, then the tech stack (l1dder/rules/30-tech-stack.mdc, skills.json, Makefile), then the Idea Bank, backlog and roadmap. Each stage runs short grilling rounds with recommendations and ends on a human "ок". Use when the user invokes /l1-onboard or starts a project after npx l1dder init.
 ---
 
-# L1DDER — Цепочка 0: Онбординг проекта и настройка стека (`/l1-onboard`)
+# L1DDER — Цепочка 0: Онбординг проекта по этапам (`/l1-onboard`)
 
-> **ПРАВИЛО ДЛЯ МОДЕЛИ:** Выполняй инструкцию строго по шагам 1 → 2 → 3 → 4 → 5. Не пропускай шаги. На каждом шаге показывай пользователю черновик и останавливайся (`⛔ СТОП`) до явного слова «ок».
-
----
-
-## ШАГ 1: Определи режим старта (`from-scratch` или `existing-code`) и изучи контекст
-
-1. Проверь содержимое репозитория:
-   - Если в проекте уже есть заполненный `docs/roadmap.md` — покажи пользователю краткую сводку активного спринта (`1 CURRENT`), следующей задачи `TASK-NN.MM` и следующей идеи в `Discovery Queue`, и предложи вызвать `/l1-task`, `/l1-feature` или `/l1-planning`.
-   - Если в проекте **уже есть исходный код приложения** (`src/`, `app/`, `packages/`, `package.json`, `pyproject.toml`, `go.mod` и т.д.), но нет `docs/roadmap.md` → выбери режим **`existing-code` (Реверс-инжиниринг по коду)**.
-   - Если проект **пустой** (или есть только входные заметки вроде `concept.md` / `README.md`) → выбери режим **`from-scratch` (Проект с нуля)**.
-2. Прочитай `l1dder/METHODOLOGY.md`, `l1dder/rules/30-tech-stack.mdc` и `l1dder/rules/40-skills-router.mdc`.
+> **ПРАВИЛО ДЛЯ МОДЕЛИ:** Выполняй шаги 1 → 2 → 3 → 4. Концепт прорабатывается по одному этапу за раз: каждый этап проходит один и тот же цикл из ШАГА 3 и заканчивается остановкой `⛔ СТОП` до явного «ок». Стек выбирается только на этапе 5, после архитектуры и модели данных.
 
 ---
 
-## ШАГ 2: Согласование технологического стека (`30-tech-stack.mdc` + `Makefile`) и `⛔ СТОП №1`
+## ШАГ 1: Определи, откуда начинать
 
-1. **Если режим `existing-code`:** изучи конфиги проекта (`package.json`, `tsconfig.json`, `pyproject.toml`, `go.mod`, `Makefile`, структуру папок) и сам выпиши фактический стек.
-2. **Если режим `from-scratch`:** если стек ещё не назван пользователем (или не указан в `concept.md`), задай 1–2 вопроса в формате `grilling` (`❓ Q1 — Технологический стек ➡️ Рекомендация по принципу ponytail`).
-3. Покажи пользователю проект настройки стека:
-   - Сводная таблица стека для `l1dder/rules/30-tech-stack.mdc` (Язык, Frontend/UI, Backend/Core, Данные, Тесты/Линтер);
-   - Архитектурная структура папок проекта;
-   - Цели `Makefile` (`make dev`, `make build`, `make lint`, `make typecheck`, `make test`, `make ci`);
-   - Рекомендуемые профильные скиллы для `l1dder/skills.json` (секция `"stack"`) и `l1dder/rules/40-skills-router.mdc`.
-4. ⛔ **СТОП №1:** Спроси: *«Утверждаем стек проекта для записи в `l1dder/rules/30-tech-stack.mdc`, `l1dder/skills.json` и `Makefile` (ок / правки)?»* и жди ответа.
-5. **После «ок»:**
-   - Запиши заполненный `l1dder/rules/30-tech-stack.mdc`, добавь выбранные стек-скиллы в секцию `"stack"` файла `l1dder/skills.json` и обнови раздел 2 в `l1dder/rules/40-skills-router.mdc`.
-   - Создай (или обнови) корневой `Makefile` с контрактом команд.
-   - Запусти `npx l1dder skills install` и `npx l1dder sync`, чтобы скачать стек-скиллы и синхронизировать правила во все активные ИИ-агенты.
+1. Если в проекте уже есть заполненный `docs/roadmap.md`, покажи краткую сводку активного спринта (`1 (CURRENT)`), следующей задачи `TASK-NN.MM` и следующей идеи в `Discovery Queue` и предложи `/l1-task`, `/l1-feature` или `/l1-planning`. Онбординг на этом заканчивается.
+2. Определи режим:
+   - **`existing-code`** — в проекте есть исходный код (`src/`, `app/`, `packages/`, `package.json`, `pyproject.toml`, `go.mod` и т.д.).
+   - **`from-scratch`** — проект пустой или в нём только заметки вроде `concept.md` и `README.md`. Прочитай их как первичный контекст.
+3. В режиме `existing-code` первоисточник фактов — код. Файлы инструкций `CLAUDE.md`, `AGENTS.md` (вне блока `l1dder:begin`), `.cursor/rules/` и подобные, в том числе созданные `/init` агента, читай только вспомогательно и ничего в них не меняй. Если они расходятся с кодом, опирайся на код и покажи расхождение пользователю.
+4. Найди первый незавершённый этап по таблице ШАГА 2: этап завершён, когда все его файлы заполнены. Шаблон после `npx l1dder init` (например, `30-tech-stack.mdc`) и файл, где есть только раздел `## Заметки с других этапов`, считаются незавершёнными. Начни с первого незавершённого этапа и не повторяй завершённые.
+5. Прочитай `l1dder/METHODOLOGY.md` и шаблоны `l1dder/templates/concept/`.
 
 ---
 
-## ШАГ 3: Базовый фундамент концепта (`docs/concept/`) и `⛔ СТОП №2`
+## ШАГ 2: Этапы онбординга
 
-1. Прочитай шаблоны в `l1dder/templates/concept/`.
-2. Подготовь проект базовых документов концепта (в режиме `existing-code` — строго по тому, как система устроена сейчас; в режиме `from-scratch` — по ответам пользователя и `grilling`):
-   - `docs/concept/idea.md` — суть продукта, для кого, какую задачу решает, границы MVP.
-   - `docs/concept/vision.md` — роли, ключевые сценарии, компоненты, стек и принципы.
-   - `docs/concept/architecture.md` — слои, контейнеры, потоки данных (если компонентов ≥ 2).
-   - `docs/concept/data-model.md` — сущности и схемы хранения/конфигов (если применимо).
-   - `docs/concept/integrations.md` и `docs/concept/api-contracts.md` (если применимо).
-3. ⛔ **СТОП №2:** Покажи пользователю сводку концепта и спроси: *«Утверждаем базовый концепт для записи в `docs/concept/` (ок / правки)?»*
-4. **После «ок»:** создай согласованные файлы в `docs/concept/`.
+| Этап | Файлы этапа | О чём вопросы | Скиллы (прочитай через `Read` в начале этапа) |
+|------|-------------|---------------|-----------------------------------------------|
+| 1. Идея | `docs/concept/idea.md` | Суть продукта, для кого он, какую задачу решает, границы MVP | `grilling`, `domain-modeling`, `prototype` (если поведение непонятно на словах) |
+| 2. Видение | `docs/concept/vision.md` | Система в целом, роли, сценарии, принципы | `grilling`, `domain-modeling`, `prototype` (если нужен набросок экрана или потока) |
+| 3. Архитектура | `docs/concept/architecture.md`; `docs/concept/integrations.md` и `docs/concept/api-contracts.md`, только если нужны | Компоненты и слои, потоки данных, глубокие модули и швы, внешние системы и API | `codebase-design` (и его `DESIGN-IT-TWICE.md`), `domain-modeling` (и его `ADR-FORMAT.md`), `ponytail` |
+| 4. Модель данных | `docs/concept/data-model.md` | Сущности, связи, хранение и схемы конфигов | `domain-modeling`, `codebase-design` |
+| 5. Стек | `l1dder/rules/30-tech-stack.mdc`, `l1dder/rules/40-skills-router.mdc`, `l1dder/skills.json` (секция `"stack"`), `Makefile` | Язык и платформа, фреймворки, хранение данных, тесты и линтер, цели `make` | `ponytail`, `tdd`, `writing-for-agents` и стек-скиллы, которые предлагаешь |
+| 6. Банк идей и роадмап | `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md`, `docs/README.md` | Первые идеи `IDEA-NNN`, их приоритеты и порядок проработки | `grilling` |
 
----
-
-## ШАГ 4: Инициализация Банка Идей (`docs/ideas.md`), Бэклога (`docs/backlog.md`) и Роадмапа (`docs/roadmap.md`) + `⛔ СТОП №3`
-
-1. Прочитай шаблоны `l1dder/templates/ideas/ideas-template.md`, `l1dder/templates/backlog/backlog-template.md` и `l1dder/templates/roadmap/roadmap-template.md`.
-2. Сформируй стартовый набор идей `IDEA-001`, `IDEA-002`, `IDEA-003`... с приоритетами `P0..P3` и статусом `📋 нереализована` (в режиме `existing-code` уже работающую функциональность можно отметить как `✅ реализована`, а новые планы — как `📋 нереализована`).
-3. Покажи пользователю список первых `IDEA-NNN` и порядок очереди `Discovery Queue` для `docs/roadmap.md`.
-4. ⛔ **СТОП №3:** Спроси: *«Утверждаем стартовый Банк Идей (`docs/ideas.md`), Бэклог (`docs/backlog.md`) и Роадмап (`docs/roadmap.md`) (ок / правки)?»*
-5. **После «ок»:**
-   - Создай `docs/ideas.md` со стартовыми карточками `IDEA-NNN`.
-   - Создай `docs/backlog.md` и `docs/roadmap.md`.
-   - Создай навигатор `docs/README.md` со ссылками на все документы.
+Особенности этапов:
+- **Этап 3:** спроси, есть ли у системы внешние интеграции и API. Если нет, `integrations.md` и `api-contracts.md` не создавай. Значимые решения оформи как `docs/adrs/ADR-NNNN-<slug>.md`.
+- **Этап 5:** стек выводи из `architecture.md` и `data-model.md`: сначала платформа и то, что уже есть в проекте. После «ок» запусти `npx l1dder skills install` и `npx l1dder sync`.
+- **Этап 6:** идеи оформи по шаблону `l1dder/templates/ideas/ideas-template.md` со статусом `📋 нереализована`. В режиме `existing-code` уже работающее можно отметить `✅ реализована`. Бэклог, роадмап и навигатор `docs/README.md` создай по шаблонам `l1dder/templates/`.
 
 ---
 
-## ШАГ 5: Завершение онбординга (Exit Gate)
+## ШАГ 3: Цикл этапа (одинаковый для всех шести)
 
-Проверь, что все файлы на месте (`l1dder/rules/30-tech-stack.mdc`, `docs/concept/idea.md`, `docs/concept/vision.md`, `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md`, `docs/README.md`), и напиши пользователю:
-- *«Онбординг проекта на `L1DDER` завершён! Стек настроен, база `docs/` создана.»*
+1. **Ориентир.** Каждое сообщение этапа начинай строкой `Этап N из 6: <название>, раунд M`.
+2. **Подготовка.** Прочитай скиллы этапа из таблицы и заметки, которые уже лежат в его файлах. В режиме `existing-code` сначала составь черновик по коду и спрашивай только о том, чего в коде нет.
+3. **Раунд вопросов.** Задай до 7 вопросов об этом этапе в формате `grilling`: у каждого варианты с опорой на факты и твоя рекомендация, которую принимает ответ «ок». Факты из кода и файлов находи сам, у пользователя спрашивай только решения.
+4. **Разбор ответа.** Коротко скажи, что стало понятно, что стоит усилить и что осталось неясным. Если в ответе есть сведения для другого этапа, предложи их записать, например «это предлагаю занести в `architecture.md`». После «ок» сразу допиши заметку в раздел `## Заметки с других этапов` того файла.
+5. **Выбор.** Каждый раунд заканчивай вопросом «Идём дальше или ещё раунд?» и своей рекомендацией: что осталось неясным и нужен ли ещё раунд. Раундов столько, сколько решит пользователь.
+6. **Черновик.** Когда пользователь выбрал «дальше», покажи черновик файлов этапа и спроси: *«Утверждаем `<файлы этапа>` (ок / правки)?»*
+7. ⛔ **СТОП:** жди «ок». После него запиши файлы этапа: заметки из раздела `## Заметки с других этапов` перенеси в нужные места, а сам раздел удали. Затем переходи к следующему этапу с пункта 1.
+
+---
+
+## ШАГ 4: Завершение онбординга (Exit Gate)
+
+Проверь, что на месте файлы всех шести этапов (`integrations.md` и `api-contracts.md` — только если их решили создать), и напиши пользователю:
+- *«Онбординг проекта на `L1DDER` завершён: концепт, стек и база `docs/` готовы.»*
 - *«Следующий шаг: вызови `/l1-feature IDEA-001` для проработки первой спецификации фичи (или `/l1-idea`, чтобы добавить ещё идей).»*

@@ -634,13 +634,13 @@ function printOutcome(
       isRu
         ? `👉 Следующий шаг (для человека в чате агента):\n   Введи команду: /l1-onboard\n\n` +
           `🤖 Инструкция для ИИ-агента (если установку попросил выполнить пользователь в чате):\n` +
-          `   Сразу прочитай файл ${outcome.rootDir}/skills/l1-onboard/SKILL.md и начни ШАГ 1 онбординга\n` +
-          `   (определи режим from-scratch / existing-code и предложи настройку стека для ${outcome.rootDir}/rules/30-tech-stack.mdc),\n` +
+          `   Сразу прочитай файл ${outcome.rootDir}/skills/l1-onboard/SKILL.md и начни онбординг\n` +
+          `   (определи режим from-scratch / existing-code и начни с первого незавершённого этапа: обычно «Этап 1 из 6: идея»),\n` +
           `   не заставляя пользователя вручную вводить /l1-onboard!\n`
         : `👉 Next step (for human in agent chat):\n   Type command: /l1-onboard\n\n` +
           `🤖 AI Agent Instruction (if the user asked you to install L1DDER in chat):\n` +
-          `   Immediately read ${outcome.rootDir}/skills/l1-onboard/SKILL.md and start STEP 1 of onboarding\n` +
-          `   (detect from-scratch / existing-code mode and propose stack config for ${outcome.rootDir}/rules/30-tech-stack.mdc)\n` +
+          `   Immediately read ${outcome.rootDir}/skills/l1-onboard/SKILL.md and start onboarding\n` +
+          `   (detect from-scratch / existing-code mode and begin at the first unfinished stage, usually "Stage 1 of 6: idea")\n` +
           `   without making the user manually type /l1-onboard!\n`,
     );
   }
