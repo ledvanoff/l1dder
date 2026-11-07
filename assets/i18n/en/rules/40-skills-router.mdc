@@ -14,7 +14,7 @@ All project skills are managed declaratively via **`l1dder/skills.json`** (like 
 
 | When to Use | Slash Command | Path in `l1dder/skills/` |
 |-------------|---------------|--------------------------|
-| Start a project (`from-scratch` or `existing-code`), configure `30-tech-stack.mdc` & `l1dder/skills.json`, and create initial `docs/` | `/l1-onboard` | `l1dder/skills/l1-onboard/SKILL.md` |
+| Start a project (`from-scratch` or `existing-code`): work out the concept stage by stage (idea, vision, architecture, data model), then configure `30-tech-stack.mdc` & `l1dder/skills.json` and create `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md` | `/l1-onboard` | `l1dder/skills/l1-onboard/SKILL.md` |
 | Brainstorm & refine a new idea (`grilling`) and save to the Idea Bank (`docs/ideas.md`) | `/l1-idea` | `l1dder/skills/l1-idea/SKILL.md` |
 | Write a feature spec (`docs/specs/FEAT-NNN/`) from an idea and slice steps `FEAT-NNN.01..99` into `docs/backlog.md` | `/l1-feature` | `l1dder/skills/l1-feature/SKILL.md` |
 | Schedule or reorder the Roadmap (`docs/roadmap.md`), assign `SPRINT-NN` and `TASK-NN.01..99` | `/l1-planning` | `l1dder/skills/l1-planning/SKILL.md` |

@@ -6,8 +6,8 @@
 ```
 We are starting a new project from scratch using the L1DDER methodology.
 Read l1dder/METHODOLOGY.md, l1dder/rules/, and l1dder/skills/l1-onboard/SKILL.md.
-Follow /l1-onboard step by step, pausing for my explicit "ok" at each step:
-1. Configure l1dder/rules/30-tech-stack.mdc, 40-skills-router.mdc, and Makefile, then run npx l1dder sync.
-2. Create docs/concept/ (idea.md, vision.md, architecture.md, data-model.md, integrations.md, api-contracts.md).
-3. Initialize docs/ideas.md, docs/backlog.md, docs/roadmap.md, and docs/README.md.
+Follow /l1-onboard stage by stage:
+1. Go through six stages, one file at a time: idea (docs/concept/idea.md) → vision (vision.md) → architecture (architecture.md, plus integrations.md and api-contracts.md if needed) → data model (data-model.md) → stack (l1dder/rules/30-tech-stack.mdc, 40-skills-router.mdc, Makefile, then npx l1dder sync) → docs/ideas.md, docs/backlog.md, docs/roadmap.md, and docs/README.md.
+2. At each stage ask up to 7 questions with recommendations, review my answers, and ask: "Move on or another round?".
+3. Write a stage file only after my explicit "ok".
 ```

@@ -13,8 +13,7 @@
 Если в проекте уже есть исходный концепт (например, concept.md), обязательно прочитай его как первичный контекст.
 
 Работай пошагово по скиллу /l1-onboard:
-1. На каждом шаге показывай результат и жди моего явного «ок» перед переходом к следующему шагу.
-2. ШАГ 1: Согласуй технологический стек и настрой l1dder/rules/30-tech-stack.mdc, l1dder/rules/40-skills-router.mdc и Makefile, затем запусти npx l1dder sync.
-3. ШАГ 2: Сформируй базовый концепт в docs/concept/ (idea.md, vision.md, architecture.md, data-model.md, integrations.md, api-contracts.md).
-4. ШАГ 3: Инициализируй Банк Идей (docs/ideas.md), Бэклог (docs/backlog.md), Роадмап (docs/roadmap.md) и навигатор docs/README.md.
+1. Иди по шести этапам, по одному файлу за раз: идея (docs/concept/idea.md) → видение (vision.md) → архитектура (architecture.md, при необходимости integrations.md и api-contracts.md) → модель данных (data-model.md) → стек (l1dder/rules/30-tech-stack.mdc, 40-skills-router.mdc, Makefile, затем npx l1dder sync) → Банк Идей, Бэклог, Роадмап и навигатор docs/README.md.
+2. На каждом этапе задавай до 7 вопросов с рекомендациями, разбирай мои ответы и спрашивай: «Идём дальше или ещё раунд?».
+3. Файл этапа записывай только после моего явного «ок».
 ```

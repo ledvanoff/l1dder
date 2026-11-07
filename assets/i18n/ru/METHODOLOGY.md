@@ -12,7 +12,7 @@
 ```mermaid
 flowchart TB
     subgraph foundation["0. Старт и фундамент (/l1-onboard → docs/concept/)"]
-        CON["Настройка стека (30-tech-stack.mdc) + idea.md → vision.md → architecture.md / data-model.md / integrations.md"]
+        CON["idea.md → vision.md → architecture.md / integrations.md → data-model.md → стек (30-tech-stack.mdc)"]
     end
 
     subgraph flow1["1. Флоу Идея (/l1-idea)"]
@@ -77,10 +77,11 @@ flowchart TB
 ## 3. Рабочие потоки `L1DDER`
 
 ### Поток 0: Онбординг проекта (`/l1-onboard`)
-Единая точка старта после `npx l1dder init`:
-1. Определяет режим (`from-scratch` для нового проекта или `existing-code` для существующего репозитория).
-2. Настраивает проектный стек в `l1dder/rules/30-tech-stack.mdc`, маршрутизатор скиллов в `l1dder/rules/40-skills-router.mdc` и `Makefile`, после чего синхронизирует правила агентов (`npx l1dder sync`).
-3. Пошагово с подтверждением (`ок`) создаёт `docs/concept/*`, `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md` и `docs/README.md`.
+Единая точка старта после `npx l1dder init`. Проходит шесть этапов, по одному файлу, и на каждом ждёт «ок»:
+1. Определяет режим (`from-scratch` для нового проекта или `existing-code` для существующего репозитория) и первый незавершённый этап. В режиме `existing-code` первоисточник фактов — код.
+2. Прорабатывает концепт: `docs/concept/idea.md` → `vision.md` → `architecture.md` (при необходимости `integrations.md` и `api-contracts.md`) → `data-model.md`. На каждом этапе раунды до 7 вопросов с рекомендациями и вопрос «Идём дальше или ещё раунд?».
+3. Выводит из архитектуры стек: `l1dder/rules/30-tech-stack.mdc`, `40-skills-router.mdc`, `Makefile`, затем `npx l1dder sync`.
+4. Создаёт `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md` и `docs/README.md`.
 
 ---
 

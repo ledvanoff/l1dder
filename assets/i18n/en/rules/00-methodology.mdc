@@ -32,7 +32,7 @@ When the user invokes any command below, **immediately read the corresponding `S
 
 | Command | Skill File | What the Flow Does |
 |---------|------------|--------------------|
-| **`/l1-onboard`** | `l1dder/skills/l1-onboard/SKILL.md` | Configures `30-tech-stack.mdc`, `40-skills-router.mdc`, `Makefile` and initializes `docs/concept/`, `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md` |
+| **`/l1-onboard`** | `l1dder/skills/l1-onboard/SKILL.md` | Stage by stage, one file each: the concept in `docs/concept/` (idea, vision, architecture, data model), then the stack (`30-tech-stack.mdc`, `40-skills-router.mdc`, `Makefile`), then `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md` |
 | **`/l1-idea`** | `l1dder/skills/l1-idea/SKILL.md` | Refines an idea → assigns `IDEA-NNN` → records in `docs/ideas.md` |
 | **`/l1-feature`** | `l1dder/skills/l1-feature/SKILL.md` | Takes `IDEA-NNN` → creates `docs/specs/FEAT-NNN-<slug>/` → slices `FEAT-NNN.01 .. FEAT-NNN.99` → updates `docs/backlog.md` |
 | **`/l1-planning`** | `l1dder/skills/l1-planning/SKILL.md` | Schedules `docs/roadmap.md` → assigns `SPRINT-NN` & `TASK-NN.01 .. TASK-NN.99` → creates `docs/sprints/SPRINT-NN-<slug>/README.md` |

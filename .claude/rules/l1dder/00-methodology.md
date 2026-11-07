@@ -28,7 +28,7 @@
 
 | Команда | Скилл | Что делает цепочка |
 |---------|-------|--------------------|
-| **`/l1-onboard`** | `l1dder/skills/l1-onboard/SKILL.md` | Настраивает стек (`30-tech-stack.mdc`, `40-skills-router.mdc`, `Makefile`) и создаёт базовую документацию `docs/concept/`, `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md` |
+| **`/l1-onboard`** | `l1dder/skills/l1-onboard/SKILL.md` | По этапам, по одному файлу: концепт в `docs/concept/` (идея, видение, архитектура, модель данных), затем стек (`30-tech-stack.mdc`, `40-skills-router.mdc`, `Makefile`), затем `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md` |
 | **`/l1-idea`** | `l1dder/skills/l1-idea/SKILL.md` | Развивает идею → присваивает `IDEA-NNN` → записывает в `docs/ideas.md` |
 | **`/l1-feature`** | `l1dder/skills/l1-feature/SKILL.md` | Берёт `IDEA-NNN` → создаёт `docs/specs/FEAT-NNN-<slug>/` → режет на шаги `FEAT-NNN.01 .. FEAT-NNN.99` → записывает в `docs/backlog.md` |
 | **`/l1-planning`** | `l1dder/skills/l1-planning/SKILL.md` | Строит очередь в `docs/roadmap.md` → назначает `SPRINT-NN` и `TASK-NN.01 .. TASK-NN.99` → создаёт `docs/sprints/SPRINT-NN-<slug>/README.md` |

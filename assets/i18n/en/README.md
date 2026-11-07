@@ -62,7 +62,7 @@ The agent automatically detects whether the repo is empty (`from-scratch`) or al
 
 | Slash Command | Flow | What It Does |
 |---------------|------|--------------|
-| **`/l1-onboard`** | Project Onboarding | Configures tech stack (`30-tech-stack.mdc`) and creates `docs/concept/`, `docs/ideas.md`, `docs/backlog.md`, and `docs/roadmap.md`. |
+| **`/l1-onboard`** | Project Onboarding | Works out the concept (`docs/concept/`) stage by stage, then the tech stack (`30-tech-stack.mdc`), and creates `docs/ideas.md`, `docs/backlog.md`, and `docs/roadmap.md`. |
 | **`/l1-idea`** | Idea Flow | Refines an idea (`grilling`) and saves it to the **Idea Bank** (`docs/ideas.md`) with `IDEA-NNN`, priority, and `📋 unrealized` status. |
 | **`/l1-feature`** | Feature & Spec Flow | Takes `IDEA-NNN`, writes a full spec (`docs/specs/FEAT-NNN-<slug>/`), slices steps `FEAT-NNN.01..99`, and adds to **Backlog** (`docs/backlog.md`). |
 | **`/l1-planning`** | Planning Flow | Updates the **Roadmap** (`docs/roadmap.md` — Single Source of Truth): schedules sprints (`Delivery Queue`) and idea grooming (`Discovery Queue`). |

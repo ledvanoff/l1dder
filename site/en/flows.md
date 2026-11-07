@@ -4,8 +4,13 @@
 
 ---
 
-## 🧭 Button 0: `/l1-onboard` — Project Onboarding & Stack Setup
-Run once after `npx l1dder init`. Detects `from-scratch` or `existing-code` mode, configures `l1dder/rules/30-tech-stack.mdc` and `Makefile`, syncs agent rules, and creates `docs/concept/`, `docs/ideas.md`, `docs/backlog.md`, and `docs/roadmap.md`.
+## 🧭 Button 0: `/l1-onboard` — Project Onboarding by Stages
+
+**When to press:** Once, right after `npx l1dder init` (in a new empty project or in an existing repository with code).
+- The agent detects `from-scratch` or `existing-code` mode and walks you through six stages, one file at a time: idea → vision → architecture → data model → stack → Idea Bank and roadmap.
+- At each stage it asks up to 7 questions with ready recommendations, reviews your answers and asks: "Move on or another round?". A stage file is written only after your "ok".
+- The agent proposes the stack (`l1dder/rules/30-tech-stack.mdc`, `Makefile`) at stage 5, once the architecture and the data model are clear. In a project with code it takes the stack and other facts from the code itself.
+- If you mention something about the architecture or the data early, the agent offers to record it in the right file so nothing gets lost.
 
 ---
 

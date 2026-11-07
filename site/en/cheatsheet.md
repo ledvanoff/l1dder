@@ -8,7 +8,7 @@
 
 | Situation | What to Type in Agent Chat | What Happens |
 |-----------|----------------------------|--------------|
-| 🧭 Just ran `npx l1dder init` in a new or existing repo | `/l1-onboard` | Configures `30-tech-stack.mdc` and step-by-step initializes `docs/concept/`, `docs/ideas.md`, `docs/backlog.md`, and `docs/roadmap.md`. |
+| 🧭 Just ran `npx l1dder init` in a new or existing repo | `/l1-onboard` | Works out the concept in `docs/concept/` stage by stage, then the stack in `30-tech-stack.mdc`, and creates `docs/ideas.md`, `docs/backlog.md`, and `docs/roadmap.md`. |
 | 💡 Got a new idea (even mid-sprint) | `/l1-idea [idea summary]` | Refines with recommendations and after `"ok"` saves `IDEA-NNN` to `docs/ideas.md`. Active sprint is untouched. |
 | 📐 Want to turn an idea into a spec and Backlog tasks | `/l1-feature IDEA-001` | Creates `docs/specs/FEAT-NNN/`, slices `FEAT-NNN.01..99`, and adds to `docs/backlog.md`. |
 | 🗺 Want to schedule a sprint or reorder priorities | `/l1-planning` | Updates `docs/roadmap.md` and assigns `SPRINT-NN` and `TASK-NN.01..99`. |

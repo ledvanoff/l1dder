@@ -25,7 +25,7 @@ In **L1DDER**, roles are strictly separated:
 - 🤖 **The AI Agent is your Engineering Team with a Built-in Tech Lead.** It asks smart decision-tree questions with recommendations, writes specs, writes lean code (`ponytail`), runs tests, and keeps documentation in sync.
 
 You control the entire lifecycle with **6 slash commands**:
-0. `/l1-onboard` — run once at project start to configure your tech stack and create `docs/`.
+0. `/l1-onboard` — run once at project start to work out the concept stage by stage, then the tech stack and `docs/`.
 1. `/l1-idea` — capture and refine an idea into the Idea Bank.
 2. `/l1-feature` — turn an idea into a technical specification and slice it into Backlog tasks.
 3. `/l1-planning` — order the Roadmap queue (what we build now vs. next).

@@ -65,7 +65,7 @@ Then open your AI agent chat and run `/l1-onboard`.
 
 | Command | Flow | What It Does |
 |---------|------|--------------|
-| **`/l1-onboard`** | Onboarding | Configures `30-tech-stack.mdc` & `Makefile` and initializes `docs/`. |
+| **`/l1-onboard`** | Onboarding | Works out the concept stage by stage, then configures `30-tech-stack.mdc` & `Makefile` and initializes `docs/`. |
 | **`/l1-idea`** | Idea Bank | Refines an idea (`grilling`) and records `IDEA-NNN` in `docs/ideas.md`. |
 | **`/l1-feature`** | Feature Spec | Creates `docs/specs/FEAT-NNN-<slug>/`, slices `FEAT-NNN.01..99`, updates `docs/backlog.md`. |
 | **`/l1-planning`** | Roadmap | Updates `docs/roadmap.md` (`Delivery Queue` & `Discovery Queue`) and creates `SPRINT-NN`. |

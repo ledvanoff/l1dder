@@ -9,7 +9,7 @@
 3. **Сквозная цепочка ID (`ID Passport`):** Каждый документ хранит все родительские ID: `IDEA-NNN` (`docs/ideas.md`) → `FEAT-NNN` (`docs/backlog.md` + `docs/specs/FEAT-NNN-<slug>/`) → `SPRINT-NN` (`docs/roadmap.md` + `docs/sprints/SPRINT-NN-<slug>/`) → `TASK-NN.MM` (и обязательный финал спринта `TASK-NN.99` Doctor Checklist).
 
 ## Управляющие слэш-команды (при вызове `/l1-*` или `$l1-*` читай соответствующий `SKILL.md`)
-- `/l1-onboard` (`$l1-onboard`) → `l1dder/skills/l1-onboard/SKILL.md` (старт проекта, настройка `30-tech-stack.mdc` и `l1dder/skills.json`)
+- `/l1-onboard` (`$l1-onboard`) → `l1dder/skills/l1-onboard/SKILL.md` (старт проекта по этапам: концепт в `docs/concept/`, затем стек в `30-tech-stack.mdc` и `l1dder/skills.json`)
 - `/l1-idea` (`$l1-idea`) → `l1dder/skills/l1-idea/SKILL.md` (брейншторм идеи и запись `IDEA-NNN` в `docs/ideas.md`)
 - `/l1-feature` (`$l1-feature`) → `l1dder/skills/l1-feature/SKILL.md` (спека `docs/specs/FEAT-NNN-<slug>/` и нарезка в `docs/backlog.md`)
 - `/l1-planning` (`$l1-planning`) → `l1dder/skills/l1-planning/SKILL.md` (планирование `docs/roadmap.md` и создание `SPRINT-NN`)

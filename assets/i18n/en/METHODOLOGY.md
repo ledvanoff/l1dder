@@ -12,7 +12,7 @@
 ```mermaid
 flowchart TB
     subgraph foundation["0. Onboarding & Foundation (/l1-onboard → docs/concept/)"]
-        CON["Stack Config (30-tech-stack.mdc) + idea.md → vision.md → architecture.md / data-model.md / integrations.md"]
+        CON["idea.md → vision.md → architecture.md / integrations.md → data-model.md → stack (30-tech-stack.mdc)"]
     end
 
     subgraph flow1["1. Idea Flow (/l1-idea)"]
@@ -77,9 +77,11 @@ Created once at project start (via `/l1-onboard`) and **mandatorily kept up to d
 ## 3. Core Workflows
 
 ### Flow 0: Project Onboarding (`/l1-onboard`)
-1. Detects `from-scratch` or `existing-code` mode.
-2. Configures the stack in `l1dder/rules/30-tech-stack.mdc`, `40-skills-router.mdc`, and `Makefile`, then runs `npx l1dder sync`.
-3. Step-by-step creates `docs/concept/*`, `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md`, and `docs/README.md` with human `"ok"` approvals.
+The single entry point after `npx l1dder init`. It runs six stages, one file each, and waits for "ok" at each:
+1. Detects `from-scratch` or `existing-code` mode and the first unfinished stage. In `existing-code` mode the code is the primary source of facts.
+2. Works out the concept: `docs/concept/idea.md` → `vision.md` → `architecture.md` (plus `integrations.md` and `api-contracts.md` if needed) → `data-model.md`. Each stage runs rounds of up to 7 questions with recommendations and the question "Move on or another round?".
+3. Derives the stack from the architecture: `l1dder/rules/30-tech-stack.mdc`, `40-skills-router.mdc`, `Makefile`, then runs `npx l1dder sync`.
+4. Creates `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md`, and `docs/README.md`.
 
 ### Flow 1: Idea Flow (`/l1-idea` → `docs/ideas.md`)
 1. Invoked via **`/l1-idea`**.

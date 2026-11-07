@@ -40,12 +40,11 @@
 
 ---
 
-### ЦЕПОЧКА 0: `/l1-onboard` (Онбординг проекта и настройка стека)
+### ЦЕПОЧКА 0: `/l1-onboard` (Онбординг проекта по этапам)
 
-1. **ШАГ 1:** Определи режим (`from-scratch` для нового проекта или `existing-code` для проекта с кодом).
-2. **ШАГ 2 (`⛔ СТОП`):** Согласуй технологический стек и обнови `l1dder/rules/30-tech-stack.mdc`, `l1dder/rules/40-skills-router.mdc` и `Makefile`, затем синхронизируй правила агентов (`npx l1dder sync`).
-3. **ШАГ 3 (`⛔ СТОП`):** Создай и согласуй базовый концепт в `docs/concept/` (`idea.md`, `vision.md`, `architecture.md`, `data-model.md`, `integrations.md`, `api-contracts.md`).
-4. **ШАГ 4 (`⛔ СТОП`):** Инициализируй `docs/ideas.md`, `docs/backlog.md` (с первой спекой `FEAT-001` при готовности), `docs/roadmap.md` и навигатор `docs/README.md`.
+1. **ШАГ 1:** Определи режим (`from-scratch` для нового проекта или `existing-code` для проекта с кодом) и первый незавершённый этап. В режиме `existing-code` первоисточник фактов — код.
+2. **ШАГ 2 (6 этапов, по одному файлу, каждый заканчивается `⛔ СТОП`):** идея (`docs/concept/idea.md`) → видение (`vision.md`) → архитектура (`architecture.md`, при необходимости `integrations.md` и `api-contracts.md`) → модель данных (`data-model.md`) → стек (`l1dder/rules/30-tech-stack.mdc`, `40-skills-router.mdc`, `l1dder/skills.json`, `Makefile`, затем `npx l1dder sync`) → банк идей, бэклог, роадмап и навигатор `docs/README.md`.
+3. **ШАГ 3 (цикл каждого этапа):** до 7 вопросов в формате `grilling` с рекомендациями, разбор ответа, вопрос «Идём дальше или ещё раунд?», затем черновик файлов этапа и «ок». Порядок действий — в `l1dder/skills/l1-onboard/SKILL.md`.
 
 ---
 

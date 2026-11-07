@@ -26,7 +26,7 @@ Then open your agent chat and run:
 ```text
 /l1-onboard
 ```
-The agent detects your project stack (or helps you choose one), configures `l1dder/rules/30-tech-stack.mdc`, and initializes `docs/`.
+The agent walks you through six stages: idea, vision, architecture, data model, stack, Idea Bank and roadmap. At each stage it asks up to 7 questions with ready recommendations and asks whether to move on or discuss more. It proposes the stack only after the architecture and records it in `l1dder/rules/30-tech-stack.mdc`.
 
 ---
 

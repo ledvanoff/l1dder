@@ -11,6 +11,14 @@ Created during `/l1-onboard` and **mandatorily synchronized at the end of every 
 
 ---
 
+## Concept Phase & Onboarding Stages (`/l1-onboard`)
+
+- **Concept phase** — working out `docs/concept/` during onboarding, before the Idea Bank and features. Not to be confused with the `Discovery Queue`, the queue of ideas to turn into specs in `docs/roadmap.md`.
+- **Concept stage** — working out one onboarding file in rounds of up to 7 questions, ending with a draft and an "ok". There are six stages: idea, vision, architecture, data model, stack, Idea Bank and roadmap.
+- **Answer review** — the agent's reaction to the human's answers: what is now clear, what is worth strengthening, what is still unclear and what belongs in another stage's file.
+
+---
+
 ## Idea Bank (`docs/ideas.md`) & `IDEA-NNN`
 
 Single registry of all product and technical ideas, managed via **`/l1-idea`**.

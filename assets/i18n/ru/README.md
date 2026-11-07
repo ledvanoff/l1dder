@@ -62,7 +62,7 @@ npx l1dder init --lang ru --agents cursor,claude --yes
 
 | Слэш-команда | Поток | Что делает |
 |--------------|-------|-----------|
-| **`/l1-onboard`** | Старт проекта | Определяет стек (`30-tech-stack.mdc`), создаёт `docs/concept/`, Банк Идей (`docs/ideas.md`), Бэклог (`docs/backlog.md`) и Роадмап (`docs/roadmap.md`). |
+| **`/l1-onboard`** | Старт проекта | По этапам прорабатывает концепт (`docs/concept/`), затем стек (`30-tech-stack.mdc`) и создаёт Банк Идей (`docs/ideas.md`), Бэклог (`docs/backlog.md`) и Роадмап (`docs/roadmap.md`). |
 | **`/l1-idea`** | Флоу «Идея» | Помогает развить идею (`grilling`) и сохраняет её в **Банк Идей** (`docs/ideas.md`) с кодом `IDEA-NNN`, приоритетом и статусом `📋 нереализована`. |
 | **`/l1-feature`** | Флоу «Фича» | Берёт идею `IDEA-NNN`, создаёт полную спеку (`docs/specs/FEAT-NNN-<slug>/`), грумит фичу на шаги `FEAT-NNN.01..99` и кладёт в **Бэклог** (`docs/backlog.md`). |
 | **`/l1-planning`** | Флоу «Планирование» | Формирует и обновляет **Роадмап** (`docs/roadmap.md` — Единый источник истины): планирует спринты (`Delivery Queue`) и очередь идей (`Discovery Queue`). |
