@@ -5,6 +5,23 @@
 
 ---
 
+## [1.1.0] — 2026-11-07
+
+**RU:** Пошаговый онбординг /l1-onboard по одному файлу концепта со стеком после архитектуры, сокращённый шаблон видения и обновлённые встроенные скиллы.
+
+**EN:** Step-by-step /l1-onboard working out the concept one file at a time before the stack, a leaner vision template, and updated bundled skills.
+
+### Changes (Изменения)
+
+- **[RU]** FEAT-004: /l1-onboard теперь проходит 6 этапов по одному файлу (идея → видение → архитектура → модель данных → стек → банк идей и роадмап), задаёт до 7 вопросов с рекомендациями в раунде и переносит заметки между этапами.
+- **[RU]** FEAT-004: Сокращён шаблон vision.md, чтобы этапы концепта не дублировали друг друга.
+- **[RU]** FEAT-004: Встроенные скиллы ponytail и mattpocock/skills сверены с исходниками, добавлены вложенные файлы (SKILL-MECHANICS.md, scripts/hitl-loop.template.sh) и их рекурсивное копирование во все папки агентов.
+- **[EN]** FEAT-004: /l1-onboard now runs in 6 stages one file at a time (idea → vision → architecture → data model → stack → Idea Bank and roadmap), asks up to 7 questions with recommendations per round, and carries notes across stages.
+- **[EN]** FEAT-004: Trimmed the vision.md template so concept stages no longer overlap.
+- **[EN]** FEAT-004: Synced bundled ponytail and mattpocock/skills with upstream, added nested companion files (SKILL-MECHANICS.md, scripts/hitl-loop.template.sh), and copied nested skill folders to all agent directories.
+
+---
+
 ## [1.0.3] — 2026-11-04
 
 **RU:** Обновлены описание пакета и README, чтобы L1DDER проще находился в поиске. Поведение CLI, правила и скиллы не менялись.

@@ -1,6 +1,30 @@
 {
   "releases": [
     {
+      "version": "1.1.0",
+      "date": "2026-11-07",
+      "summary": {
+        "ru": "Пошаговый онбординг /l1-onboard по одному файлу концепта со стеком после архитектуры, сокращённый шаблон видения и обновлённые встроенные скиллы.",
+        "en": "Step-by-step /l1-onboard working out the concept one file at a time before the stack, a leaner vision template, and updated bundled skills."
+      },
+      "changes": {
+        "ru": [
+          "FEAT-004: /l1-onboard теперь проходит 6 этапов по одному файлу (идея → видение → архитектура → модель данных → стек → банк идей и роадмап), задаёт до 7 вопросов с рекомендациями в раунде и переносит заметки между этапами.",
+          "FEAT-004: Сокращён шаблон vision.md, чтобы этапы концепта не дублировали друг друга.",
+          "FEAT-004: Встроенные скиллы ponytail и mattpocock/skills сверены с исходниками, добавлены вложенные файлы (SKILL-MECHANICS.md, scripts/hitl-loop.template.sh) и их рекурсивное копирование во все папки агентов."
+        ],
+        "en": [
+          "FEAT-004: /l1-onboard now runs in 6 stages one file at a time (idea → vision → architecture → data model → stack → Idea Bank and roadmap), asks up to 7 questions with recommendations per round, and carries notes across stages.",
+          "FEAT-004: Trimmed the vision.md template so concept stages no longer overlap.",
+          "FEAT-004: Synced bundled ponytail and mattpocock/skills with upstream, added nested companion files (SKILL-MECHANICS.md, scripts/hitl-loop.template.sh), and copied nested skill folders to all agent directories."
+        ]
+      },
+      "breaking": {
+        "ru": [],
+        "en": []
+      }
+    },
+    {
       "version": "1.0.3",
       "date": "2026-11-04",
       "summary": {
