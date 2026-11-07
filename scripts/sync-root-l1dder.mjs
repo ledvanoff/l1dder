@@ -14,6 +14,16 @@ const cliDist = join(repoRoot, "dist", "cli.js");
 
 execFileSync(
   process.execPath,
-  [cliDist, "sync", "--cwd", repoRoot, "--lang", "ru", "--agents", "cursor,claude,codex", "--yes"],
+  [
+    cliDist,
+    "sync",
+    "--cwd",
+    repoRoot,
+    "--lang",
+    "ru",
+    "--agents",
+    "cursor,claude,codex,opencode",
+    "--yes",
+  ],
   { stdio: "inherit" },
 );

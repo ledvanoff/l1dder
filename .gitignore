@@ -9,6 +9,7 @@ site/.vitepress/dist/
 .env
 .env.*
 !.env.example
+.claude/launch.json
 
 <!-- l1dder:begin -->
 .env

@@ -141,3 +141,4 @@
 | `CHORE-002` | 2026-11-04 | Защита от случайного релиза перенесена в репозиторий: хук `scripts/hooks/pre-push` ставится при `npm install`, чужие хуки и настройки git не меняются, обновление через `make hooks-update` | `chore(hooks): install the release guard from the repo on npm install` |
 | `CHORE-003` | 2026-11-04 | `package-lock.json` держит версию релиза: раньше оставался на `1.0.0` и менялся при `npm install` в каждом новом клоне | `fix(release): keep package-lock.json on the released version` |
 | `CHORE-004` | 2026-11-04 | Порядок служебных правок и этот журнал | `chore(rules): add a chore flow and a CHORE-NNN journal` |
+| `CHORE-005` | 2026-11-07 | Добавлен `opencode` в список агентов догфудинг-синхронизации (`scripts/sync-root-l1dder.mjs`, `l1dder/config.json`) и `.claude/launch.json` в `.gitignore` | `chore(repo): add opencode to root sync agents and ignore .claude/launch.json` |
