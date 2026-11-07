@@ -15,6 +15,7 @@
 | [`FEAT-002`](#feat-002) | Предрелизный гигиенический спринт, полигон на 2 моделях (Composer и Grok), аудит ponytail и релиз v1.0.0 | [`IDEA-002`](./ideas.md#idea-002) | P0 | ✅ реализована | [`FEAT-002`](./specs/FEAT-002-release-hygiene-v1/) | [`SPRINT-01`](./sprints/SPRINT-01-release-hygiene-v1/README.md) |
 | [`FEAT-003`](#feat-003) | SEO-база сайта и витрин проекта | [`IDEA-003`](./ideas.md#idea-003) | P1 | ✅ реализована | [`FEAT-003`](./specs/FEAT-003-seo-foundation/) | [`SPRINT-02`](./sprints/SPRINT-02-seo-foundation/README.md) |
 | [`FEAT-004`](#feat-004) | Пошаговый онбординг и свежие встроенные скиллы | [`IDEA-006`](./ideas.md#idea-006) | P1 | ✅ реализована | [`FEAT-004`](./specs/FEAT-004-step-by-step-onboarding/) | [`SPRINT-03`](./sprints/SPRINT-03-step-by-step-onboarding/README.md) |
+| [`FEAT-005`](#feat-005) | Команда `/l1-chore` для служебных правок вне роадмапа | [`IDEA-004`](./ideas.md#idea-004) | P2 | 📋 в бэклоге | [`FEAT-005`](./specs/FEAT-005-chore-command/) | — *(не назначен)* |
 
 ---
 
@@ -116,6 +117,29 @@
 | `FEAT-004.03` | `TASK-03.03` | Сокращённый шаблон `vision.md` и согласование остальных шаблонов концепта | `feat` | ✅ реализована | [plan](./sprints/SPRINT-03-step-by-step-onboarding/tasks/TASK-03.03-concept-templates/plan.md) | [summary](./sprints/SPRINT-03-step-by-step-onboarding/tasks/TASK-03.03-concept-templates/summary.md) |
 | `FEAT-004.04` | `TASK-03.04` | Цепочка 0 в `20-workflow.mdc`, гайды `onboarding/`, путеводитель, `METHODOLOGY.md`, словарь и описание скилла | `docs` | ✅ реализована | [plan](./sprints/SPRINT-03-step-by-step-onboarding/tasks/TASK-03.04-docs-and-rules/plan.md) | [summary](./sprints/SPRINT-03-step-by-step-onboarding/tasks/TASK-03.04-docs-and-rules/summary.md) |
 | `FEAT-004.99` | `TASK-03.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)** *(Обязательная)*: два прогона онбординга субагентом | `chore` | ✅ реализована | [plan](./sprints/SPRINT-03-step-by-step-onboarding/tasks/TASK-03.99-doctor/plan.md) | [summary](./sprints/SPRINT-03-step-by-step-onboarding/tasks/TASK-03.99-doctor/summary.md) |
+
+---
+
+### FEAT-005: Команда `/l1-chore` для служебных правок вне роадмапа {#feat-005}
+
+| Поле паспорта | Значение |
+|---------------|----------|
+| **ID фичи / спеки** | `FEAT-005` |
+| **Родительская идея** | [`IDEA-004`](./ideas.md#idea-004) |
+| **Папка спецификации** | [`docs/specs/FEAT-005-chore-command/`](./specs/FEAT-005-chore-command/) |
+| **Приоритет** | `P2` |
+| **Статус фичи** | `📋 в бэклоге` |
+| **Назначенные спринты** | — *(ожидает `/l1-planning`)* |
+
+#### Кандидат спринта 1 (`SPRINT-??` — номер присвоится в `/l1-planning`): Команда `/l1-chore` и журнал `CHORE-NNN`
+- **Цель спринта:** пользователь любого проекта на `L1DDER` может выполнять служебные правки вне роадмапа через `/l1-chore` с одной остановкой «ок» и записью `CHORE-NNN` в `docs/backlog.md`, без ослабления `Roadmap Gate` для продуктовых фич.
+
+| ID шага спеки | ID задачи спринта | Название задачи | Тип | Статус | Plan | Summary |
+|:-------------:|:-----------------:|-----------------|:---:|--------|------|---------|
+| `FEAT-005.01` | — *(до `/l1-planning`)* | Скилл `/l1-chore` на RU и EN, регистрация в `skills.json`, `src/agents.ts` и `src/installer.ts`, контрактные и CLI-тесты | `feat` | 📋 запланирована | — | — |
+| `FEAT-005.02` | — *(до `/l1-planning`)* | Раздел `CHORE-NNN` в шаблоне `backlog-template.md`, правила `00-methodology.mdc`, `20-workflow.mdc`, `40-skills-router.mdc`, `GLOSSARY.md` и ссылка в `30-tech-stack.mdc` | `feat` | 📋 запланирована | — | — |
+| `FEAT-005.03` | — *(до `/l1-planning`)* | Описание `/l1-chore` и обновление счётчиков (`21 скилл`, `7 команд`) в `README.md`, `METHODOLOGY.md`, `user-guide/*`, `onboarding/continue-project.md`, `site/*` и `seo.mts` | `docs` | 📋 запланирована | — | — |
+| `FEAT-005.99` | — *(до `/l1-planning`)* | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)** *(Обязательная)*: живой E2E-прогон `/l1-chore` субагентом в песочнице | `chore` | 📋 запланирована | — | — |
 
 ---
 
