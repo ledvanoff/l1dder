@@ -3,7 +3,7 @@
 > **Methodology:** L1DDER
 > **Control Skills:** `/l1-planning` (scheduling queues) and `/l1-task` (updating progress and closing sprints).
 > **Document Status:** 🔒 **Single Source of Truth** for work ordering.
-> **`Roadmap Gate` Rule:** It is forbidden to run `/l1-task` for any feature or sprint that is not at row **`1 (CURRENT)`** in `Delivery Queue` below. Reordering must happen **first** here via `/l1-planning`. The only exception is `/l1-hotfix`.
+> **`Roadmap Gate` Rule:** It is forbidden to run `/l1-task` for any feature or sprint that is not at row **`1 (CURRENT)`** in `Delivery Queue` below. Reordering must happen **first** here via `/l1-planning`. Exceptions: `/l1-hotfix` (an urgent bug) and `/l1-chore` (changes to the project itself that leave the product unchanged).
 > **Linked Registries:** [Idea Bank (`docs/ideas.md`)](./ideas.md) | [Backlog & Task Tracker (`docs/backlog.md`)](./backlog.md)
 > **Last Updated:** YYYY-MM-DD
 

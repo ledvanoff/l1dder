@@ -26,9 +26,10 @@
 | 1 | Скилл `/l1-chore` на RU и EN зарегистрирован в `skills.json` и CLI (21 скилл), раскладывается во все 7 агентов | `tests/chore-skill.test.ts` + `tests/cli.test.ts` |
 | 2 | Раздел `CHORE-NNN` добавлен в шаблон `backlog-template.md`, правила `00`, `20`, `40` и `GLOSSARY.md` содержат `CHORE-NNN` и `/l1-chore` | `tests/chore-skill.test.ts` |
 | 3 | Документация, гайды и счётчики (`21 скилл`, `7 команд`) обновлены на RU и EN, сайт собирается и проходит гейт | `make ci` + `make site-gate` |
-| 4 | **Doctor Checklist & E2E (`TASK-04.99`):** `make ci` + живой E2E-прогон `/l1-chore` субагентом в песочнице (отказ на продукте, автосоздание раздела 4 и запись `CHORE-001`) | `make ci` + E2E-проверка агентом |
-| 5 | **Living Docs Sync (`TASK-04.99`):** обновлены `docs/concept/`, `docs/specs/FEAT-005-chore-command/`, `l1dder/rules/` | Проверка `git diff` по документации и правилам |
-| 6 | **Human UAT (`TASK-04.99`):** ручное тестирование и просмотр лога пройдены и подтверждены человеком («ок») | Явный апрув человека в задаче `TASK-04.99` |
+| 4 | У каждой новой версии в `assets/releases.json` есть инструкция агенту, `npx l1dder update` всегда печатает её блок 🤖, а сводка `AGENTS.md` / `CLAUDE.md` требует её выполнить | `tests/cli.test.ts` + `tests/sync-release-meta.test.ts` |
+| 5 | **Doctor Checklist & E2E (`TASK-04.99`):** `make ci` + живой E2E-прогон `/l1-chore` субагентом в песочнице (отказ на продукте, автосоздание раздела 4 и запись `CHORE-001`) | `make ci` + E2E-проверка агентом |
+| 6 | **Living Docs Sync (`TASK-04.99`):** обновлены `docs/concept/`, `docs/specs/FEAT-005-chore-command/`, `l1dder/rules/` | Проверка `git diff` по документации и правилам |
+| 7 | **Human UAT (`TASK-04.99`):** ручное тестирование и просмотр лога пройдены и подтверждены человеком («ок») | Явный апрув человека в задаче `TASK-04.99` |
 
 ---
 
@@ -41,8 +42,9 @@
 | ID задачи спринта | ID шага спеки | Название задачи | Тип | Статус | Plan | Summary |
 |:-----------------:|:-------------:|-----------------|:---:|--------|------|---------|
 | `TASK-04.01` | `FEAT-005.01` | Скилл `/l1-chore` на RU и EN, регистрация в `skills.json`, `src/agents.ts` и `src/installer.ts`, контрактные и CLI-тесты | `feat` | ✅ реализована | [plan](./tasks/TASK-04.01-chore-skill/plan.md) | [summary](./tasks/TASK-04.01-chore-skill/summary.md) |
-| `TASK-04.02` | `FEAT-005.02` | Раздел `CHORE-NNN` в шаблоне `backlog-template.md`, правила `00-methodology.mdc`, `20-workflow.mdc`, `40-skills-router.mdc`, `GLOSSARY.md` и ссылка в `30-tech-stack.mdc` | `feat` | 📋 запланирована | — | — |
+| `TASK-04.02` | `FEAT-005.02` | Раздел `CHORE-NNN` в шаблоне `backlog-template.md`, правила `00-methodology.mdc`, `20-workflow.mdc`, `40-skills-router.mdc`, `GLOSSARY.md` и ссылка в `30-tech-stack.mdc` | `feat` | ✅ реализована | [plan](./tasks/TASK-04.02-chore-log-and-rules/plan.md) | [summary](./tasks/TASK-04.02-chore-log-and-rules/summary.md) |
 | `TASK-04.03` | `FEAT-005.03` | Описание `/l1-chore` простым языком (для чего команда, примеры правок самого репозитория) и обновление счётчиков (`21 скилл`, `7 команд`) в `README.md`, `METHODOLOGY.md`, `user-guide/*`, `onboarding/continue-project.md`, `site/*` и `seo.mts` | `docs` | 📋 запланирована | — | — |
+| `TASK-04.04` | `FEAT-005.04` | Обязательная инструкция агенту для каждой версии: поле `agent` в `assets/releases.json`, проверка в сборке, блок 🤖 после `npx l1dder update` и правило в сводке `AGENTS.md` / `CLAUDE.md` | `feat` | 📋 запланирована | — | — |
 | `TASK-04.99` | `FEAT-005.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)**: живой E2E-прогон `/l1-chore` субагентом в песочнице | `chore` | 📋 запланирована | — | — |
 
 ---

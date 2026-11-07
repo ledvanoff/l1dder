@@ -1,7 +1,7 @@
 # Backlog & Task Tracker — [Project Name]
 
 > **Methodology:** L1DDER
-> **Control Skills:** populated via `/l1-feature`, scheduled into sprints via `/l1-planning`, task statuses updated via `/l1-task` and `/l1-hotfix`.
+> **Control Skills:** populated via `/l1-feature`, scheduled into sprints via `/l1-planning`, task statuses updated via `/l1-task` and `/l1-hotfix`, maintenance changes to the project itself logged via `/l1-chore`.
 > **Ordering Source of Truth:** [`docs/roadmap.md`](./roadmap.md)
 > **Last Updated:** YYYY-MM-DD
 
@@ -63,3 +63,13 @@
 | Hotfix ID | Linked ID (`FEAT-NNN` / `TASK-NN.MM` or `—`) | Date | Symptom / Problem | Fix Summary | Status | Commit / PR |
 |-----------|:--------------------------------------------:|------|-------------------|-------------|--------|:-----------:|
 | `HOTFIX-001` | `FEAT-001` / `TASK-01.01` | 2026-10-21 | [Bug symptom] | [What was fixed] | ✅ realized | `fix(core): ...` |
+
+---
+
+## 4. Chore Log (`CHORE-NNN`)
+
+> Internal repository maintenance changes that do not alter product behavior, executed via `/l1-chore`.
+
+| Chore ID | Date | What and why | Commit message |
+|:--------:|------|--------------|:--------------:|
+| `CHORE-001` | 2026-10-21 | [What changed and why, e.g. a branch name check in the `pre-push` hook] | `chore(git): ...` |

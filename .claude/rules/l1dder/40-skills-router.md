@@ -7,7 +7,7 @@
 
 1. Для управления процессом (онбординг, идеи, фичи, планирование роадмапа, запуск задач, хотфиксы) используй управляющие скиллы `L1DDER` (`/l1-*` — Раздел 0).
 2. Для брейншторма, проектирования архитектуры, TDD, отладки багов и ревью спринта читай через `Read` инженерные скиллы из Раздела 1 (`ponytail` + `mattpocock/skills` — **все они уже лежат в коробке `l1dder/skills/`!**).
-3. Перед реализацией кода в `/l1-task` или `/l1-hotfix` прочитай профильные скиллы стека из Раздела 2 (управляются через секцию `"stack"` в `l1dder/skills.json` и команду `npx l1dder skills install`).
+3. Перед реализацией кода в `/l1-task`, `/l1-hotfix` или `/l1-chore` прочитай профильные скиллы стека из Раздела 2 (управляются через секцию `"stack"` в `l1dder/skills.json` и команду `npx l1dder skills install`).
 
 **Важно:** если skill найден — его `SKILL.md` нужно прочитать через `Read` и применить, а не просто упомянуть в `plan.md`.
 
@@ -23,6 +23,7 @@
 | Спланировать или изменить очередь в Роадмапе (`docs/roadmap.md`), назначить `SPRINT-NN` и `TASK-NN.01..99` | `/l1-planning` | `l1dder/skills/l1-planning/SKILL.md` |
 | Выполнить очередную задачу `TASK-NN.MM` по Роадмапу или финальный `TASK-NN.99` (`Doctor Checklist`: E2E + `code-review` + `retro` + Docs Sync + UAT) | `/l1-task` | `l1dder/skills/l1-task/SKILL.md` |
 | Срочно починить баг в обход Роадмапа (`diagnosing-bugs` RED-first gate) с записью `HOTFIX-NNN` в `docs/backlog.md` | `/l1-hotfix` | `l1dder/skills/l1-hotfix/SKILL.md` |
+| Поправить сам проект, а не продукт: правила git, CI, библиотеки, `Makefile`, тесты, правила агента — с одной остановкой «ок» и записью `CHORE-NNN` в `docs/backlog.md` | `/l1-chore` | `l1dder/skills/l1-chore/SKILL.md` |
 | Доработать саму методологию `L1DDER`, записать итерацию в `WORKLOG-CHANGELOG.md` или подготовить `HANDOFF.md` | `/l1-evo` | `l1dder/skills/l1-evo/SKILL.md` |
 
 ---

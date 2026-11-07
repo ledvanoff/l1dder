@@ -22,6 +22,7 @@ Every entity has a strict ID format. **Every child document must store all paren
 | **Sprint Task** | `TASK-01.01` | `docs/sprints/SPRINT-01-<slug>/tasks/TASK-01.01-<slug>/{plan,summary}.md` | `FEAT-001.01`, `SPRINT-01`, `FEAT-001`, `IDEA-001` |
 | **Sprint Hygiene (Doctor)** | `TASK-01.99` | `docs/sprints/SPRINT-01-<slug>/tasks/TASK-01.99-doctor/{plan,summary}.md` | `FEAT-001.99`, `SPRINT-01`, `FEAT-001`, `IDEA-001` |
 | **Hotfix** | `HOTFIX-001` | `docs/backlog.md` (Section 3, `#hotfix-001`) | Optional: `FEAT-NNN` / `TASK-NN.MM` |
+| **Chore** | `CHORE-001` | `docs/backlog.md` (Section 4, a table row) | None: a change to the project itself is not tied to a feature |
 | **Arch Decision (ADR)** | `ADR-0001` | `docs/adrs/ADR-0001-<slug>.md` | `IDEA-NNN`, `FEAT-NNN` |
 
 ---
@@ -38,6 +39,7 @@ When the user invokes any command below, **immediately read the corresponding `S
 | **`/l1-planning`** | `l1dder/skills/l1-planning/SKILL.md` | Schedules `docs/roadmap.md` → assigns `SPRINT-NN` & `TASK-NN.01 .. TASK-NN.99` → creates `docs/sprints/SPRINT-NN-<slug>/README.md` |
 | **`/l1-task`** | `l1dder/skills/l1-task/SKILL.md` | Executes the active task `TASK-NN.MM` from `docs/roadmap.md` (and mandatory `TASK-NN.99` Doctor Checklist at sprint end) |
 | **`/l1-hotfix`** | `l1dder/skills/l1-hotfix/SKILL.md` | Fixes an urgent bug bypassing `docs/roadmap.md` (`RED → GREEN`) → logs `HOTFIX-NNN` in `docs/backlog.md` |
+| **`/l1-chore`** | `l1dder/skills/l1-chore/SKILL.md` | A change to the project itself, not the product (git rules, CI, libraries, `Makefile`, agent rules), with a single "ok" stop → logs `CHORE-NNN` in `docs/backlog.md` |
 | **`/l1-evo`** | `l1dder/skills/l1-evo/SKILL.md` | Evolves `L1DDER` itself following `l1dder/evolution/METHODOLOGY-RULES.md`, logs `WORKLOG-CHANGELOG.md`, updates `HANDOFF.md` |
 
 ---

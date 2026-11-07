@@ -45,6 +45,7 @@ Operational tracker containing:
 1. **Feature Registry (`FEAT-NNN`)**
 2. **Feature Decomposition, Sprints & Tasks (`SPRINT-NN` & `TASK-NN.MM`)**
 3. **Hotfix Log (`HOTFIX-NNN`)**
+4. **Chore Log (`CHORE-NNN`)** — one row per change to the project itself made via `/l1-chore`
 
 ---
 
@@ -54,7 +55,7 @@ Operational tracker containing:
 1. **Delivery Queue:** strict execution order for sprints (`SPRINT-NN`).
 2. **Discovery Queue:** strict grooming order for ideas (`IDEA-NNN`).
 
-**Roadmap Gate:** no feature or task may be executed in `/l1-task` unless it sits at position `1 (CURRENT)` in `docs/roadmap.md`. The only exception is `/l1-hotfix`.
+**Roadmap Gate:** no feature or task may be executed in `/l1-task` unless it sits at position `1 (CURRENT)` in `docs/roadmap.md`. Exceptions: `/l1-hotfix` (an urgent bug) and `/l1-chore` (changes to the project itself that leave the product unchanged).
 
 ---
 
@@ -74,6 +75,13 @@ Every sprint **must** end with task **`TASK-NN.99: Sprint Hygiene & Doctor Check
 An atomic unit of work inside a sprint executed via **`/l1-task`** with two mandatory stops:
 - **STOP #1:** after creating `plan.md` (before writing code).
 - **STOP #2:** after running DoD self-check (before writing `summary.md` and closing).
+
+---
+
+## Chore (`CHORE-NNN` & `/l1-chore`)
+
+A change to **the project itself**, not to what its users see and use: git rules (how branches and commits are named, what is checked before a push), automatic checks in CI, library updates, the `Makefile`, build scripts, tests, rules for the AI agent.
+Done via the **`/l1-chore`** skill with no idea, spec or sprint: check that the product stays unchanged → a `CHORE-NNN` card and a single "ok" stop → the change and `make ci` → a row in section 4 of `docs/backlog.md`. If the change alters the product, it is `/l1-task` or `/l1-hotfix` instead.
 
 ---
 

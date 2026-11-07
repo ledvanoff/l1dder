@@ -1,5 +1,5 @@
 ---
-description: Step-by-step instructions for all L1DDER workflows (/l1-onboard, /l1-idea, /l1-feature, /l1-planning, /l1-task, /l1-hotfix), ID traceability matrix, and status transitions.
+description: Step-by-step instructions for all L1DDER workflows (/l1-onboard, /l1-idea, /l1-feature, /l1-planning, /l1-task, /l1-hotfix, /l1-chore), ID traceability matrix, and status transitions.
 alwaysApply: true
 ---
 
@@ -14,7 +14,7 @@ alwaysApply: true
 1. **`Roadmap Gate` (`docs/roadmap.md` is law):**
    - Never start `/l1-task` for any feature or sprint that is NOT at position `1 (CURRENT)` in the `Delivery Queue` of `docs/roadmap.md`.
    - If the user asks to build something else, reply: *"Let's update `docs/roadmap.md` via `/l1-planning` first, then run `/l1-task`."*
-   - The only exception for urgent bug fixes is `/l1-hotfix`.
+   - Exceptions: `/l1-hotfix` for urgent bug fixes and `/l1-chore` for changes to the project itself that leave the product unchanged (git rules, CI, libraries, `Makefile`, agent rules).
 2. **End-to-End ID Traceability:**
    - Every `FEAT-NNN` links to its parent `IDEA-NNN`.
    - Spec steps before sprint planning are numbered `FEAT-NNN.01 .. FEAT-NNN.99`.
@@ -46,3 +46,4 @@ alwaysApply: true
 - **Flow 3 (`/l1-planning`):** Propose `Delivery Queue` (`SPRINT-NN`, `TASK-NN.01..99`) & `Discovery Queue` (`⛔ STOP`) → update `docs/roadmap.md`, `docs/backlog.md` (`🗓 scheduled`), `docs/specs/FEAT-NNN-<slug>/tasks.md`, and create `docs/sprints/SPRINT-NN-<slug>/README.md`.
 - **Flow 4 (`/l1-task`):** Verify `Roadmap Gate` (`1 CURRENT` in `docs/roadmap.md`) → for regular tasks: `plan.md` (`⛔ STOP #1`) → `Implement` → `Self-check` (`⛔ STOP #2` + 2-line `Ponytail skipped / Risk` footer) → `summary.md` & update 4 files. For `TASK-NN.99`: run all 4 `Doctor Checklist` blocks (`Code & Repo Doctor`, `Agent E2E`, `Living Docs Sync + retro`, `Human UAT`) → after human `"ok"`, cascade `✅ realized` across all 6 files.
 - **Flow 5 (`/l1-hotfix`):** Reproduce bug first (`RED Gate`) → show brief chat plan (`⛔ STOP`) → minimal fix (`GREEN` + `make ci`) → log `HOTFIX-NNN` in `docs/backlog.md`.
+- **Flow 6 (`/l1-chore`):** For changes to the project itself, not the product (git rules, CI, libraries, scripts, tests, `Makefile`, agent rules); no idea, spec, sprint or `plan.md`. If the change alters the product → change no files and suggest `/l1-task` or `/l1-hotfix` → otherwise compute `CHORE-NNN` from section 4 of `docs/backlog.md` and show the card with options (`⛔ STOP`) → minimal change, `tdd` for non-trivial logic, `make ci` → log `CHORE-NNN` in section 4 of `docs/backlog.md` (add the section to the end of the file if it is missing). Steps are in `l1dder/skills/l1-chore/SKILL.md`.

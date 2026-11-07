@@ -22,6 +22,7 @@ alwaysApply: true
 | **Задача спринта** | `TASK-01.01` | `docs/sprints/SPRINT-01-<slug>/tasks/TASK-01.01-<slug>/{plan,summary}.md` | `FEAT-001.01`, `SPRINT-01`, `FEAT-001`, `IDEA-001` |
 | **Гигиена спринта (Doctor)** | `TASK-01.99` | `docs/sprints/SPRINT-01-<slug>/tasks/TASK-01.99-doctor/{plan,summary}.md` | `FEAT-001.99`, `SPRINT-01`, `FEAT-001`, `IDEA-001` |
 | **Хотфикс** | `HOTFIX-001` | `docs/backlog.md` (Таблица 3, якорь `#hotfix-001`) | Опционально: `FEAT-NNN` / `TASK-NN.MM` |
+| **Служебная правка** | `CHORE-001` | `docs/backlog.md` (раздел 4, строка таблицы) | Не нужны: правка самого проекта не привязана к фиче |
 | **Арх. решение** | `ADR-0001` | `docs/adrs/ADR-0001-<slug>.md` | `IDEA-NNN`, `FEAT-NNN` |
 
 ---
@@ -38,6 +39,7 @@ alwaysApply: true
 | **`/l1-planning`** | `l1dder/skills/l1-planning/SKILL.md` | Строит очередь в `docs/roadmap.md` → назначает `SPRINT-NN` и `TASK-NN.01 .. TASK-NN.99` → создаёт `docs/sprints/SPRINT-NN-<slug>/README.md` |
 | **`/l1-task`** | `l1dder/skills/l1-task/SKILL.md` | Выполняет текущую задачу `TASK-NN.MM` из `docs/roadmap.md` (а в конце спринта — обязательный `TASK-NN.99` Doctor Checklist) |
 | **`/l1-hotfix`** | `l1dder/skills/l1-hotfix/SKILL.md` | Чинит срочный баг в обход `docs/roadmap.md` → записывает `HOTFIX-NNN` в `docs/backlog.md` |
+| **`/l1-chore`** | `l1dder/skills/l1-chore/SKILL.md` | Правка самого проекта, а не продукта (правила git, CI, библиотеки, `Makefile`, правила агента) с одной остановкой «ок» → записывает `CHORE-NNN` в `docs/backlog.md` |
 | **`/l1-evo`** | `l1dder/skills/l1-evo/SKILL.md` | Дорабатывает саму методологию `L1DDER` по `l1dder/evolution/METHODOLOGY-RULES.md`, ведёт `WORKLOG-CHANGELOG.md` и обновляет `HANDOFF.md` |
 
 ---
@@ -68,7 +70,7 @@ docs/
 │   └── api-contracts.md
 ├── adrs/                                      # архитектурные решения: ADR-0001-<slug>.md
 ├── ideas.md                                   # 💡 БАНК ИДЕЙ (IDEA-001, IDEA-002...)
-├── backlog.md                                 # 📋 БЭКЛОГ И ТАСК-ТРЕКЕР (FEAT-001, SPRINT-01, TASK-01.01, HOTFIX-001)
+├── backlog.md                                 # 📋 БЭКЛОГ И ТАСК-ТРЕКЕР (FEAT-001, SPRINT-01, TASK-01.01, HOTFIX-001, CHORE-001)
 ├── roadmap.md                                 # 🔒 РОАДМАП — ИСТОЧНИК ИСТИНЫ (Delivery Queue + Discovery Queue)
 ├── specs/                                     # папки спек строго начинаются с FEAT-NNN:
 │   └── FEAT-001-<slug>/

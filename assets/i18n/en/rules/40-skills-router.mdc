@@ -20,6 +20,7 @@ All project skills are managed declaratively via **`l1dder/skills.json`** (like 
 | Schedule or reorder the Roadmap (`docs/roadmap.md`), assign `SPRINT-NN` and `TASK-NN.01..99` | `/l1-planning` | `l1dder/skills/l1-planning/SKILL.md` |
 | Execute the next task `TASK-NN.MM` from the Roadmap or the final `TASK-NN.99` (`Doctor Checklist`) | `/l1-task` | `l1dder/skills/l1-task/SKILL.md` |
 | Fix an urgent bug bypassing the Roadmap (`RED-first gate`) and log `HOTFIX-NNN` in `docs/backlog.md` | `/l1-hotfix` | `l1dder/skills/l1-hotfix/SKILL.md` |
+| Change the project itself, not the product: git rules, CI, libraries, `Makefile`, tests, agent rules — with a single "ok" stop and a `CHORE-NNN` row in `docs/backlog.md` | `/l1-chore` | `l1dder/skills/l1-chore/SKILL.md` |
 | Evolve the `L1DDER` methodology itself, log in `WORKLOG-CHANGELOG.md`, or update `HANDOFF.md` | `/l1-evo` | `l1dder/skills/l1-evo/SKILL.md` |
 
 ---
