@@ -1,7 +1,7 @@
 # L1DDER — Development Methodology
 
 > **Philosophy:** The AI agent handles execution mechanics and self-verification. The human owns intent, priorities, and quality acceptance.
-> **Core Invariant:** The Roadmap (`docs/roadmap.md`) is the Single Source of Truth. Nothing is built outside the Roadmap (except `/l1-hotfix`).
+> **Core Invariant:** The Roadmap (`docs/roadmap.md`) is the Single Source of Truth. Nothing is built outside the Roadmap (except `/l1-hotfix` for urgent bugs and `/l1-chore` for changes to the project itself).
 
 **L1DDER** defines a closed-loop Spec-driven development lifecycle with AI coding agents: from onboarding (`/l1-onboard`) and raw ideas in the Idea Bank (`/l1-idea`) to specifications in the Backlog (`/l1-feature`), scheduling in the Roadmap (`/l1-planning`), step-by-step sprint execution (`/l1-task`), and mandatory sprint hygiene (`Doctor Checklist`) at the end of every sprint.
 

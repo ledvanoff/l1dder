@@ -11,7 +11,7 @@ This guide is written in plain language. Even if you don't write code by hand an
 |----------|----------------|:---------:|
 | **[0. Main Map (You are here)](./README.md)** | Core idea, **visual map of all flows**, nested ID chain, and the 3 control screens | 3 min |
 | **[1. Quickstart & Live Walkthrough](./01-QUICKSTART.md)** | One-command setup `npx l1dder init` + real chat walkthrough from idea to finished sprint | 5 min |
-| **[2. Deep Dive into `/l1-*` Commands](./02-FLOWS-IN-DETAIL.md)** | Inside `/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task` (`Doctor Checklist`), and `/l1-hotfix` | 7 min |
+| **[2. Deep Dive into `/l1-*` Commands](./02-FLOWS-IN-DETAIL.md)** | Inside `/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task` (`Doctor Checklist`), `/l1-hotfix`, and `/l1-chore` | 7 min |
 | **[3. One-Page Cheatsheet & FAQ](./03-CHEATSHEET.md)** | "What to press when..." table, all statuses, and FAQ | 2 min |
 
 ---
@@ -118,7 +118,7 @@ flowchart LR
 | File | Plain-Language Purpose | Managed By |
 |------|------------------------|------------|
 | **`docs/ideas.md`** | **💡 Idea Bank.** All your ideas with priorities (`P0..P3`) and statuses (`📋 unrealized`, `🚧 in-progress`, `✅ realized`, `❌ rejected`). | `/l1-idea` |
-| **`docs/backlog.md`** | **📋 Backlog & Task Tracker.** All specified features (`FEAT-001`), their sprints, tasks, and the emergency hotfix log (`HOTFIX-001`). | `/l1-feature`, `/l1-task`, `/l1-hotfix` |
+| **`docs/backlog.md`** | **📋 Backlog & Task Tracker.** All specified features (`FEAT-001`), their sprints, tasks, the emergency hotfix log (`HOTFIX-001`), and the chore log (`CHORE-001`). | `/l1-feature`, `/l1-task`, `/l1-hotfix`, `/l1-chore` |
 | **`docs/roadmap.md`** | **🔒 Roadmap (Source of Truth).** Which sprint is active right now (`1 CURRENT`), which is `2 NEXT`, and which idea is next for spec grooming. | `/l1-planning` |
 
 ---

@@ -161,7 +161,7 @@ describe.each(["ru", "en"] as const)("/l1-chore in the human guide (%s)", (langu
 
 // A number next to these words goes stale with every new command, so the docs list commands by name instead.
 const COUNTED_WORDS = /\b\d+\+?(?:[^\S\n]+\S+){0,2}?[^\S\n]+\S*(?:скилл|skill|команд|command|кноп|button|цепоч|chain|встроенн|bundled|управляющ|инженерн|engineering|базов)/gi;
-const ONLY_EXCEPTION = /единственное исключение|only (?:roadmap )?exception/gi;
+const ONLY_EXCEPTION = /единственное исключение|only (?:roadmap )?exception|\((?:кроме|except) `\/l1-hotfix`\)/gi;
 const repoFile = (path: string) => readFileSync(fileURLToPath(new URL(`../${path}`, import.meta.url)), "utf-8");
 const HUMAN_DOCS = [
   "README.md",

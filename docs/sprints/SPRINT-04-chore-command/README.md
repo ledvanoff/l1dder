@@ -6,8 +6,8 @@
 | **ID родительской фичи / спеки** | [`FEAT-005`](../../backlog.md#feat-005) ([`docs/specs/FEAT-005-chore-command/`](../../specs/FEAT-005-chore-command/)) |
 | **ID родительской идеи** | [`IDEA-004`](../../ideas.md#idea-004) |
 | **Позиция в Роадмапе** | [`docs/roadmap.md`](../../roadmap.md) |
-| **Статус спринта** | `🚧 реализация` |
-| **Дата открытия / закрытия** | 2026-11-07 / — |
+| **Статус спринта** | `✅ реализована` |
+| **Дата открытия / закрытия** | 2026-11-07 / 2026-11-07 |
 
 ---
 
@@ -45,12 +45,12 @@
 | `TASK-04.02` | `FEAT-005.02` | Раздел `CHORE-NNN` в шаблоне `backlog-template.md`, правила `00-methodology.mdc`, `20-workflow.mdc`, `40-skills-router.mdc`, `GLOSSARY.md` и ссылка в `30-tech-stack.mdc` | `feat` | ✅ реализована | [plan](./tasks/TASK-04.02-chore-log-and-rules/plan.md) | [summary](./tasks/TASK-04.02-chore-log-and-rules/summary.md) |
 | `TASK-04.03` | `FEAT-005.03` | Описание `/l1-chore` простым языком (для чего команда, примеры правок самого репозитория) и удаление чисел скиллов и команд из текста в `README.md`, `METHODOLOGY.md`, `user-guide/*`, `onboarding/continue-project.md`, `site/*` и `seo.mts` | `docs` | ✅ реализована | [plan](./tasks/TASK-04.03-chore-docs/plan.md) | [summary](./tasks/TASK-04.03-chore-docs/summary.md) |
 | `TASK-04.04` | `FEAT-005.04` | Обязательная инструкция агенту для каждой версии: поле `agent` в `assets/releases.json`, проверка в сборке, блок 🤖 после `npx l1dder update` и правило в сводке `AGENTS.md` / `CLAUDE.md` | `feat` | ✅ реализована | [plan](./tasks/TASK-04.04-agent-update-steps/plan.md) | [summary](./tasks/TASK-04.04-agent-update-steps/summary.md) |
-| `TASK-04.99` | `FEAT-005.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)**: живой E2E-прогон `/l1-chore` субагентом в песочнице | `chore` | 📋 запланирована | — | — |
+| `TASK-04.99` | `FEAT-005.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)**: живой E2E-прогон `/l1-chore` субагентом в песочнице | `chore` | ✅ реализована | [plan](./tasks/TASK-04.99-doctor/plan.md) | [summary](./tasks/TASK-04.99-doctor/summary.md) |
 
 ---
 
 ## 4. Итог спринта (заполняется после закрытия `TASK-04.99`)
 
-- **Что поставлено по `FEAT-005` (`IDEA-004`):** —
-- **Обновления в долгосрочной доке (`concept` / `rules` / `specs`):** —
-- **Новые идеи / техдолг, вынесенные в `docs/ideas.md` или `docs/backlog.md`:** —
+- **Что поставлено по `FEAT-005` (`IDEA-004`):** скилл `/l1-chore` на RU и EN (простое объяснение назначения, защита границы «продукт vs сам проект», одна остановка «ок», `make ci`, автосоздание раздела 4 `CHORE-NNN` в старых `docs/backlog.md`); регистрация в `skills.json` и CLI (21 скилл); раздел 4 в `backlog-template.md`, правила `00/20/40` и `GLOSSARY.md`; удаление устаревающих чисел скиллов и команд из документации и сайта со страж-тестом; обязательное поле `agent` в `assets/releases.json` и вывод блока «🤖 Инструкция для ИИ-агента после обновления» при `npx l1dder update`; два живых E2E-прогона на быстрых моделях (`Qwen3.8 Flash` и `Kimi K2.7 Code`).
+- **Обновления в долгосрочной доке (`concept` / `rules` / `specs`):** обновлены `docs/concept/{idea,vision,architecture,data-model}.md`, `l1dder/rules/30-tech-stack.mdc`, `l1dder/rules/40-skills-router.mdc`, `AGENTS.md`, `l1dder/GLOSSARY.md`.
+- **Новые идеи / техдолг, вынесенные в `docs/ideas.md` или `docs/backlog.md`:** падение `make dev` на зависимости `fastdom` плагина `mermaid` (сборка `docs:build` и `docs:preview` работают исправно; кандидат для починки через `/l1-chore`); при выпуске следующего релиза вписать подготовленный шаг `agent` из `docs/specs/FEAT-005-chore-command/design.md` в `assets/releases.json`.

@@ -11,7 +11,7 @@
 
 ## Для кого
 
-- **Вайбкодеры и Product Owner'ы** — управляют разработкой продукта на понятном языке через 6 слэш-команд (`/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-hotfix`) и подтверждение словом **«ок»** на точках остановки (`⛔ СТОП`).
+- **Вайбкодеры и Product Owner'ы** — управляют разработкой продукта на понятном языке через слэш-команды (`/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-hotfix`, `/l1-chore`) и подтверждение словом **«ок»** на точках остановки (`⛔ СТОП`).
 - **Инженеры и команды разработки** — получают единый стандарт спецификаций (`FEAT-NNN`), декомпозиции (`SPRINT-NN`, `TASK-NN.MM`), встроенные инженерные дисциплины (`ponytail` + `mattpocock/skills`) и обязательную ревизию качества спринта (`TASK-NN.99` `Doctor Checklist`).
 
 ---
@@ -27,7 +27,7 @@
 
 - Ультра-тонкий CLI (`npx l1dder init`, `update`, `sync`, `skills`, `changelog`, `doctor`) без внешних runtime-зависимостей.
 - Полная двуязычная поставка (`--lang ru` и `--lang en`) правил, шаблонов и путеводителя.
-- 20 встроенных скиллов в коробке (`7 /l1-*` + `4 ponytail*` + `9 mattpocock/skills`) и манифест `l1dder/skills.json` для стек-скиллов.
+- Встроенные скиллы в коробке (управляющие `/l1-*` + `ponytail*` + `mattpocock/skills`) и манифест `l1dder/skills.json` для стек-скиллов.
 - Генерация нативных правил и команд для `Cursor`, `Claude Code`, `Codex`, `Windsurf`, `Copilot`, `OpenCode`, `Cline`.
 - Предупреждение о `BREAKING CHANGES` с интерактивным подтверждением перед обновлением (`npx l1dder@latest update`).
 - Двуязычный сайт документации на VitePress + Mermaid для GitHub Pages.

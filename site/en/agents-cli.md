@@ -29,6 +29,7 @@ npx l1dder@latest update
    `❓ This update includes BREAKING CHANGES. Proceed with update? (yes/no) [y/N]:`
    Only if you reply **`yes`** (or pass `--yes`) does the CLI proceed. If you reply `no`, zero files are modified.
 2. **Framework Update:** updates `00-methodology.mdc`, `10-conventions.mdc`, `20-workflow.mdc`, all bundled `/l1-*`, `ponytail*`, `mattpocock/skills`, `templates/`, `user-guide/`, `METHODOLOGY.md`, and refreshes all configured AI agent folders.
+3. **Post-Update AI Agent Steps (`🤖`):** when your agent runs the update for you ("update l1dder"), the CLI prints a `🤖 AI Agent Instruction after L1DDER update` block so the agent can add any new entries to protected project files (such as a new command in `l1dder/rules/40-skills-router.mdc`) without overwriting your custom settings.
 
 > 🔒 **Stack Protection:** `npx l1dder@latest update` **never overwrites** your project-specific stack files (`l1dder/rules/30-tech-stack.mdc`, `l1dder/rules/40-skills-router.mdc`, `l1dder/ci/*`, and the `"stack"` array in `l1dder/skills.json`). Use `--force` only if you want to reset stack files to the default template.
 

@@ -78,7 +78,7 @@ npx l1dder init --lang ru --agents cursor,claude --yes
 Начни с папки **[`user-guide/`](user-guide/README.md)**:
 - **[`user-guide/README.md`](user-guide/README.md)** — Главная визуальная схема всех цепочек и связки ID за 3 минуты.
 - **[`user-guide/01-QUICKSTART.md`](user-guide/01-QUICKSTART.md)** — Установка `npx l1dder init` и живой пример диалога от идеи до спринта.
-- **[`user-guide/02-FLOWS-IN-DETAIL.md`](user-guide/02-FLOWS-IN-DETAIL.md)** — Разбор каждой кнопки (`/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-hotfix`) и `Doctor Checklist`.
+- **[`user-guide/02-FLOWS-IN-DETAIL.md`](user-guide/02-FLOWS-IN-DETAIL.md)** — Разбор каждой кнопки (`/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-hotfix`, `/l1-chore`) и `Doctor Checklist`.
 - **[`user-guide/03-CHEATSHEET.md`](user-guide/03-CHEATSHEET.md)** — Шпаргалка на 1 экран «Что нажать, если...» и FAQ.
 
 ---

@@ -25,7 +25,7 @@
 
 ```json
 {
-  "l1dder": ["l1-onboard", "l1-idea", "l1-feature", "l1-planning", "l1-task", "l1-hotfix", "l1-evo"],
+  "l1dder": ["l1-onboard", "l1-idea", "l1-feature", "l1-planning", "l1-task", "l1-hotfix", "l1-chore", "l1-evo"],
   "core": [
     { "repo": "DietrichGebert/ponytail", "bundled": true, "skills": ["ponytail", "ponytail-review", "ponytail-audit", "ponytail-debt"] },
     { "repo": "mattpocock/skills", "bundled": true, "skills": ["grilling", "domain-modeling", "codebase-design", "tdd", "diagnosing-bugs", "code-review", "retro", "prototype", "writing-for-agents"] }
@@ -47,3 +47,4 @@
 | `summary` | `{ ru: string, en: string }` | Краткая суть релиза |
 | `changes` | `{ ru: string[], en: string[] }` | Список новых возможностей и улучшений |
 | `breaking` | `{ ru: string[], en: string[] }` | Список ломающих изменений (`BREAKING CHANGES`), требующих подтверждения `да/нет` при обновлении |
+| `agent` | `{ ru: string[], en: string[] }` | Обязательные шаги, которые ИИ-агент выполняет в проекте пользователя после `npx l1dder update` (`[]` — ручных шагов нет; проверяется при сборке для версий новее `1.1.0`) |

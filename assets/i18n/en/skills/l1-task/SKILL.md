@@ -18,7 +18,7 @@ description: Executes the next scheduled task TASK-NN.MM from the active sprint 
    - `SPRINT-NN` (e.g., `SPRINT-01`)
    - `FEAT-NNN` (e.g., `FEAT-001`)
    - `IDEA-NNN` (e.g., `IDEA-001`)
-3. **`Roadmap Gate` check:** If the user asks to work on a task outside `1 (CURRENT)`, **STOP** and reply: *"By the Roadmap Gate rule, we only execute tasks from the `1 (CURRENT)` sprint in `docs/roadmap.md`. Run `/l1-planning` first to change the queue (or `/l1-hotfix` for an urgent bug)."*
+3. **`Roadmap Gate` check:** If the user asks to work on a task outside `1 (CURRENT)`, **STOP** and reply: *"By the Roadmap Gate rule, we only execute tasks from the `1 (CURRENT)` sprint in `docs/roadmap.md`. Run `/l1-planning` first to change the queue (or `/l1-hotfix` for an urgent bug, `/l1-chore` for a change to the project itself)."*
 4. Open `docs/sprints/SPRINT-NN-<slug>/README.md` and find the first task with status `📋 planned` (or `🚧 in-progress`). Extract `TASK-NN.MM` and `FEAT-NNN.MM`.
 5. Choose the branch:
    - If `TASK-NN.MM` does NOT end with `.99` → follow **BRANCH A (Regular Task)**.

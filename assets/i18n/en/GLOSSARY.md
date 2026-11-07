@@ -78,6 +78,12 @@ An atomic unit of work inside a sprint executed via **`/l1-task`** with two mand
 
 ---
 
+## Hotfix (`HOTFIX-NNN` & `/l1-hotfix`)
+
+An urgent bug fix bypassing `docs/roadmap.md`, executed via **`/l1-hotfix`**: reproduce the bug first (`RED Reproduction Gate`) → confirm a concise fix plan in chat (`⛔ STOP`) → apply the minimal fix (`ponytail`) and pass `make ci` (`GREEN`) → log `HOTFIX-NNN` in section 3 of `docs/backlog.md`.
+
+---
+
 ## Chore (`CHORE-NNN` & `/l1-chore`)
 
 A change to **the project itself**, not to what its users see and use: git rules (how branches and commits are named, what is checked before a push), automatic checks in CI, library updates, the `Makefile`, build scripts, tests, rules for the AI agent.
