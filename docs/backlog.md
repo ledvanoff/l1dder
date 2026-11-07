@@ -3,7 +3,7 @@
 > **Методология:** L1DDER (100% Dogfooding)
 > **Скиллы управления:** пополняется через `/l1-feature`, привязывается к спринтам через `/l1-planning`, статусы задач обновляются через `/l1-task` и `/l1-hotfix`.
 > **Источник истины по очерёдности:** [`docs/roadmap.md`](./roadmap.md)
-> **Последнее обновление:** 2026-11-07
+> **Последнее обновление:** 2026-11-08
 
 ---
 
@@ -16,6 +16,7 @@
 | [`FEAT-003`](#feat-003) | SEO-база сайта и витрин проекта | [`IDEA-003`](./ideas.md#idea-003) | P1 | ✅ реализована | [`FEAT-003`](./specs/FEAT-003-seo-foundation/) | [`SPRINT-02`](./sprints/SPRINT-02-seo-foundation/README.md) |
 | [`FEAT-004`](#feat-004) | Пошаговый онбординг и свежие встроенные скиллы | [`IDEA-006`](./ideas.md#idea-006) | P1 | ✅ реализована | [`FEAT-004`](./specs/FEAT-004-step-by-step-onboarding/) | [`SPRINT-03`](./sprints/SPRINT-03-step-by-step-onboarding/README.md) |
 | [`FEAT-005`](#feat-005) | Команда `/l1-chore` для служебных правок вне роадмапа | [`IDEA-004`](./ideas.md#idea-004) | P2 | ✅ реализована | [`FEAT-005`](./specs/FEAT-005-chore-command/) | [`SPRINT-04`](./sprints/SPRINT-04-chore-command/README.md) |
+| [`FEAT-006`](#feat-006) | Режим `/l1-fast` и отклонение текущего спринта | [`IDEA-005`](./ideas.md#idea-005) | P2 | 🗓 запланирована | [`FEAT-006`](./specs/FEAT-006-fast-mode/) | [`SPRINT-05`](./sprints/SPRINT-05-fast-mode/README.md) |
 
 ---
 
@@ -144,6 +145,33 @@
 | `FEAT-005.03` | `TASK-04.03` | Описание `/l1-chore` простым языком (для чего команда, примеры правок самого репозитория) и удаление чисел скиллов и команд из текста в `README.md`, `METHODOLOGY.md`, `user-guide/*`, `onboarding/continue-project.md`, `site/*` и `seo.mts` | `docs` | ✅ реализована | [plan](./sprints/SPRINT-04-chore-command/tasks/TASK-04.03-chore-docs/plan.md) | [summary](./sprints/SPRINT-04-chore-command/tasks/TASK-04.03-chore-docs/summary.md) |
 | `FEAT-005.04` | `TASK-04.04` | Обязательная инструкция агенту для каждой версии: поле `agent` в `assets/releases.json`, проверка в сборке, блок 🤖 после `npx l1dder update` и правило в сводке `AGENTS.md` / `CLAUDE.md` | `feat` | ✅ реализована | [plan](./sprints/SPRINT-04-chore-command/tasks/TASK-04.04-agent-update-steps/plan.md) | [summary](./sprints/SPRINT-04-chore-command/tasks/TASK-04.04-agent-update-steps/summary.md) |
 | `FEAT-005.99` | `TASK-04.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)** *(Обязательная)*: живой E2E-прогон `/l1-chore` субагентом в песочнице | `chore` | ✅ реализована | [plan](./sprints/SPRINT-04-chore-command/tasks/TASK-04.99-doctor/plan.md) | [summary](./sprints/SPRINT-04-chore-command/tasks/TASK-04.99-doctor/summary.md) |
+
+---
+
+### FEAT-006: Режим `/l1-fast` и отклонение текущего спринта {#feat-006}
+
+| Поле паспорта | Значение |
+|---------------|----------|
+| **ID фичи / спеки** | `FEAT-006` |
+| **Родительская идея** | [`IDEA-005`](./ideas.md#idea-005) |
+| **Папка спецификации** | [`docs/specs/FEAT-006-fast-mode/`](./specs/FEAT-006-fast-mode/) |
+| **Приоритет** | `P2` |
+| **Статус фичи** | `🗓 запланирована` |
+| **Назначенные спринты** | `SPRINT-05` |
+
+#### Спринт: `SPRINT-05` — Режим `/l1-fast` и отклонение спринта (`📋 запланирована`)
+- **ID спринта:** `SPRINT-05`
+- **Родительские ID:** `FEAT-006` → `IDEA-005`
+- **Документ спринта:** [`docs/sprints/SPRINT-05-fast-mode/README.md`](./sprints/SPRINT-05-fast-mode/README.md)
+- **Цель спринта:** пользователь любого проекта на `L1DDER` делает небольшую фичу через `/l1-fast`: сначала код, потом честные реестры, с двумя остановками и без ослабления проверок; при активном спринте получает строгий отказ и может отклонить текущий спринт с откатом через `/l1-planning`.
+
+| ID шага спеки | ID задачи спринта | Название задачи | Тип | Статус | Plan | Summary |
+|:-------------:|:-----------------:|-----------------|:---:|--------|------|---------|
+| `FEAT-006.01` | `TASK-05.01` | Скилл `/l1-fast` на RU и EN, регистрация в `skills.json`, `src/agents.ts` и `src/installer.ts`, тесты контракта и CLI | `feat` | 📋 запланирована | — | — |
+| `FEAT-006.02` | `TASK-05.02` | Отклонение текущего спринта с откатом (`git revert`) в `/l1-planning`, статус `❌ отклонена` для `SPRINT-NN` и `TASK-NN.MM` в правилах и шаблонах | `feat` | 📋 запланирована | — | — |
+| `FEAT-006.03` | `TASK-05.03` | Исключение `/l1-fast` в правилах `00/20/40`, словаре, шаблоне роадмапа, скиллах `l1-task` и `l1-hotfix`, сводке `AGENTS.md` / `CLAUDE.md`; сверка шагов `agent` для релиза | `feat` | 📋 запланирована | — | — |
+| `FEAT-006.04` | `TASK-05.04` | `/l1-fast` и отклонение спринта простым языком в `README`, `METHODOLOGY.md`, `user-guide/*` и на сайте | `docs` | 📋 запланирована | — | — |
+| `FEAT-006.99` | `TASK-05.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)** *(Обязательная)*: живой E2E-прогон `/l1-fast` субагентом в песочнице на двух быстрых моделях | `chore` | 📋 запланирована | — | — |
 
 ---
 
