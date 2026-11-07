@@ -12,6 +12,7 @@ const phrases = {
     step: "## ШАГ",
     noEdits: "не меняй ни одного файла",
     resume: "продолжить эту фичу с Шага 5",
+    parallel: "работают параллельно",
     sizeSigns: ["больше 3 задач", "одного спринта", "модель данных", "внешняя интеграция", "ADR", "ломающие изменения", "отдельный разбор требований"],
     normalPath: "/l1-idea",
     stops: ["⛔ СТОП №1", "⛔ СТОП №2"],
@@ -22,12 +23,14 @@ const phrases = {
     modeRow: "| **Режим** | `/l1-fast` |",
     planAfter: "записан после реализации",
     completed: "Завершённые спринты",
+    ownFiles: "только свои файлы",
   },
   en: {
     purpose: "## What this command is for",
     step: "## STEP",
     noEdits: "do not change any file",
     resume: "continue this feature from Step 5",
+    parallel: "work in parallel",
     sizeSigns: ["more than 3 tasks", "one sprint", "data model", "external integration", "ADR", "breaking changes", "separate requirements review"],
     normalPath: "/l1-idea",
     stops: ["⛔ STOP #1", "⛔ STOP #2"],
@@ -38,6 +41,7 @@ const phrases = {
     modeRow: "| **Mode** | `/l1-fast` |",
     planAfter: "written after the build",
     completed: "Completed Sprints",
+    ownFiles: "only your own files",
   },
 };
 
@@ -70,6 +74,12 @@ describe.each(["ru", "en"] as const)("/l1-fast skill (%s)", (language) => {
     const roadmap = step(language, 1);
     expect(roadmap).toContain(phrases[language].resume);
     expect(roadmap).toContain(phrases[language].mode);
+  });
+
+  it("blocks only a second fast feature and lets idea, spec and planning work in parallel", () => {
+    const roadmap = step(language, 1);
+    expect(roadmap).toContain(phrases[language].parallel);
+    for (const command of ["/l1-idea", "/l1-feature"]) expect(roadmap).toContain(command);
   });
 
   it("sends a bug to /l1-hotfix and a change to the project itself to /l1-chore", () => {
@@ -144,6 +154,12 @@ describe.each(["ru", "en"] as const)("/l1-fast skill (%s)", (language) => {
     expect(record).toContain(phrases[language].modeRow);
     expect(record).toContain(phrases[language].planAfter);
     expect(record).toContain(phrases[language].completed);
+  });
+
+  it("commits only its own files by path, so a parallel tab's work stays out of the commit", () => {
+    const record = step(language, 7);
+    expect(record).toContain(phrases[language].ownFiles);
+    expect(record).toContain("git add <");
   });
 });
 

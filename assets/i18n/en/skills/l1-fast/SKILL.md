@@ -23,13 +23,15 @@ A large feature, a bug or a change to the project itself has its own command: th
 2. **If position `1 (CURRENT)` is taken by a regular sprint**, refuse outright. Stop, **do not change any file**, and say that fast mode only works when no sprint is in progress. Name the two ways out, the user picks:
    - finish the current sprint with `/l1-task`;
    - reject the current sprint and roll back all its changes with `/l1-planning`.
-3. **If `1 (CURRENT)` holds a reservation marked (mode: `/l1-fast`)**, it is an interrupted fast feature. Do not start a new feature on top of it and do not change any file. Ask the user which to choose:
+3. **If `1 (CURRENT)` holds a reservation marked (mode: `/l1-fast`)**, it is an interrupted fast feature. Do not reserve or build a second fast feature on top of it, and do not change any file. Ask the user which to choose:
    - continue this feature from Step 5: reread the reservation, the card in the roadmap history, the code and the commits since the reservation;
    - reject it and roll back its changes with `/l1-planning`.
 4. Work out what exactly the user wants. `/l1-fast` is for a new capability or a change in product behaviour. If it is something else, do not change any file and suggest the right command:
    - a product bug → `/l1-hotfix`;
    - a change to the project itself that product users will not notice (git, CI, libraries, `Makefile`, agent rules) → `/l1-chore`.
 5. If position `1 (CURRENT)` is empty and this is a product feature, go to Step 2.
+
+The refusal covers building only, that is a second `/l1-fast` and `/l1-task`. Preparing other features is not blocked: `/l1-idea`, `/l1-feature` and `/l1-planning` queueing at `2 (NEXT)` work in parallel, for example in another tab.
 
 ---
 
@@ -142,7 +144,7 @@ If the human sent remarks: fix them as in Step 5 (a bug through `diagnosing-bugs
    - for every `TASK-NN.MM` and for `TASK-NN.99` — `plan.md` and `summary.md` in `docs/sprints/SPRINT-NN-<slug>/tasks/`. In `plan.md`, the solution from the Step 3 card and in the passport `` `/l1-fast`, written after the build <date> ``. In `summary.md`, the Step 6 results, the manual test remarks and the user's decision on size signs, if there was one;
    - `docs/roadmap.md` — move the `SPRINT-NN` row from `Delivery Queue` to "4. Completed Sprints", free position `1 (CURRENT)`, update "Current focus" and the "Roadmap change history".
 3. Run `make ci` and `npx l1dder doctor`: 0 errors.
-4. Commit the code and the documents in one commit following the project Git rules (`l1dder/rules/10-conventions.mdc`), for example `feat(<scope>): <what was done>`. Push only if the user asked or the project does so (`l1dder/rules/30-tech-stack.mdc`).
+4. Commit the code and the documents in one commit following the project Git rules (`l1dder/rules/10-conventions.mdc`), for example `feat(<scope>): <what was done>`. Stage only your own files, by path (`git add <path>`): this feature's code and the documents with its IDs. Leave other changes as they are, such as a spec from another tab, and name them to the user. Push only if the user asked or the project does so (`l1dder/rules/30-tech-stack.mdc`).
 5. Tell the user the outcome: what was done and the list of created documents with their IDs.
 
 ---
