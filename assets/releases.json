@@ -1,6 +1,38 @@
 {
   "releases": [
     {
+      "version": "1.2.0",
+      "date": "2026-11-07",
+      "summary": {
+        "ru": "Новая команда /l1-chore для служебных правок самого проекта вне роадмапа и автоматические инструкции для ИИ-агента после обновления.",
+        "en": "New /l1-chore command for repository maintenance outside the roadmap and post-update instructions for AI agents."
+      },
+      "changes": {
+        "ru": [
+          "FEAT-005: Добавлена команда /l1-chore и журнал CHORE-NNN в docs/backlog.md для правок самого проекта (правила git, CI, библиотеки, Makefile, тесты, правила агента) с одной остановкой «ок» и проверкой make ci.",
+          "FEAT-005: Из документации и сайта убраны устаревающие счётчики скиллов и команд — команды перечисляются по именам.",
+          "FEAT-005: После npx l1dder update CLI выводит блок «🤖 Инструкция для ИИ-агента после обновления», чтобы агент сам дописывал новые строки в защищённые проектные файлы (например, 40-skills-router.mdc), не затирая настройки пользователя."
+        ],
+        "en": [
+          "FEAT-005: Added the /l1-chore command and CHORE-NNN log in docs/backlog.md for project maintenance changes (git rules, CI, libraries, Makefile, tests, agent rules) with a single 'ok' stop and make ci verification.",
+          "FEAT-005: Removed stale skill and command counts from documentation and the docs site in favor of listing commands by name.",
+          "FEAT-005: npx l1dder update now prints a '🤖 AI Agent Instruction after L1DDER update' block so the agent can add new entries to protected project files (such as 40-skills-router.mdc) without overwriting custom settings."
+        ]
+      },
+      "breaking": {
+        "ru": [],
+        "en": []
+      },
+      "agent": {
+        "ru": [
+          "В `l1dder/rules/40-skills-router.mdc`, в таблице раздела 0, после строки `/l1-hotfix` добавь строку: `| Поправить сам проект, а не продукт: правила git, CI, библиотеки, `Makefile`, тесты, правила агента — с одной остановкой «ок» и записью `CHORE-NNN` в `docs/backlog.md` | `/l1-chore` | `l1dder/skills/l1-chore/SKILL.md` |` Остальное в файле не меняй."
+        ],
+        "en": [
+          "In `l1dder/rules/40-skills-router.mdc`, in the section 0 table, add this row after the `/l1-hotfix` row: `| Change the project itself, not the product: git rules, CI, libraries, `Makefile`, tests, agent rules — with a single \"ok\" stop and a `CHORE-NNN` row in `docs/backlog.md` | `/l1-chore` | `l1dder/skills/l1-chore/SKILL.md` |` Leave the rest of the file unchanged."
+        ]
+      }
+    },
+    {
       "version": "1.1.0",
       "date": "2026-11-07",
       "summary": {

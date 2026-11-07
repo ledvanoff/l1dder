@@ -5,6 +5,23 @@
 
 ---
 
+## [1.2.0] — 2026-11-07
+
+**RU:** Новая команда /l1-chore для служебных правок самого проекта вне роадмапа и автоматические инструкции для ИИ-агента после обновления.
+
+**EN:** New /l1-chore command for repository maintenance outside the roadmap and post-update instructions for AI agents.
+
+### Changes (Изменения)
+
+- **[RU]** FEAT-005: Добавлена команда /l1-chore и журнал CHORE-NNN в docs/backlog.md для правок самого проекта (правила git, CI, библиотеки, Makefile, тесты, правила агента) с одной остановкой «ок» и проверкой make ci.
+- **[RU]** FEAT-005: Из документации и сайта убраны устаревающие счётчики скиллов и команд — команды перечисляются по именам.
+- **[RU]** FEAT-005: После npx l1dder update CLI выводит блок «🤖 Инструкция для ИИ-агента после обновления», чтобы агент сам дописывал новые строки в защищённые проектные файлы (например, 40-skills-router.mdc), не затирая настройки пользователя.
+- **[EN]** FEAT-005: Added the /l1-chore command and CHORE-NNN log in docs/backlog.md for project maintenance changes (git rules, CI, libraries, Makefile, tests, agent rules) with a single 'ok' stop and make ci verification.
+- **[EN]** FEAT-005: Removed stale skill and command counts from documentation and the docs site in favor of listing commands by name.
+- **[EN]** FEAT-005: npx l1dder update now prints a '🤖 AI Agent Instruction after L1DDER update' block so the agent can add new entries to protected project files (such as 40-skills-router.mdc) without overwriting custom settings.
+
+---
+
 ## [1.1.0] — 2026-11-07
 
 **RU:** Пошаговый онбординг /l1-onboard по одному файлу концепта со стеком после архитектуры, сокращённый шаблон видения и обновлённые встроенные скиллы.
