@@ -35,3 +35,23 @@
 **Принимаем: вариант A.**
 - **Позитивные последствия:** скиллы остаются согласованными с правилами L1DDER, а тест целостности ссылок ловит недостающие файлы.
 - **Риски и митигация:** правку исходника можно пропустить при слиянии. Митигация: коммит исходника записывается в манифест, и следующая сверка смотрит только дифф от него.
+
+---
+
+## 4. Текущая база исходников (обновляется при каждой сверке)
+
+Сверка 2026-11-07 (`TASK-03.01`). Следующая сверка сравнивает исходник с этими коммитами, а не с нашей копией.
+
+| Исходник | Коммит | Скиллы |
+|----------|--------|--------|
+| `DietrichGebert/ponytail` | `96608e0` | `ponytail`, `ponytail-review`, `ponytail-audit`, `ponytail-debt` |
+| `mattpocock/skills` | `4ae2317` | `grilling`, `domain-modeling`, `codebase-design`, `tdd`, `diagnosing-bugs`, `code-review`, `retro`, `prototype`, `writing-for-agents` |
+
+**Наши правки под L1DDER, которые сохраняются при слиянии:**
+- **`ponytail`-скиллы** сделаны с вариантов `.opencode/command/*.md` исходника, а не с `skills/*/SKILL.md`: свой frontmatter, жирные выделения, заголовки вроде «6-Step Decision Ladder» и «Execution Rules». Сравнивать их нужно с `.opencode/command/`.
+- **`domain-modeling`:** словарь в `l1dder/GLOSSARY.md`, ADR в `docs/adrs/` по шаблону `l1dder/templates/adrs/`, один контекст без `GLOSSARY-MAP.md`.
+- **`ADR-FORMAT.md`:** имена файлов `ADR-NNNN-<slug>.md`.
+- **`code-review`:** трекер `docs/backlog.md`, спеки `docs/specs/FEAT-NNN-<slug>/`, правила `10-conventions.mdc` и `30-tech-stack.mdc`.
+- **`retro`:** правила `10-conventions.mdc` и `30-tech-stack.mdc` вместо `CODING_STANDARDS.md`.
+
+**Не берём из исходника:** папки `agents/` (метаданные Codex `openai.yaml`), скиллы `ponytail-gain` и `ponytail-help`.
