@@ -17,7 +17,7 @@
 
 | Когда использовать | Слэш-команда / Skill | Путь в проекте (`l1dder/skills/`) |
 |--------------------|----------------------|-----------------------------------|
-| Стартовать проект (`from-scratch` или `existing-code`), настроить `30-tech-stack.mdc`, `l1dder/skills.json` и создать базовый `docs/` | `/l1-onboard` | `l1dder/skills/l1-onboard/SKILL.md` |
+| Стартовать проект (`from-scratch` или `existing-code`): по этапам проработать концепт (идея, видение, архитектура, модель данных), затем настроить `30-tech-stack.mdc` и `l1dder/skills.json` и создать `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md` | `/l1-onboard` | `l1dder/skills/l1-onboard/SKILL.md` |
 | Есть новая задумка: развить идею (`grilling`) и положить в Банк Идей (`docs/ideas.md`) | `/l1-idea` | `l1dder/skills/l1-idea/SKILL.md` |
 | Проработать спеку (`docs/specs/FEAT-NNN/`) по идее (`grilling` + `codebase-design`) и нарезать на шаги `FEAT-NNN.01..99` в `docs/backlog.md` | `/l1-feature` | `l1dder/skills/l1-feature/SKILL.md` |
 | Спланировать или изменить очередь в Роадмапе (`docs/roadmap.md`), назначить `SPRINT-NN` и `TASK-NN.01..99` | `/l1-planning` | `l1dder/skills/l1-planning/SKILL.md` |

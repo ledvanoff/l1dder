@@ -29,7 +29,7 @@ description: Onboards a new (from-scratch) or existing (existing-code) project o
 | 2. Vision | `docs/concept/vision.md` | The system as a whole, roles, scenarios, principles | `grilling`, `domain-modeling`, `prototype` (if a screen or flow sketch helps) |
 | 3. Architecture | `docs/concept/architecture.md`; `docs/concept/integrations.md` and `docs/concept/api-contracts.md` only if needed | Components and layers, data flows, deep modules and seams, external systems and APIs | `codebase-design` (and its `DESIGN-IT-TWICE.md`), `domain-modeling` (and its `ADR-FORMAT.md`), `ponytail` |
 | 4. Data model | `docs/concept/data-model.md` | Entities, relations, storage and config schemas | `domain-modeling`, `codebase-design` |
-| 5. Stack | `l1dder/rules/30-tech-stack.mdc`, `l1dder/rules/40-skills-router.mdc`, `l1dder/skills.json` (`"stack"` section), `Makefile` | Language and platform, frameworks, data storage, folder layout, tests and linter, `make` targets | `ponytail`, `tdd`, `writing-for-agents` and the stack skills you propose |
+| 5. Stack | `l1dder/rules/30-tech-stack.mdc`, `l1dder/rules/40-skills-router.mdc`, `l1dder/skills.json` (`"stack"` section), `Makefile` | Language and platform, frameworks, data storage, folder layout, tests and linter, `make` targets | `ponytail`, `tdd`, `writing-for-agents` (and any already installed stack skills) |
 | 6. Idea Bank and roadmap | `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md`, `docs/README.md` | First `IDEA-NNN` ideas, their priorities and the order to work them out | `grilling` |
 
 Stage specifics:
@@ -47,7 +47,7 @@ Stage specifics:
 4. **Answer review.** Say briefly what is now clear, what is worth strengthening and what is still unclear. If the answer holds facts for another stage, offer to record them, for example "I suggest adding this to `architecture.md`". After "ok", add the note to the `## Notes from other stages` section of that file right away.
 5. **Choice.** End every round with the question "Move on or another round?" and your recommendation: what is still unclear and whether another round is needed. There are as many rounds as the user decides.
 6. **Draft.** When the user chooses to move on, show a draft of the stage files and ask: *"Approve `<stage files>` (ok / edits)?"*
-7. ⛔ **STOP:** wait for "ok". Then write the stage files: move the notes from the `## Notes from other stages` section to where they belong and remove the section. Then move to the next stage from point 1.
+7. ⛔ **STOP:** wait for "ok" (do not write the stage files before "ok"). Then write the stage files: move the notes from the `## Notes from other stages` section to where they belong and remove the section. Then move to the next stage from point 1.
 
 ---
 

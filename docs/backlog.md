@@ -14,7 +14,7 @@
 | [`FEAT-001`](#feat-001) | Базовое ядро L1DDER v1.0.0 (CLI, 20 скиллов, skills.json, RU/EN, VitePress Docs) | [`IDEA-001`](./ideas.md#idea-001) | P0 | ✅ реализована | — | Завершено |
 | [`FEAT-002`](#feat-002) | Предрелизный гигиенический спринт, полигон на 2 моделях (Composer и Grok), аудит ponytail и релиз v1.0.0 | [`IDEA-002`](./ideas.md#idea-002) | P0 | ✅ реализована | [`FEAT-002`](./specs/FEAT-002-release-hygiene-v1/) | [`SPRINT-01`](./sprints/SPRINT-01-release-hygiene-v1/README.md) |
 | [`FEAT-003`](#feat-003) | SEO-база сайта и витрин проекта | [`IDEA-003`](./ideas.md#idea-003) | P1 | ✅ реализована | [`FEAT-003`](./specs/FEAT-003-seo-foundation/) | [`SPRINT-02`](./sprints/SPRINT-02-seo-foundation/README.md) |
-| [`FEAT-004`](#feat-004) | Пошаговый онбординг и свежие встроенные скиллы | [`IDEA-006`](./ideas.md#idea-006) | P1 | 🚧 реализация | [`FEAT-004`](./specs/FEAT-004-step-by-step-onboarding/) | [`SPRINT-03`](./sprints/SPRINT-03-step-by-step-onboarding/README.md) |
+| [`FEAT-004`](#feat-004) | Пошаговый онбординг и свежие встроенные скиллы | [`IDEA-006`](./ideas.md#idea-006) | P1 | ✅ реализована | [`FEAT-004`](./specs/FEAT-004-step-by-step-onboarding/) | [`SPRINT-03`](./sprints/SPRINT-03-step-by-step-onboarding/README.md) |
 
 ---
 
@@ -100,10 +100,10 @@
 | **Родительская идея** | [`IDEA-006`](./ideas.md#idea-006) |
 | **Папка спецификации** | [`docs/specs/FEAT-004-step-by-step-onboarding/`](./specs/FEAT-004-step-by-step-onboarding/) |
 | **Приоритет** | `P1` |
-| **Статус фичи** | `🚧 реализация` |
+| **Статус фичи** | `✅ реализована` |
 | **Назначенные спринты** | `SPRINT-03` |
 
-#### Спринт: `SPRINT-03` — Пошаговый онбординг и свежие встроенные скиллы (`📋 запланирована`)
+#### Спринт: `SPRINT-03` — Пошаговый онбординг и свежие встроенные скиллы (`✅ реализована`)
 - **ID спринта:** `SPRINT-03`
 - **Родительские ID:** `FEAT-004` → `IDEA-006`
 - **Документ спринта:** [`docs/sprints/SPRINT-03-step-by-step-onboarding/README.md`](./sprints/SPRINT-03-step-by-step-onboarding/README.md)
@@ -115,7 +115,7 @@
 | `FEAT-004.02` | `TASK-03.02` | Новый скилл `/l1-onboard` на RU и EN со скиллами для каждого этапа, сначала тесты контракта текста | `feat` | ✅ реализована | [plan](./sprints/SPRINT-03-step-by-step-onboarding/tasks/TASK-03.02-onboard-skill/plan.md) | [summary](./sprints/SPRINT-03-step-by-step-onboarding/tasks/TASK-03.02-onboard-skill/summary.md) |
 | `FEAT-004.03` | `TASK-03.03` | Сокращённый шаблон `vision.md` и согласование остальных шаблонов концепта | `feat` | ✅ реализована | [plan](./sprints/SPRINT-03-step-by-step-onboarding/tasks/TASK-03.03-concept-templates/plan.md) | [summary](./sprints/SPRINT-03-step-by-step-onboarding/tasks/TASK-03.03-concept-templates/summary.md) |
 | `FEAT-004.04` | `TASK-03.04` | Цепочка 0 в `20-workflow.mdc`, гайды `onboarding/`, путеводитель, `METHODOLOGY.md`, словарь и описание скилла | `docs` | ✅ реализована | [plan](./sprints/SPRINT-03-step-by-step-onboarding/tasks/TASK-03.04-docs-and-rules/plan.md) | [summary](./sprints/SPRINT-03-step-by-step-onboarding/tasks/TASK-03.04-docs-and-rules/summary.md) |
-| `FEAT-004.99` | `TASK-03.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)** *(Обязательная)*: два прогона онбординга субагентом | `chore` | 📋 запланирована | — | — |
+| `FEAT-004.99` | `TASK-03.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)** *(Обязательная)*: два прогона онбординга субагентом | `chore` | ✅ реализована | [plan](./sprints/SPRINT-03-step-by-step-onboarding/tasks/TASK-03.99-doctor/plan.md) | [summary](./sprints/SPRINT-03-step-by-step-onboarding/tasks/TASK-03.99-doctor/summary.md) |
 
 ---
 

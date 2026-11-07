@@ -6,8 +6,8 @@
 | **ID родительской фичи / спеки** | [`FEAT-004`](../../backlog.md#feat-004) ([`docs/specs/FEAT-004-step-by-step-onboarding/`](../../specs/FEAT-004-step-by-step-onboarding/)) |
 | **ID родительской идеи** | [`IDEA-006`](../../ideas.md#idea-006) |
 | **Позиция в Роадмапе** | [`docs/roadmap.md`](../../roadmap.md) |
-| **Статус спринта** | `🚧 реализация` |
-| **Дата открытия / закрытия** | 2026-11-07 / — |
+| **Статус спринта** | `✅ реализована` |
+| **Дата открытия / закрытия** | 2026-11-07 / 2026-11-07 |
 
 ---
 
@@ -44,12 +44,12 @@
 | `TASK-03.02` | `FEAT-004.02` | Новый скилл `/l1-onboard` на RU и EN со скиллами для каждого этапа, сначала тесты контракта текста | `feat` | ✅ реализована | [plan](tasks/TASK-03.02-onboard-skill/plan.md) | [summary](tasks/TASK-03.02-onboard-skill/summary.md) |
 | `TASK-03.03` | `FEAT-004.03` | Сокращённый шаблон `vision.md` и согласование остальных шаблонов концепта | `feat` | ✅ реализована | [plan](tasks/TASK-03.03-concept-templates/plan.md) | [summary](tasks/TASK-03.03-concept-templates/summary.md) |
 | `TASK-03.04` | `FEAT-004.04` | Цепочка 0 в `20-workflow.mdc`, гайды `onboarding/`, путеводитель, `METHODOLOGY.md`, словарь и описание скилла | `docs` | ✅ реализована | [plan](tasks/TASK-03.04-docs-and-rules/plan.md) | [summary](tasks/TASK-03.04-docs-and-rules/summary.md) |
-| `TASK-03.99` | `FEAT-004.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)**: два прогона онбординга субагентом | `chore` | 📋 запланирована | — | — |
+| `TASK-03.99` | `FEAT-004.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)**: два прогона онбординга субагентом | `chore` | ✅ реализована | [plan](tasks/TASK-03.99-doctor/plan.md) | [summary](tasks/TASK-03.99-doctor/summary.md) |
 
 ---
 
 ## 4. Итог спринта (заполняется после закрытия `TASK-03.99`)
 
-- **Что поставлено по `FEAT-004` (`IDEA-006`):** —
-- **Обновления в долгосрочной доке (`concept` / `rules` / `specs`):** —
-- **Новые идеи / техдолг, вынесенные в `docs/ideas.md` или `docs/backlog.md`:** —
+- **Что поставлено по `FEAT-004` (`IDEA-006`):** встроенные скиллы `ponytail` и `mattpocock/skills` сверены с исходниками с сохранением адаптаций L1DDER и рекурсивным копированием вложенных файлов (`SKILL-MECHANICS.md`, `scripts/hitl-loop.template.sh`); скилл `/l1-onboard` на RU и EN переведён на 6 пошаговых этапов (концепт по одному файлу до стека, до 7 вопросов с рекомендациями, разбор ответа, перенос заметок между этапами, код как первоисточник); сокращён шаблон `vision.md`; обновлены `20-workflow.mdc`, гайды, путеводитель и словарь; проведены два живых E2E-прогона на быстрых моделях (`Qwen3.8 Flash` и `Kimi K2.7 Code`).
+- **Обновления в долгосрочной доке (`concept` / `rules` / `specs`):** создан [`ADR-0001`](../../adrs/ADR-0001-bundled-skills-merge.md), обновлены `docs/concept/architecture.md`, `l1dder/rules/40-skills-router.mdc` и `l1dder/GLOSSARY.md`.
+- **Новые идеи / техдолг, вынесенные в `docs/ideas.md` или `docs/backlog.md`:** [`IDEA-007`](../../ideas.md#idea-007) (встроенные скиллы без правок в исходнике, патчи и `make skills-sync`), [`IDEA-008`](../../ideas.md#idea-008) (слэш-команды `/l1-*` в меню `/` для OpenCode v2), расхождение детализации цепочек между RU и EN в `20-workflow.mdc`.
