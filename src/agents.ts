@@ -157,6 +157,19 @@ interface SkillDoc {
   readonly companionFiles: ReadonlyArray<{ readonly fileName: string; readonly content: string }>;
 }
 
+/** Every file next to `SKILL.md`, nested folders included (e.g. `scripts/x.sh`), as paths relative to the skill. */
+function listCompanionFiles(dir: string, prefix = ""): Array<{ fileName: string; content: string }> {
+  return readdirSync(dir)
+    .sort()
+    .flatMap((entry) => {
+      if (entry === ".DS_Store" || (prefix === "" && entry === "SKILL.md")) return [];
+      const path = join(dir, entry);
+      const fileName = `${prefix}${entry}`;
+      if (statSync(path).isDirectory()) return listCompanionFiles(path, `${fileName}/`);
+      return [{ fileName, content: readFileSync(path, "utf-8") }];
+    });
+}
+
 function loadProjectRulesAndSkills(projectDir: string, rootDir: string): {
   rules: readonly RuleDoc[];
   skills: readonly SkillDoc[];
@@ -191,17 +204,7 @@ function loadProjectRulesAndSkills(projectDir: string, rootDir: string): {
       const rawContent = readFileSync(skillFile, "utf-8");
       const parsed = parseFrontmatter(rawContent);
 
-      const companionFiles: Array<{ fileName: string; content: string }> = [];
-      for (const subEntry of readdirSync(skillFolder).sort()) {
-        if (subEntry === "SKILL.md" || subEntry === ".DS_Store") continue;
-        const subPath = join(skillFolder, subEntry);
-        if (statSync(subPath).isFile()) {
-          companionFiles.push({
-            fileName: subEntry,
-            content: readFileSync(subPath, "utf-8"),
-          });
-        }
-      }
+      const companionFiles = listCompanionFiles(skillFolder);
 
       skills.push({
         name: entry,
