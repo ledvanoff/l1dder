@@ -42,7 +42,7 @@
 |:-----------------:|:-------------:|-----------------|:---:|--------|------|---------|
 | `TASK-03.01` | `FEAT-004.01` | Сверка встроенных скиллов с исходниками: слить обновления с сохранением правок L1DDER, добавить недостающие файлы, тест на целостность ссылок | `chore` | ✅ реализована | [plan](tasks/TASK-03.01-bundled-skills-sync/plan.md) | [summary](tasks/TASK-03.01-bundled-skills-sync/summary.md) |
 | `TASK-03.02` | `FEAT-004.02` | Новый скилл `/l1-onboard` на RU и EN со скиллами для каждого этапа, сначала тесты контракта текста | `feat` | ✅ реализована | [plan](tasks/TASK-03.02-onboard-skill/plan.md) | [summary](tasks/TASK-03.02-onboard-skill/summary.md) |
-| `TASK-03.03` | `FEAT-004.03` | Сокращённый шаблон `vision.md` и согласование остальных шаблонов концепта | `feat` | 📋 запланирована | — | — |
+| `TASK-03.03` | `FEAT-004.03` | Сокращённый шаблон `vision.md` и согласование остальных шаблонов концепта | `feat` | ✅ реализована | [plan](tasks/TASK-03.03-concept-templates/plan.md) | [summary](tasks/TASK-03.03-concept-templates/summary.md) |
 | `TASK-03.04` | `FEAT-004.04` | Цепочка 0 в `20-workflow.mdc`, гайды `onboarding/`, путеводитель, `METHODOLOGY.md`, словарь и описание скилла | `docs` | 📋 запланирована | — | — |
 | `TASK-03.99` | `FEAT-004.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)**: два прогона онбординга субагентом | `chore` | 📋 запланирована | — | — |
 

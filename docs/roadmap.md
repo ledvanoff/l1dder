@@ -22,7 +22,7 @@
 
 | Очередь | ID спринта | ID фичи (`FEAT-NNN`) | ID идеи (`IDEA-NNN`) | Приоритет | Цель спринта | Прогресс задач | Статус спринта | Документ спринта |
 |:-------:|:----------:|:--------------------:|:--------------------:|:---------:|--------------|:--------------:|----------------|------------------|
-| **1 (CURRENT)** | [`SPRINT-03`](./sprints/SPRINT-03-step-by-step-onboarding/README.md) | [`FEAT-004`](./backlog.md#feat-004) | [`IDEA-006`](./ideas.md#idea-006) | P1 | Пошаговый онбординг без портянки текста, встроенные скиллы актуальны и без битых ссылок | `2/4 (+ TASK-03.99)` | 🚧 реализация | [README](./sprints/SPRINT-03-step-by-step-onboarding/README.md) |
+| **1 (CURRENT)** | [`SPRINT-03`](./sprints/SPRINT-03-step-by-step-onboarding/README.md) | [`FEAT-004`](./backlog.md#feat-004) | [`IDEA-006`](./ideas.md#idea-006) | P1 | Пошаговый онбординг без портянки текста, встроенные скиллы актуальны и без битых ссылок | `3/4 (+ TASK-03.99)` | 🚧 реализация | [README](./sprints/SPRINT-03-step-by-step-onboarding/README.md) |
 
 ---
 

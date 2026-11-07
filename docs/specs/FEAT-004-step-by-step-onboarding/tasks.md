@@ -14,6 +14,6 @@
 |:------:|:-------------:|:-------------------------------:|:---:|-----------------|--------------------|
 | [x] | `FEAT-004.01` | `TASK-03.01` | `chore` | Сверка встроенных скиллов с исходниками: слить обновления с сохранением правок L1DDER, добавить недостающие файлы, тест на целостность ссылок | `assets/i18n/{ru,en}/skills/`, `assets/i18n/{ru,en}/skills.json`, `tests/bundled-skills.test.ts` |
 | [x] | `FEAT-004.02` | `TASK-03.02` | `feat` | Новый скилл `/l1-onboard` на RU и EN со скиллами для каждого этапа, сначала тесты контракта текста | `assets/i18n/{ru,en}/skills/l1-onboard/SKILL.md`, `tests/onboarding-skill.test.ts` |
-| [ ] | `FEAT-004.03` | `TASK-03.03` | `feat` | Сокращённый шаблон `vision.md` и согласование остальных шаблонов концепта | `assets/i18n/{ru,en}/templates/concept/` |
+| [x] | `FEAT-004.03` | `TASK-03.03` | `feat` | Сокращённый шаблон `vision.md` и согласование остальных шаблонов концепта | `assets/i18n/{ru,en}/templates/concept/` |
 | [ ] | `FEAT-004.04` | `TASK-03.04` | `docs` | Цепочка 0 в `20-workflow.mdc`, гайды `onboarding/`, путеводитель, `METHODOLOGY.md`, словарь и описание скилла | `assets/i18n/{ru,en}/rules/20-workflow.mdc`, `assets/i18n/{ru,en}/onboarding/`, `assets/i18n/{ru,en}/user-guide/`, `assets/i18n/{ru,en}/GLOSSARY.md` |
 | [ ] | `FEAT-004.99` | `TASK-03.99` | `chore` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)** *(Обязательная финальная задача)*: два прогона онбординга субагентом, с нуля и с кодом | `docs/`, тесты, `assets/releases.json` (по отдельной просьбе о релизе) |
