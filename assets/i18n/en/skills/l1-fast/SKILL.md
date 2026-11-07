@@ -88,7 +88,8 @@ The refusal covers building only, that is a second `/l1-fast` and `/l1-task`. Pr
 
    - in the "Current focus" table, `SPRINT-NN` with status `🚧 in-progress`;
    - in the "Roadmap change history", a row: `SPRINT-NN` (`FEAT-NNN` ← `IDEA-NNN`) put at `1 (CURRENT)` in `/l1-fast` mode.
-2. The other registries are filled in Step 7. The reservation lets an interrupted session and other commands see the work in progress and keeps them from taking the same numbers.
+2. Commit the reservation on its own, only `docs/roadmap.md`: `chore(roadmap): reserve SPRINT-NN for /l1-fast`. It marks where the sprint starts: from it an interrupted session sees what is already done, and `/l1-planning` rolls back everything after it on a rejection.
+3. The other registries are filled in Step 7. The reservation lets an interrupted session and other commands see the work in progress and keeps them from taking the same numbers.
 
 ---
 
@@ -96,7 +97,8 @@ The refusal covers building only, that is a second `/l1-fast` and `/l1-task`. Pr
 
 1. Read the skills you need from `l1dder/rules/40-skills-router.mdc`: `ponytail`, `codebase-design`, `tdd` and the stack skills.
 2. Write the code in vertical slices using `tdd`: one public seam → one failing test (`RED`) → minimal code (`GREEN`) → the next slice. For every changed file run the `Edit → Sanitize → Verify` loop from `l1dder/rules/10-conventions.mdc`.
-3. Work autonomously: settle any question the code, the rules or the spec can answer. Stop for two reasons only:
+3. When task `TASK-NN.MM` is done and its tests are green, commit its files by path (`git add <path>`), for example `feat(<scope>): <what was done> (TASK-NN.MM)`. This way git keeps the log of the work: an interrupted session sees which tasks are done, and a rejection rolls back only this sprint's commits.
+4. Work autonomously: settle any question the code, the rules or the spec can answer. Stop for two reasons only:
    - the work grew and a size sign from Step 2 fired — stop and assess the size again together with the user;
    - a decision only a human can make is needed (product behaviour the card did not cover).
 
@@ -144,7 +146,7 @@ If the human sent remarks: fix them as in Step 5 (a bug through `diagnosing-bugs
    - for every `TASK-NN.MM` and for `TASK-NN.99` — `plan.md` and `summary.md` in `docs/sprints/SPRINT-NN-<slug>/tasks/`. In `plan.md`, the solution from the Step 3 card and in the passport `` `/l1-fast`, written after the build <date> ``. In `summary.md`, the Step 6 results, the manual test remarks and the user's decision on size signs, if there was one;
    - `docs/roadmap.md` — move the `SPRINT-NN` row from `Delivery Queue` to "4. Completed Sprints", free position `1 (CURRENT)`, update "Current focus" and the "Roadmap change history".
 3. Run `make ci` and `npx l1dder doctor`: 0 errors.
-4. Commit the code and the documents in one commit following the project Git rules (`l1dder/rules/10-conventions.mdc`), for example `feat(<scope>): <what was done>`. Stage only your own files, by path (`git add <path>`): this feature's code and the documents with its IDs. Leave other changes as they are, such as a spec from another tab, and name them to the user. Push only if the user asked or the project does so (`l1dder/rules/30-tech-stack.mdc`).
+4. Commit the registries in a final commit following the project Git rules (`l1dder/rules/10-conventions.mdc`): `docs(<scope>): record FEAT-NNN built in /l1-fast`. The code is already committed in Step 5, and so are the fixes after the checks, in separate commits under the same rules. Stage only your own files, by path (`git add <path>`): the documents with this feature's IDs. Leave other changes as they are, such as a spec from another tab, and name them to the user. Push only if the user asked or the project does so (`l1dder/rules/30-tech-stack.mdc`).
 5. Tell the user the outcome: what was done and the list of created documents with their IDs.
 
 ---

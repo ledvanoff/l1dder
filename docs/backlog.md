@@ -168,8 +168,8 @@
 | ID шага спеки | ID задачи спринта | Название задачи | Тип | Статус | Plan | Summary |
 |:-------------:|:-----------------:|-----------------|:---:|--------|------|---------|
 | `FEAT-006.01` | `TASK-05.01` | Скилл `/l1-fast` на RU и EN, регистрация в `skills.json`, `src/agents.ts` и `src/installer.ts`, тесты контракта и CLI | `feat` | ✅ реализована | [plan](./sprints/SPRINT-05-fast-mode/tasks/TASK-05.01-fast-skill/plan.md) | [summary](./sprints/SPRINT-05-fast-mode/tasks/TASK-05.01-fast-skill/summary.md) |
-| `FEAT-006.02` | `TASK-05.02` | Отклонение текущего спринта с откатом (`git revert`) в `/l1-planning`, статус `❌ отклонена` для `SPRINT-NN` и `TASK-NN.MM` в правилах и шаблонах | `feat` | 📋 запланирована | — | — |
-| `FEAT-006.03` | `TASK-05.03` | Исключение `/l1-fast` в правилах `00/20/40`, словаре, шаблоне роадмапа, скиллах `l1-task` и `l1-hotfix`, сводке `AGENTS.md` / `CLAUDE.md`; сверка шагов `agent` для релиза | `feat` | 📋 запланирована | — | — |
+| `FEAT-006.02` | `TASK-05.02` | Отклонение текущего спринта с откатом (`git revert`) в `/l1-planning`, статус `❌ отклонена` для `SPRINT-NN` и `TASK-NN.MM` в правилах и шаблонах | `feat` | ✅ реализована | [plan](./sprints/SPRINT-05-fast-mode/tasks/TASK-05.02-sprint-rejection/plan.md) | [summary](./sprints/SPRINT-05-fast-mode/tasks/TASK-05.02-sprint-rejection/summary.md) |
+| `FEAT-006.03` | `TASK-05.03` | Исключение `/l1-fast` в правилах `00/20/40`, словаре, шаблоне роадмапа, скиллах `l1-task` и `l1-hotfix`, сводке `AGENTS.md` / `CLAUDE.md`; сверка шагов `agent` для релиза; **обязательно:** синхронизация EN `/l1-planning` с RU (шаги 3–5 и Exit Gate) и страж RU/EN на весь скилл | `feat` | 📋 запланирована | — | — |
 | `FEAT-006.04` | `TASK-05.04` | `/l1-fast` и отклонение спринта простым языком в `README`, `METHODOLOGY.md`, `user-guide/*` и на сайте | `docs` | 📋 запланирована | — | — |
 | `FEAT-006.99` | `TASK-05.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)** *(Обязательная)*: живой E2E-прогон `/l1-fast` субагентом в песочнице на двух быстрых моделях | `chore` | 📋 запланирована | — | — |
 

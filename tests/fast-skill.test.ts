@@ -24,6 +24,7 @@ const phrases = {
     planAfter: "записан после реализации",
     completed: "Завершённые спринты",
     ownFiles: "только свои файлы",
+    codeCommitted: "Код уже закоммичен в Шаге 5",
   },
   en: {
     purpose: "## What this command is for",
@@ -42,6 +43,7 @@ const phrases = {
     planAfter: "written after the build",
     completed: "Completed Sprints",
     ownFiles: "only your own files",
+    codeCommitted: "The code is already committed in Step 5",
   },
 };
 
@@ -109,10 +111,20 @@ describe.each(["ru", "en"] as const)("/l1-fast skill (%s)", (language) => {
     expect(reserve).toContain(phrases[language].mode);
   });
 
+  it("commits the reservation on its own, so a rejection knows where the sprint starts", () => {
+    expect(step(language, 4)).toContain("chore(roadmap): reserve SPRINT-NN for /l1-fast");
+  });
+
   it("builds test-first and stops to reassess the size when the work grows", () => {
     const build = step(language, 5);
     expect(build).toContain("tdd");
     expect(build).toContain(phrases[language].reassess);
+  });
+
+  it("commits each finished task with green tests by path, so git keeps the log of the work", () => {
+    const build = step(language, 5);
+    expect(build).toContain("TASK-NN.MM");
+    expect(build).toContain("git add <");
   });
 
   it("runs every check of a usual task and its Doctor Checklist before the second stop", () => {
@@ -154,6 +166,12 @@ describe.each(["ru", "en"] as const)("/l1-fast skill (%s)", (language) => {
     expect(record).toContain(phrases[language].modeRow);
     expect(record).toContain(phrases[language].planAfter);
     expect(record).toContain(phrases[language].completed);
+  });
+
+  it("makes the final commit with the registries only, since the code is already committed in Step 5", () => {
+    const record = step(language, 7);
+    expect(record).toContain("docs(<scope>): record FEAT-NNN built in /l1-fast");
+    expect(record).toContain(phrases[language].codeCommitted);
   });
 
   it("commits only its own files by path, so a parallel tab's work stays out of the commit", () => {

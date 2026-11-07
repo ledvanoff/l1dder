@@ -32,8 +32,8 @@ alwaysApply: true
 |--------|-------------------------------------------|
 | **`IDEA-NNN`** (`docs/ideas.md`) | `📋 unrealized` → `🚧 in-progress` → `✅ realized` \| `❌ rejected` |
 | **`FEAT-NNN`** (`docs/backlog.md`) | `📝 drafting` → `📋 in-backlog` → `🗓 scheduled` → `🚧 in-progress` → `✅ realized` \| `❌ rejected` |
-| **`SPRINT-NN`** (`backlog.md`, `roadmap.md`) | `📋 planned` → `🚧 in-progress` → `✅ realized` \| `⏸ paused` |
-| **`TASK-NN.MM`** (`backlog.md`, `SPRINT README`) | `📋 planned` → `🚧 in-progress` → `✅ realized` \| `⏸ paused` |
+| **`SPRINT-NN`** (`backlog.md`, `roadmap.md`) | `📋 planned` → `🚧 in-progress` → `✅ realized` \| `⏸ paused` \| `❌ rejected` |
+| **`TASK-NN.MM`** (`backlog.md`, `SPRINT README`) | `📋 planned` → `🚧 in-progress` → `✅ realized` \| `⏸ paused` \| `❌ rejected` |
 | **`HOTFIX-NNN`** (`docs/backlog.md`) | `🚧 in-progress` → `✅ realized` |
 
 ---

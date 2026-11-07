@@ -8,7 +8,7 @@
 | **Parent Feature / Spec ID** | [`FEAT-NNN`](../../backlog.md#feat-nnn) ([`docs/specs/FEAT-NNN-<slug>/`](../../specs/FEAT-NNN-<slug>/)) |
 | **Parent Idea ID** | [`IDEA-NNN`](../../ideas.md#idea-nnn) |
 | **Roadmap Pointer** | [`docs/roadmap.md`](../../roadmap.md) |
-| **Sprint Status** | `📋 planned` \| `🚧 in-progress` \| `✅ realized` |
+| **Sprint Status** | `📋 planned` \| `🚧 in-progress` \| `✅ realized` \| `❌ rejected` |
 | **Opened / Closed Date** | YYYY-MM-DD / YYYY-MM-DD |
 
 ---
