@@ -67,7 +67,8 @@ npx l1dder init --lang ru --agents cursor,claude --yes
 | **`/l1-feature`** | Флоу «Фича» | Берёт идею `IDEA-NNN`, создаёт полную спеку (`docs/specs/FEAT-NNN-<slug>/`), грумит фичу на шаги `FEAT-NNN.01..99` и кладёт в **Бэклог** (`docs/backlog.md`). |
 | **`/l1-planning`** | Флоу «Планирование» | Формирует и обновляет **Роадмап** (`docs/roadmap.md` — Единый источник истины): планирует спринты (`Delivery Queue`) и очередь идей (`Discovery Queue`). |
 | **`/l1-task`** | Флоу «Задача» | Берёт строго следующую задачу из Роадмапа (`Plan → Implement → Self-check → Summary`), а в конце каждого спринта проводит обязательную задачу **`TASK-NN.99` (`Doctor Checklist`)**. |
-| **`/l1-hotfix`** | Флоу «Хотфикс» | Единственное исключение из Роадмапа: быстрая починка критического бага (`RED → GREEN`) и запись `HOTFIX-NNN` в `docs/backlog.md`. |
+| **`/l1-hotfix`** | Флоу «Хотфикс» | Исключение из Роадмапа для срочных багов: быстрая починка критического бага (`RED → GREEN`) и запись `HOTFIX-NNN` в `docs/backlog.md`. |
+| **`/l1-chore`** | Правка самого проекта | Правки не продукта, а самого проекта: правила git, CI, библиотеки, `Makefile`, правила агента. Без идеи, спеки и спринта: одна остановка «ок», `make ci` и строка `CHORE-NNN` в `docs/backlog.md`. |
 | **`/l1-evo`** | Эволюция `L1DDER` | Доработка самой методологии по правилам [`evolution/METHODOLOGY-RULES.md`](evolution/METHODOLOGY-RULES.md), ведение [`WORKLOG-CHANGELOG.md`](evolution/WORKLOG-CHANGELOG.md) и [`HANDOFF.md`](evolution/HANDOFF.md). |
 
 ---
@@ -84,11 +85,11 @@ npx l1dder init --lang ru --agents cursor,claude --yes
 
 ## Справочник CLI-команд и манифест `l1dder/skills.json`
 
-В коробку `l1dder/` уже вшиты **20 скиллов** (7 управляющих `/l1-*` + 4 скилла **[DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)** + 9 инженерных скиллов **[mattpocock/skills](https://github.com/mattpocock/skills)**: `grilling`, `domain-modeling`, `codebase-design`, `tdd`, `diagnosing-bugs`, `code-review`, `retro`, `prototype`, `writing-for-agents`), которые описаны в манифесте **`l1dder/skills.json`**.
+В коробку `l1dder/` уже вшиты **встроенные скиллы**: управляющие `/l1-*`, скиллы **[DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)** и инженерные скиллы **[mattpocock/skills](https://github.com/mattpocock/skills)**: `grilling`, `domain-modeling`, `codebase-design`, `tdd`, `diagnosing-bugs`, `code-review`, `retro`, `prototype`, `writing-for-agents`), которые описаны в манифесте **`l1dder/skills.json`**.
 
 | Команда в терминале | Что делает |
 |---------------------|-----------|
-| `npx l1dder init` | Устанавливает `l1dder/`, `skills.json`, все 20 встроенных скиллов и правила для выбранных агентов (`--lang ru\|en`, `--agents cursor,claude,codex`, `--yes`). |
+| `npx l1dder init` | Устанавливает `l1dder/`, `skills.json`, все встроенные скиллы и правила для выбранных агентов (`--lang ru\|en`, `--agents cursor,claude,codex`, `--yes`). |
 | `npx l1dder@latest update` | **Обновляет весь фреймворк** (правила `Core`, шаблоны, гайды и скиллы), **сохраняя нетронутыми** твой проектный стек (`30-tech-stack.mdc`, `40-skills-router.mdc`, `stack` в `skills.json`) и `docs/`. |
 | `npx l1dder@latest update --skills` | **Обновляет только скиллы** (`l1dder/skills/**` и папки скиллов в агентах), не трогая правила и шаблоны. |
 | `npx l1dder skills list` | Показывает все скиллы из `l1dder/skills.json` (`l1dder`, `core`, `stack`) и статус их установки. |

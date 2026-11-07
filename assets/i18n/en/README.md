@@ -67,7 +67,8 @@ The agent automatically detects whether the repo is empty (`from-scratch`) or al
 | **`/l1-feature`** | Feature & Spec Flow | Takes `IDEA-NNN`, writes a full spec (`docs/specs/FEAT-NNN-<slug>/`), slices steps `FEAT-NNN.01..99`, and adds to **Backlog** (`docs/backlog.md`). |
 | **`/l1-planning`** | Planning Flow | Updates the **Roadmap** (`docs/roadmap.md` — Single Source of Truth): schedules sprints (`Delivery Queue`) and idea grooming (`Discovery Queue`). |
 | **`/l1-task`** | Task & Doctor Flow | Executes the next scheduled task from the Roadmap (`Plan → Implement → Self-check → Summary`), ending every sprint with mandatory **`TASK-NN.99` (`Doctor Checklist`)**. |
-| **`/l1-hotfix`** | Hotfix Flow | The only Roadmap exception: reproduces a critical bug (`RED → GREEN`), fixes it with minimal diff (`ponytail`), and logs `HOTFIX-NNN` in `docs/backlog.md`. |
+| **`/l1-hotfix`** | Hotfix Flow | The Roadmap exception for urgent bugs: reproduces a critical bug (`RED → GREEN`), fixes it with minimal diff (`ponytail`), and logs `HOTFIX-NNN` in `docs/backlog.md`. |
+| **`/l1-chore`** | Project Maintenance | Changes to the project itself, not the product: git rules, CI, libraries, `Makefile`, agent rules. No idea, spec or sprint: a single "ok" stop, `make ci`, and a `CHORE-NNN` row in `docs/backlog.md`. |
 | **`/l1-evo`** | Framework Evolution | Dogfoods improvements to `L1DDER` itself following [`evolution/METHODOLOGY-RULES.md`](evolution/METHODOLOGY-RULES.md), updating [`WORKLOG-CHANGELOG.md`](evolution/WORKLOG-CHANGELOG.md) and [`HANDOFF.md`](evolution/HANDOFF.md). |
 
 ---
@@ -84,11 +85,11 @@ Start with **[`user-guide/`](user-guide/README.md)**:
 
 ## Terminal CLI Commands & Skills Manifest (`l1dder/skills.json`)
 
-`l1dder/` ships with **20 bundled skills** out of the box (7 `/l1-*` workflow skills + 4 **[DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)** skills + 9 **[mattpocock/skills](https://github.com/mattpocock/skills)** engineering skills: `grilling`, `domain-modeling`, `codebase-design`, `tdd`, `diagnosing-bugs`, `code-review`, `retro`, `prototype`, `writing-for-agents`), tracked in **`l1dder/skills.json`**.
+`l1dder/` ships with **bundled skills** out of the box (`/l1-*` workflow skills, **[DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)** skills, and **[mattpocock/skills](https://github.com/mattpocock/skills)** engineering skills: `grilling`, `domain-modeling`, `codebase-design`, `tdd`, `diagnosing-bugs`, `code-review`, `retro`, `prototype`, `writing-for-agents`), tracked in **`l1dder/skills.json`**.
 
 | Command | Description |
 |---------|-------------|
-| `npx l1dder init` | Installs `l1dder/`, `skills.json`, all 20 bundled skills, and agent files (`--lang en\|ru`, `--agents cursor,claude,codex`, `--yes`). |
+| `npx l1dder init` | Installs `l1dder/`, `skills.json`, all bundled skills, and agent files (`--lang en\|ru`, `--agents cursor,claude,codex`, `--yes`). |
 | `npx l1dder@latest update` | **Updates the entire framework** (`Core` rules, templates, guides & skills) while **preserving** your project stack (`30-tech-stack.mdc`, `40-skills-router.mdc`, `stack` in `skills.json`) and `docs/`. |
 | `npx l1dder@latest update --skills` | **Updates ONLY skills** (`l1dder/skills/**` and agent skill folders), leaving rules and templates untouched. |
 | `npx l1dder skills list` | Lists all skills declared in `l1dder/skills.json` (`l1dder`, `core`, `stack`). |

@@ -20,7 +20,7 @@ export const SEO_PAGES: Readonly<Record<string, { title: string; description: st
   "flows.md": {
     title: "Слэш-команды /l1-*: разбор всех цепочек L1DDER",
     description:
-      "Зачем нужны /l1-onboard, /l1-idea, /l1-feature, /l1-planning, /l1-task и /l1-hotfix, когда их вызывать и что каждая из них создаёт.",
+      "Зачем нужны /l1-onboard, /l1-idea, /l1-feature, /l1-planning, /l1-task, /l1-hotfix и /l1-chore, когда их вызывать и что каждая из них создаёт.",
   },
   "cheatsheet.md": {
     title: "Шпаргалка и FAQ по L1DDER: что делать прямо сейчас",
@@ -65,7 +65,7 @@ export const SEO_PAGES: Readonly<Record<string, { title: string; description: st
   "en/flows.md": {
     title: "Slash Commands /l1-*: Every L1DDER Flow Explained",
     description:
-      "What /l1-onboard, /l1-idea, /l1-feature, /l1-planning, /l1-task and /l1-hotfix are for, when to run them and what each one creates.",
+      "What /l1-onboard, /l1-idea, /l1-feature, /l1-planning, /l1-task, /l1-hotfix and /l1-chore are for, when to run them and what each one creates.",
   },
   "en/cheatsheet.md": {
     title: "L1DDER Cheatsheet and FAQ: What to Do Right Now",

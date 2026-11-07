@@ -38,7 +38,11 @@ flowchart TB
         HOTFIX["Emergency Bug Fix Bypassing Roadmap (RED → GREEN)<br/>Log HOTFIX-NNN in docs/backlog.md"]
     end
 
-    subgraph flow6["6. Meta Loop: Evolution & Dogfooding (/l1-evo)"]
+    subgraph flowChore["6. Exception: Change the Project Itself (/l1-chore)"]
+        CHORE["Git rules, CI, libraries, Makefile, agent rules — product unchanged<br/>Single 'ok' stop → make ci → log CHORE-NNN in docs/backlog.md"]
+    end
+
+    subgraph flow6["7. Meta Loop: Evolution & Dogfooding (/l1-evo)"]
         EVO["Evolving L1DDER by Its Own Rules<br/>l1dder/evolution/{METHODOLOGY-RULES,WORKLOG-CHANGELOG,HANDOFF}.md"]
     end
 
@@ -112,3 +116,6 @@ The single entry point after `npx l1dder init`. It runs six stages, one file eac
 
 ### Flow 5: Hotfix Exception (`/l1-hotfix`)
 Reproduces an urgent bug first (`RED Gate` — `diagnosing-bugs`), gets `"ok"` on a concise chat plan, applies the minimal fix (`GREEN` + `make ci`), and logs `HOTFIX-NNN` in `docs/backlog.md`.
+
+### Flow 6: Chore Exception — Changes to the Project Itself (`/l1-chore`)
+For changes to the project itself, not to what its users see: git rules (branch and commit names, pre-push checks), automatic checks in CI, library updates, the `Makefile`, build scripts, tests, rules for the AI agent. No idea, spec or sprint: the agent checks that the product stays unchanged (otherwise it changes no files and suggests `/l1-task` or `/l1-hotfix`), computes `CHORE-NNN`, gets a single `"ok"` on the options, makes the minimal change (`make ci`), and logs `CHORE-NNN` in the Chore Log of `docs/backlog.md` (adding the section if it is missing).

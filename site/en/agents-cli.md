@@ -7,7 +7,7 @@
 ## 1. Terminal CLI Commands
 
 ### `npx l1dder init`
-Installs the `l1dder/` directory (methodology, templates, rules, `l1dder/skills.json` manifest, and **20 bundled skills**) and configures native rules and slash commands for your selected AI agents.
+Installs the `l1dder/` directory (methodology, templates, rules, `l1dder/skills.json` manifest, and **bundled skills**) and configures native rules and slash commands for your selected AI agents.
 
 ```bash
 # Interactive setup (asks for language and agents):
@@ -28,7 +28,7 @@ npx l1dder@latest update
 1. **Changelog & `BREAKING CHANGES` Check:** The CLI compares your installed version in `l1dder/config.json` against the new release, prints the changelog, and if any intermediate release contains **`BREAKING CHANGES`**, displays them prominently and asks:
    `❓ This update includes BREAKING CHANGES. Proceed with update? (yes/no) [y/N]:`
    Only if you reply **`yes`** (or pass `--yes`) does the CLI proceed. If you reply `no`, zero files are modified.
-2. **Framework Update:** updates `00-methodology.mdc`, `10-conventions.mdc`, `20-workflow.mdc`, all 20 bundled `/l1-*`, `ponytail*`, `mattpocock/skills`, `templates/`, `user-guide/`, `METHODOLOGY.md`, and refreshes all configured AI agent folders.
+2. **Framework Update:** updates `00-methodology.mdc`, `10-conventions.mdc`, `20-workflow.mdc`, all bundled `/l1-*`, `ponytail*`, `mattpocock/skills`, `templates/`, `user-guide/`, `METHODOLOGY.md`, and refreshes all configured AI agent folders.
 
 > 🔒 **Stack Protection:** `npx l1dder@latest update` **never overwrites** your project-specific stack files (`l1dder/rules/30-tech-stack.mdc`, `l1dder/rules/40-skills-router.mdc`, `l1dder/ci/*`, and the `"stack"` array in `l1dder/skills.json`). Use `--force` only if you want to reset stack files to the default template.
 
@@ -73,7 +73,7 @@ Inside `l1dder/` sits **`l1dder/skills.json`**, organizing all skills into 3 cle
 ```json
 {
   "l1dder": [
-    "l1-onboard", "l1-idea", "l1-feature", "l1-planning", "l1-task", "l1-hotfix", "l1-evo"
+    "l1-onboard", "l1-idea", "l1-feature", "l1-planning", "l1-task", "l1-hotfix", "l1-chore", "l1-evo"
   ],
   "core": [
     {
@@ -99,8 +99,8 @@ Inside `l1dder/` sits **`l1dder/skills.json`**, organizing all skills into 3 cle
 }
 ```
 
-1. **`l1dder` (7 workflow control skills):** built-in slash commands (`/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-hotfix`, `/l1-evo`).
-2. **`core` (13 core engineering skills — bundled out of the box `bundled: true`):**
+1. **`l1dder` (workflow control skills):** built-in slash commands (`/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-hotfix`, `/l1-chore`, `/l1-evo`).
+2. **`core` (core engineering skills — bundled out of the box `bundled: true`):**
    - **[DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)**: `ponytail`, `ponytail-review`, `ponytail-audit`, `ponytail-debt`.
    - **[mattpocock/skills](https://github.com/mattpocock/skills)** (`Model-invoked` engineering primitives): `grilling`, `domain-modeling`, `codebase-design`, `tdd`, `diagnosing-bugs`, `code-review`, `retro`, `prototype`, `writing-for-agents` (along with all companion reference files `DEEPENING.md`, `DESIGN-IT-TWICE.md`, `tests.md`, `mocking.md`, `LOGIC.md`, `UI.md`, `GLOSSARY-FORMAT.md`, `ADR-FORMAT.md`).
    - Because they are bundled (`bundled: true`), `npx l1dder init` installs them offline in milliseconds, while `npx l1dder skills update` lets you pull fresh upstream updates from GitHub anytime.
@@ -112,9 +112,9 @@ Inside `l1dder/` sits **`l1dder/skills.json`**, organizing all skills into 3 cle
 
 | AI Agent | `--agents` Flag | Files Generated in Your Repository |
 |----------|:---------------:|------------------------------------|
-| **Cursor** | `cursor` | • `.cursor/rules/l1dder/*.mdc` (5 rules with `alwaysApply: true`)<br/>• `.cursor/skills/<skill>/*` (all 20+ skills `/l1-*`, `ponytail*`, `mattpocock/skills` & `stack`)<br/>• `AGENTS.md` (managed `<!-- l1dder:begin -->` block) |
+| **Cursor** | `cursor` | • `.cursor/rules/l1dder/*.mdc` (5 rules with `alwaysApply: true`)<br/>• `.cursor/skills/<skill>/*` (all skills `/l1-*`, `ponytail*`, `mattpocock/skills` & `stack`)<br/>• `AGENTS.md` (managed `<!-- l1dder:begin -->` block) |
 | **Claude Code** | `claude` | • `CLAUDE.md` (managed `<!-- l1dder:begin -->` block)<br/>• `.claude/rules/l1dder/*.md` (modular rules)<br/>• `.claude/skills/<skill>/*` (complete skill folders) |
-| **OpenAI Codex** | `codex` | • `AGENTS.md`<br/>• `.agents/skills/<skill>/*` (complete folders for all 20+ skills) |
+| **OpenAI Codex** | `codex` | • `AGENTS.md`<br/>• `.agents/skills/<skill>/*` (complete folders for all skills) |
 | **Windsurf** | `windsurf` | • `.windsurf/rules/l1dder.md`<br/>• `.windsurf/workflows/<skill>.md` (slash workflows)<br/>• `AGENTS.md` |
 | **GitHub Copilot** | `copilot` | • `.github/copilot-instructions.md` (managed marker block)<br/>• `.github/prompts/<skill>.prompt.md` (prompt files) |
 | **OpenCode** | `opencode` | • `AGENTS.md`<br/>• `.agents/skills/<skill>/*` |

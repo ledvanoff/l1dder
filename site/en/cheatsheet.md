@@ -15,6 +15,7 @@
 | ⚙️ Want the agent to build the next scheduled task | `/l1-task` | Picks the next task from `docs/roadmap.md`, creates `plan.md` (`ok`), implements, verifies (`ok`), and records `summary.md`. |
 | 🩺 All regular sprint tasks are done | `/l1-task` | Automatically starts `TASK-NN.99` (`Doctor Checklist`): CI, E2E, Living Docs Sync, and Human UAT. |
 | 🚑 Urgent bug needs an immediate fix | `/l1-hotfix [bug description]` | Reproduces the bug (`RED`), gets `"ok"`, fixes it (`GREEN`), and logs `HOTFIX-NNN` in `docs/backlog.md`. |
+| 🧹 Want to change the project itself, not the product: git rules, CI, libraries, `Makefile`, agent rules | `/l1-chore [what to change]` *(or "let's make a chore change...")* | Checks the product stays unchanged, suggests an option, after `"ok"` makes the change, runs `make ci`, and logs `CHORE-NNN` in `docs/backlog.md`. |
 | 🔍 Want to review code for bloat | `/ponytail-review` or `/ponytail-audit` | Reviews recent changes or the whole repo for over-engineering. |
 | 🧾 Want to see deliberate shortcuts | `/ponytail-debt` | Collects all `// shortcut:` comments into a debt ledger. |
 | 🧬 Want to evolve `L1DDER` rules or update `HANDOFF.md` | `/l1-evo [description or handoff]` | Synchronously updates rules/skills/guides, logs `WORKLOG-CHANGELOG.md`, and updates `HANDOFF.md`. |

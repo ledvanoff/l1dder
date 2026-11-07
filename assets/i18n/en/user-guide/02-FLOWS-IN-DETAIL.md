@@ -107,3 +107,26 @@ flowchart LR
     H3 --> H4["3. Minimal fix (ponytail)<br/>Test turns GREEN + make ci"]
     H4 --> H5["4. Log HOTFIX-001<br/>in docs/backlog.md"]
 ```
+
+---
+
+## 🧹 Button 6: `/l1-chore` — Changes to the Project Itself
+
+**When to use:** When you need to change not what your users see, but **the project itself**: its "back kitchen". For example:
+- change how you work with git: how branches and commits are named, what is checked before a push;
+- set up automatic checks in CI;
+- update libraries and dependencies;
+- fix the `Makefile`, build scripts or tests;
+- change the rules for your AI agent.
+
+These changes need no idea, spec or sprint. The agent shows once what it will do and how, you answer "ok", and the change is logged as one line in `docs/backlog.md`. You can also skip the command and just write "let's make a chore change...".
+
+```mermaid
+flowchart LR
+    C1["You type:<br/>/l1-chore [what to change]"] --> C2["1. Agent checks:<br/>will users notice it?<br/>If yes — suggests /l1-task or /l1-hotfix"]
+    C2 --> C3["2. Options & CHORE-001 card<br/>⛔ STOP: You reply 'ok'"]
+    C3 --> C4["3. Change + tests + make ci"]
+    C4 --> C5["4. Log CHORE-001<br/>in the Chore Log (docs/backlog.md)"]
+```
+
+**How it differs from `/l1-hotfix`:** `/l1-hotfix` fixes what broke for the product's users. `/l1-chore` changes what you and the agent use while building the product.

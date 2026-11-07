@@ -9,3 +9,4 @@
 | Schedule or reorder the Roadmap (`docs/roadmap.md`) | `/l1-planning` |
 | Execute the next task from the Roadmap (or run final `Doctor Checklist`) | `/l1-task` |
 | Fix an urgent bug bypassing the Roadmap | `/l1-hotfix [bug]` |
+| Change the project itself, not the product: git rules, CI, libraries, `Makefile`, agent rules | `/l1-chore [what to change]` |

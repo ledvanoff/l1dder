@@ -7,7 +7,7 @@
 ## 1. Команды терминала (CLI)
 
 ### `npx l1dder init`
-Устанавливает папку `l1dder/` (методология, шаблоны, правила, манифест `l1dder/skills.json` и **20 встроенных скиллов**) и генерирует конфигурационные файлы для всех выбранных ИИ-агентов.
+Устанавливает папку `l1dder/` (методология, шаблоны, правила, манифест `l1dder/skills.json` и **встроенные скиллы**) и генерирует конфигурационные файлы для всех выбранных ИИ-агентов.
 
 ```bash
 # Интерактивный режим (спросит язык и список агентов):
@@ -28,7 +28,7 @@ npx l1dder@latest update
 1. **Проверка чейнджлога и `BREAKING CHANGES`:** CLI сверяет версию из твоего `l1dder/config.json` с новой версией, показывает список изменений (`CHANGELOG`) и, если между версиями есть **ломающие изменения (`BREAKING CHANGES`)**, выводит заметное предупреждение и спрашивает:
    `❓ В новой версии есть ломающие изменения (BREAKING CHANGES). Продолжить обновление? (да/нет) [y/N]:`
    Только если ты отвечаешь **`да`** (или передаёшь флаг `--yes`), CLI выполняет обновление. Если ответить `нет` — ни один файл в проекте не меняется.
-2. **Обновление фреймворка:** обновляет `00-methodology.mdc`, `10-conventions.mdc`, `20-workflow.mdc`, все 20 встроенных скиллов `/l1-*`, `ponytail*`, `mattpocock/skills`, шаблоны `templates/`, `user-guide/`, `METHODOLOGY.md` и синхронизирует папки всех агентов.
+2. **Обновление фреймворка:** обновляет `00-methodology.mdc`, `10-conventions.mdc`, `20-workflow.mdc`, все встроенные скиллы `/l1-*`, `ponytail*`, `mattpocock/skills`, шаблоны `templates/`, `user-guide/`, `METHODOLOGY.md` и синхронизирует папки всех агентов.
 
 > 🔒 **Защита стека проекта:** При обновлении `npx l1dder@latest update` **никогда не перезаписывает** твой проектный стек (`l1dder/rules/30-tech-stack.mdc`, `l1dder/rules/40-skills-router.mdc`, `l1dder/ci/*` и секцию `"stack"` в `l1dder/skills.json`), а наоборот — сохраняет их и прокидывает во все подключённые агенты!
 > Если нужно принудительно сбросить стек к заводскому шаблону — добавь флаг `--force`.
@@ -74,7 +74,7 @@ npx l1dder skills update
 ```json
 {
   "l1dder": [
-    "l1-onboard", "l1-idea", "l1-feature", "l1-planning", "l1-task", "l1-hotfix", "l1-evo"
+    "l1-onboard", "l1-idea", "l1-feature", "l1-planning", "l1-task", "l1-hotfix", "l1-chore", "l1-evo"
   ],
   "core": [
     {
@@ -100,8 +100,8 @@ npx l1dder skills update
 }
 ```
 
-1. **`l1dder` (7 управляющих скиллов процесса):** собственные слэш-команды фреймворка (`/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-hotfix`, `/l1-evo`).
-2. **`core` (13 базовых инженерных дисциплин — уже в коробке `bundled: true`):**
+1. **`l1dder` (управляющие скиллы процесса):** собственные слэш-команды фреймворка (`/l1-onboard`, `/l1-idea`, `/l1-feature`, `/l1-planning`, `/l1-task`, `/l1-hotfix`, `/l1-chore`, `/l1-evo`).
+2. **`core` (базовые инженерные дисциплины — уже в коробке `bundled: true`):**
    - **[DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)**: `ponytail`, `ponytail-review`, `ponytail-audit`, `ponytail-debt`.
    - **[mattpocock/skills](https://github.com/mattpocock/skills)** (`Model-invoked` дисциплины): `grilling`, `domain-modeling`, `codebase-design`, `tdd`, `diagnosing-bugs`, `code-review`, `retro`, `prototype`, `writing-for-agents` (вместе со всеми их вспомогательными файлами `DEEPENING.md`, `DESIGN-IT-TWICE.md`, `tests.md`, `mocking.md`, `LOGIC.md`, `UI.md`, `GLOSSARY-FORMAT.md`, `ADR-FORMAT.md`).
    - Благодаря гибридному подходу (`bundled: true`) они **уже лежат внутри npm-пакета `l1dder`** и устанавливаются за долю секунды без интернета и VPN, но при желании легко обновляются из апстрима командой `npx l1dder skills update`.
@@ -111,13 +111,13 @@ npx l1dder skills update
 
 ## 3. Куда именно устанавливаются файлы для каждого ИИ-агента
 
-При вызове `npx l1dder init --agents ...` (или `npx l1dder sync` / `npx l1dder skills install`) инсталлятор раскладывает нативные форматы правил и всех 20+ скиллов под каждый инструмент:
+При вызове `npx l1dder init --agents ...` (или `npx l1dder sync` / `npx l1dder skills install`) инсталлятор раскладывает нативные форматы правил и всех скиллов под каждый инструмент:
 
 | ИИ-Агент | Флаг `--agents` | Какие файлы создаются в проекте |
 |----------|:---------------:|---------------------------------|
-| **Cursor** | `cursor` | • `.cursor/rules/l1dder/*.mdc` (5 правил с `alwaysApply: true`)<br/>• `.cursor/skills/<skill>/*` (все 20+ скиллов `/l1-*`, `ponytail*`, `mattpocock/skills` и `stack`)<br/>• `AGENTS.md` (управляемый блок `<!-- l1dder:begin -->`) |
+| **Cursor** | `cursor` | • `.cursor/rules/l1dder/*.mdc` (5 правил с `alwaysApply: true`)<br/>• `.cursor/skills/<skill>/*` (все скиллы `/l1-*`, `ponytail*`, `mattpocock/skills` и `stack`)<br/>• `AGENTS.md` (управляемый блок `<!-- l1dder:begin -->`) |
 | **Claude Code** | `claude` | • `CLAUDE.md` (управляемый блок `<!-- l1dder:begin -->`)<br/>• `.claude/rules/l1dder/*.md` (модульные правила проекта)<br/>• `.claude/skills/<skill>/*` (полные папки всех скиллов) |
-| **OpenAI Codex** | `codex` | • `AGENTS.md` (точка входа Codex)<br/>• `.agents/skills/<skill>/*` (полные папки всех 20+ скиллов) |
+| **OpenAI Codex** | `codex` | • `AGENTS.md` (точка входа Codex)<br/>• `.agents/skills/<skill>/*` (полные папки всех скиллов) |
 | **Windsurf** | `windsurf` | • `.windsurf/rules/l1dder.md` (сводные правила)<br/>• `.windsurf/workflows/<skill>.md` (слэш-воркфлоу)<br/>• `AGENTS.md` |
 | **GitHub Copilot** | `copilot` | • `.github/copilot-instructions.md` (управляемый блок инструкций)<br/>• `.github/prompts/<skill>.prompt.md` (промт-команды) |
 | **OpenCode** | `opencode` | • `AGENTS.md`<br/>• `.agents/skills/<skill>/*` |

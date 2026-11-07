@@ -24,18 +24,19 @@ In **L1DDER**, roles are strictly separated:
 - 👤 **You are the Product Owner & Final Reviewer.** You bring ideas, set priorities, reply **"ok"** at decision checkpoints, and test the finished result.
 - 🤖 **The AI Agent is your Engineering Team with a Built-in Tech Lead.** It asks smart decision-tree questions with recommendations, writes specs, writes lean code (`ponytail`), runs tests, and keeps documentation in sync.
 
-You control the entire lifecycle with **6 slash commands**:
+You control the entire lifecycle with a few **slash commands**:
 0. `/l1-onboard` — run once at project start to work out the concept stage by stage, then the tech stack and `docs/`.
 1. `/l1-idea` — capture and refine an idea into the Idea Bank.
 2. `/l1-feature` — turn an idea into a technical specification and slice it into Backlog tasks.
 3. `/l1-planning` — order the Roadmap queue (what we build now vs. next).
 4. `/l1-task` — tell the agent "Execute the next task on the Roadmap!".
 5. `/l1-hotfix` — emergency button "Fix this bug right now bypassing the queue!".
+6. `/l1-chore` — changes to the project itself, not to what your users see: git rules (how branches and commits are named, what is checked before a push), automatic checks in CI, library updates, the `Makefile`, rules for the AI agent. No idea, spec or sprint needed: the agent suggests, you say "ok".
 *(Plus `/l1-evo` to evolve the methodology itself or save `HANDOFF.md`).*
 
 ---
 
-## 🗺 Visual Map of `L1DDER`: 5 Core Chains
+## 🗺 Visual Map of `L1DDER`: Core Chains
 
 ```mermaid
 flowchart TB
@@ -46,6 +47,7 @@ flowchart TB
     classDef taskFlow fill:#DCFCE7,stroke:#16A34A,stroke-width:2px,color:#14532D
     classDef doctorFlow fill:#F3E8FF,stroke:#9333EA,stroke-width:2px,color:#3B0764
     classDef hotfixFlow fill:#FEE2E2,stroke:#DC2626,stroke-width:2px,color:#7F1D1D
+    classDef choreFlow fill:#E5E7EB,stroke:#4B5563,stroke-width:2px,color:#111827
 
     YOU(["👤 YOU (Product Owner)<br/>Control via /l1-* commands & 'ok'"]):::human
 
@@ -79,6 +81,11 @@ flowchart TB
         H1["Urgent bug!<br/>Bypass Roadmap"]:::hotfixFlow --> H2["Agent reproduces bug (RED),<br/>shows fix plan (You: 'ok'),<br/>fixes (GREEN) & logs HOTFIX-001"]:::hotfixFlow
     end
 
+    subgraph CHAIN6["🧹 6. CHANGE THE PROJECT ITSELF — /l1-chore"]
+        direction LR
+        C1["Change git rules, CI,<br/>libraries, Makefile"]:::choreFlow --> C2["Agent checks the product stays unchanged,<br/>suggests an option (You: 'ok'),<br/>makes the change & logs CHORE-001"]:::choreFlow
+    end
+
     YOU -->|"/l1-idea"| CHAIN1
     I3 -->|"/l1-feature"| CHAIN2
     F3 -->|"/l1-planning"| CHAIN3
@@ -86,6 +93,7 @@ flowchart TB
     P3 -->|"Roadmap Gate: strictly in queue order!"| CHAIN4
     T2 -->|"Cascades closure:<br/>SPRINT-01 ✅ → FEAT-001 ✅ → IDEA-001 ✅"| P3
     YOU -->|"/l1-hotfix"| CHAIN5
+    YOU -->|"/l1-chore"| CHAIN6
 ```
 
 ---

@@ -315,8 +315,8 @@ export function runProjectDoctor(projectDir: string, rootDir = "l1dder"): Doctor
       status: "pass",
       message:
         language === "ru"
-          ? `Все ключевые правила и 21 базовый скилл в ${rootDir}/ на месте`
-          : `All core rules and 21 bundled skills in ${rootDir}/ are present`,
+          ? `Все ключевые правила и встроенные скиллы в ${rootDir}/ на месте`
+          : `All core rules and bundled skills in ${rootDir}/ are present`,
     });
   } else {
     checks.push({

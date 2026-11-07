@@ -42,7 +42,7 @@ export default withMermaid(
               items: [
                 { text: "Обзор и главная схема", link: "/guide" },
                 { text: "Быстрый старт за 3 минуты", link: "/quickstart" },
-                { text: "Разбор 6 кнопок /l1-*", link: "/flows" },
+                { text: "Разбор кнопок /l1-*", link: "/flows" },
                 { text: "Шпаргалка и FAQ", link: "/cheatsheet" },
                 { text: "Не видны слэш-команды", link: "/troubleshooting" },
               ],

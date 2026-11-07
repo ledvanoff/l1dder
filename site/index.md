@@ -4,7 +4,7 @@ layout: home
 hero:
   name: "L1DDER"
   text: "Spec-Driven & Roadmap-Gated AI Development"
-  tagline: "Управляй разработкой сложных продуктов через 6 слэш-команд (/l1-*) и слово «ок». Работает в Cursor, Claude Code, Codex, Windsurf, Copilot, OpenCode и Cline."
+  tagline: "Управляй разработкой сложных продуктов через слэш-команды /l1-* и слово «ок». Работает в Cursor, Claude Code, Codex, Windsurf, Copilot, OpenCode и Cline."
   actions:
     - theme: brand
       text: "⚡ Быстрый старт (3 мин)"
@@ -28,7 +28,7 @@ features:
     details: "Ни один спринт не закрывается без задачи TASK-NN.99: полный прогон CI, двухосевой code-review, E2E-проверка, синхронизация долгосрочной доки и твой ручной UAT."
   - icon: ✂️
     title: "Встроенная дисциплина Ponytail + Matt Pocock"
-    details: "В коробку вшиты 13 инженерных скиллов из DietrichGebert/ponytail (Lazy Senior Dev) и mattpocock/skills (grilling, codebase-design, вертикальный TDD по швам, diagnosing-bugs)."
+    details: "В коробку вшиты инженерные скиллы из DietrichGebert/ponytail (Lazy Senior Dev) и mattpocock/skills (grilling, codebase-design, вертикальный TDD по швам, diagnosing-bugs)."
     link: /agents-cli#_2-📦-манифест-скиллов-l1dder-skills-json-«package-json-для-скиллов»
     linkText: "Подробнее о скиллах →"
   - icon: 🤖
@@ -36,7 +36,7 @@ features:
     details: "Одна команда npx l1dder init разворачивает папку l1dder/ и настраивает правила и скиллы для Cursor, Claude Code, Codex, Windsurf, Copilot, OpenCode и Cline."
   - icon: 🌍
     title: "Полная поддержка RU и EN"
-    details: "Все правила, 20 скиллов, шаблоны документов и путеводитель для человека поставляются на русском (--lang ru) и английском (--lang en) языках."
+    details: "Все правила, скиллы, шаблоны документов и путеводитель для человека поставляются на русском (--lang ru) и английском (--lang en) языках."
 ---
 
 ## Установка: через чат ИИ-агента или терминал
@@ -66,6 +66,6 @@ npx l1dder init --lang ru --yes
 
 ## Инженерные дисциплины в коробке
 
-Помимо 7 управляющих скиллов `/l1-*`, в поставку `L1DDER` (`l1dder/skills.json`) включены проверенные практики от авторов лучших открытых коллекций скиллов:
+Помимо управляющих скиллов `/l1-*`, в поставку `L1DDER` (`l1dder/skills.json`) включены проверенные практики от авторов лучших открытых коллекций скиллов:
 - **[DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)** — дисциплина минимализма (*Lazy Senior Dev Mode*): 6-ступенчатая лестница решений, ревью диффа `ponytail-review`, аудит на оверинжиниринг `ponytail-audit` и учёт техдолга `ponytail-debt`.
 - **[mattpocock/skills](https://github.com/mattpocock/skills)** — инженерные примитивы: опрос по дереву решений `grilling`, единый словарь домена `domain-modeling`, проектирование глубоких модулей `codebase-design` (*Deep Modules & Seams*), вертикальный `tdd` по согласованным швам, диагностика багов `diagnosing-bugs` (*RED Gate*), двухосевой `code-review` и ретроспектива `retro`.

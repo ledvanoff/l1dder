@@ -131,3 +131,66 @@ describe.each(["ru", "en"] as const)("CHORE-NNN in templates, rules and glossary
     expect(chain).toContain("make ci");
   });
 });
+
+describe.each(["ru", "en"] as const)("/l1-chore in the human guide (%s)", (language) => {
+  it.each([
+    "user-guide/README.md",
+    "user-guide/02-FLOWS-IN-DETAIL.md",
+    "user-guide/03-CHEATSHEET.md",
+    "README.md",
+    "onboarding/continue-project.md",
+  ])(
+    "mentions /l1-chore in %s",
+    (path) => {
+      expect(asset(language, path)).toContain("/l1-chore");
+    },
+  );
+
+  it("describes the /l1-chore flow in METHODOLOGY.md", () => {
+    expect(asset(language, "METHODOLOGY.md")).toMatch(/^### .*`\/l1-chore`/m);
+  });
+
+  it("gives /l1-chore its own section in the flows guide, with a git example", () => {
+    const guide = asset(language, "user-guide/02-FLOWS-IN-DETAIL.md");
+    const start = guide.search(/^## .*`\/l1-chore`/m);
+    expect(start).toBeGreaterThan(-1);
+    const end = guide.indexOf("\n## ", start + 1);
+    expect(guide.slice(start, end === -1 ? undefined : end)).toContain("git");
+  });
+});
+
+// A number next to these words goes stale with every new command, so the docs list commands by name instead.
+const COUNTED_WORDS = /\b\d+\+?(?:[^\S\n]+\S+){0,2}?[^\S\n]+\S*(?:скилл|skill|команд|command|кноп|button|цепоч|chain|встроенн|bundled|управляющ|инженерн|engineering|базов)/gi;
+const ONLY_EXCEPTION = /единственное исключение|only (?:roadmap )?exception/gi;
+const repoFile = (path: string) => readFileSync(fileURLToPath(new URL(`../${path}`, import.meta.url)), "utf-8");
+const HUMAN_DOCS = [
+  "README.md",
+  "METHODOLOGY.md",
+  "user-guide/README.md",
+  "user-guide/01-QUICKSTART.md",
+  "user-guide/02-FLOWS-IN-DETAIL.md",
+  "user-guide/03-CHEATSHEET.md",
+  "onboarding/continue-project.md",
+  "onboarding/from-scratch.md",
+  "onboarding/existing-code.md",
+];
+const SITE_FILES = [
+  "README.md",
+  "site/index.md",
+  "site/en/index.md",
+  "site/agents-cli.md",
+  "site/en/agents-cli.md",
+  "site/.vitepress/config.mts",
+  "site/.vitepress/seo.mts",
+];
+
+describe("docs name commands instead of counting them", () => {
+  it.each([
+    ...(["ru", "en"] as const).flatMap((language) => HUMAN_DOCS.map((path) => [`assets/i18n/${language}/${path}`] as const)),
+    ...SITE_FILES.map((path) => [path] as const),
+  ])("%s has no skill or command counts and no 'only exception'", (path) => {
+    const text = repoFile(path);
+    expect([...text.matchAll(COUNTED_WORDS)].map((match) => match[0])).toEqual([]);
+    expect([...text.matchAll(ONLY_EXCEPTION)].map((match) => match[0])).toEqual([]);
+  });
+});

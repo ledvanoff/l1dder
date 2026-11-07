@@ -3,7 +3,7 @@
     {
       "path": "/l1dder/",
       "h1": "L1DDER Spec-Driven & Roadmap-Gated AI Development",
-      "textLength": 3171,
+      "textLength": 3158,
       "mermaidCount": 0,
       "navLinks": [
         "/l1dder/",
@@ -19,7 +19,7 @@
     {
       "path": "/l1dder/agents-cli",
       "h1": "🤖 Поддерживаемые ИИ-агенты, Манифест скиллов и Справочник CLI",
-      "textLength": 8588,
+      "textLength": 8595,
       "mermaidCount": 0,
       "navLinks": [
         "/l1dder/",
@@ -38,7 +38,7 @@
     {
       "path": "/l1dder/cheatsheet",
       "h1": "📋 3. Шпаргалка на 1 экран и FAQ ( L1DDER )",
-      "textLength": 5316,
+      "textLength": 5637,
       "mermaidCount": 0,
       "navLinks": [
         "/l1dder/",
@@ -57,7 +57,7 @@
     {
       "path": "/l1dder/en/",
       "h1": "L1DDER Spec-Driven & Roadmap-Gated AI Development",
-      "textLength": 3045,
+      "textLength": 3033,
       "mermaidCount": 0,
       "navLinks": [
         "/l1dder/",
@@ -73,7 +73,7 @@
     {
       "path": "/l1dder/en/agents-cli",
       "h1": "🤖 Supported AI Agents, Skills Manifest &amp; CLI Reference",
-      "textLength": 7719,
+      "textLength": 7735,
       "mermaidCount": 0,
       "navLinks": [
         "/l1dder/agents-cli",
@@ -92,7 +92,7 @@
     {
       "path": "/l1dder/en/cheatsheet",
       "h1": "📋 3. One-Page Cheatsheet &amp; FAQ ( L1DDER )",
-      "textLength": 2882,
+      "textLength": 3244,
       "mermaidCount": 0,
       "navLinks": [
         "/l1dder/cheatsheet",
@@ -111,8 +111,8 @@
     {
       "path": "/l1dder/en/flows",
       "h1": "🔍 2. Deep Dive into All L1DDER Flows",
-      "textLength": 1435,
-      "mermaidCount": 6,
+      "textLength": 2894,
+      "mermaidCount": 7,
       "navLinks": [
         "/l1dder/en/",
         "/l1dder/en/agents-cli",
@@ -130,7 +130,7 @@
     {
       "path": "/l1dder/en/glossary",
       "h1": "Glossary (L1DDER)",
-      "textLength": 3897,
+      "textLength": 5300,
       "mermaidCount": 0,
       "navLinks": [
         "/l1dder/en/",
@@ -149,7 +149,7 @@
     {
       "path": "/l1dder/en/guide",
       "h1": "🚀 L1DDER — Human Guide (Vibe-Coder Friendly)",
-      "textLength": 3580,
+      "textLength": 3912,
       "mermaidCount": 2,
       "navLinks": [
         "/l1dder/en/",
@@ -168,7 +168,7 @@
     {
       "path": "/l1dder/en/methodology",
       "h1": "L1DDER — Development Methodology",
-      "textLength": 4822,
+      "textLength": 5884,
       "mermaidCount": 1,
       "navLinks": [
         "/l1dder/en/",
@@ -187,7 +187,7 @@
     {
       "path": "/l1dder/en/quickstart",
       "h1": "⚡ 1. Quickstart &amp; Live Walkthrough in L1DDER",
-      "textLength": 3339,
+      "textLength": 3530,
       "mermaidCount": 0,
       "navLinks": [
         "/l1dder/en/",
@@ -225,8 +225,8 @@
     {
       "path": "/l1dder/flows",
       "h1": "🔍 2. Подробный разбор всех цепочек L1DDER",
-      "textLength": 4562,
-      "mermaidCount": 6,
+      "textLength": 5950,
+      "mermaidCount": 7,
       "navLinks": [
         "/l1dder/",
         "/l1dder/agents-cli",
@@ -244,7 +244,7 @@
     {
       "path": "/l1dder/glossary",
       "h1": "Словарь терминов (L1DDER)",
-      "textLength": 8225,
+      "textLength": 9558,
       "mermaidCount": 0,
       "navLinks": [
         "/l1dder/",
@@ -263,7 +263,7 @@
     {
       "path": "/l1dder/guide",
       "h1": "🚀 L1DDER — Путеводитель для человека (Vibe-Coder Friendly)",
-      "textLength": 4762,
+      "textLength": 5129,
       "mermaidCount": 2,
       "navLinks": [
         "/l1dder/",
@@ -282,7 +282,7 @@
     {
       "path": "/l1dder/methodology",
       "h1": "L1DDER — Методология разработки",
-      "textLength": 11153,
+      "textLength": 12224,
       "mermaidCount": 1,
       "navLinks": [
         "/l1dder/",
@@ -301,7 +301,7 @@
     {
       "path": "/l1dder/quickstart",
       "h1": "⚡ 1. Быстрый старт и живой пример работы в L1DDER",
-      "textLength": 7017,
+      "textLength": 7228,
       "mermaidCount": 0,
       "navLinks": [
         "/l1dder/",
@@ -320,7 +320,7 @@
     {
       "path": "/l1dder/troubleshooting",
       "h1": "🩹 Не видны слэш-команды /l1-*",
-      "textLength": 2946,
+      "textLength": 2944,
       "mermaidCount": 0,
       "navLinks": [
         "/l1dder/",
