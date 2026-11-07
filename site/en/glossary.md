@@ -55,7 +55,7 @@ Operational tracker containing:
 1. **Delivery Queue:** strict execution order for sprints (`SPRINT-NN`).
 2. **Discovery Queue:** strict grooming order for ideas (`IDEA-NNN`).
 
-**Roadmap Gate:** no feature or task may be executed in `/l1-task` unless it sits at position `1 (CURRENT)` in `docs/roadmap.md`. Exceptions: `/l1-hotfix` (an urgent bug) and `/l1-chore` (changes to the project itself that leave the product unchanged).
+**Roadmap Gate:** no feature or task may be executed in `/l1-task` unless it sits at position `1 (CURRENT)` in `docs/roadmap.md`. Exceptions: `/l1-hotfix` (an urgent product bug), `/l1-chore` (changes to the project itself that leave the product unchanged), and `/l1-fast` (a small product feature — **strictly human-invoked**, forbidden for the agent on its own initiative, and only while position `1 (CURRENT)` is empty).
 
 ---
 
@@ -68,6 +68,8 @@ Every sprint **must** end with task **`TASK-NN.99: Sprint Hygiene & Doctor Check
 3. **Living Docs Sync & Retro** (updating `docs/concept/*`, `docs/specs/*`, `l1dder/rules/*.mdc`).
 4. **Human UAT** (manual acceptance testing by the human before cascading closure).
 
+If the team decides to abandon the active sprint at `1 (CURRENT)`, it is rejected via `/l1-planning`: its code is rolled back with `git revert` without rewriting history, while the sprint and task documents stay as a record with status `❌ rejected`.
+
 ---
 
 ## Task (`TASK-NN.MM` ↔ `FEAT-NNN.MM`) & Two-Approval Rule
@@ -75,6 +77,8 @@ Every sprint **must** end with task **`TASK-NN.99: Sprint Hygiene & Doctor Check
 An atomic unit of work inside a sprint executed via **`/l1-task`** with two mandatory stops:
 - **STOP #1:** after creating `plan.md` (before writing code).
 - **STOP #2:** after running DoD self-check (before writing `summary.md` and closing).
+
+In `/l1-fast`, both stops happen in chat — before the code (`⛔ STOP #1`) and after every check (`⛔ STOP #2`) — while `plan.md` and the other documents are written after the code with `Mode | /l1-fast`.
 
 ---
 
@@ -87,7 +91,17 @@ An urgent bug fix bypassing `docs/roadmap.md`, executed via **`/l1-hotfix`**: re
 ## Chore (`CHORE-NNN` & `/l1-chore`)
 
 A change to **the project itself**, not to what its users see and use: git rules (how branches and commits are named, what is checked before a push), automatic checks in CI, library updates, the `Makefile`, build scripts, tests, rules for the AI agent.
-Done via the **`/l1-chore`** skill with no idea, spec or sprint: check that the product stays unchanged → a `CHORE-NNN` card and a single "ok" stop → the change and `make ci` → a row in section 4 of `docs/backlog.md`. If the change alters the product, it is `/l1-task` or `/l1-hotfix` instead.
+Done via the **`/l1-chore`** skill with no idea, spec or sprint: check that the product stays unchanged → a `CHORE-NNN` card and a single "ok" stop → the change and `make ci` → a row in section 4 of `docs/backlog.md`. If the change alters the product, it is `/l1-task` (or `/l1-fast` when no sprint is active) or `/l1-hotfix` instead.
+
+---
+
+## Fast Mode (`/l1-fast`)
+
+A mode for a small product feature (up to 3 tasks in one sprint, with no new data model, external integration, ADR, or breaking changes) while position `1 (CURRENT)` in `docs/roadmap.md` is empty. **Strictly human-invoked — the agent is forbidden from running `/l1-fast` on its own initiative.**
+- If `1 (CURRENT)` is occupied by a regular sprint, `/l1-fast` strictly refuses without changing any files: finish the sprint via `/l1-task` or reject it via `/l1-planning`.
+- Instead of writing `plan.md` upfront, both stops happen in chat: `⛔ STOP #1` (what we build, after `grilling` and size assessment) and `⛔ STOP #2` (human acceptance after all checks).
+- Right after the first "ok", `IDEA-NNN`, `FEAT-NNN`, and `SPRINT-NN` are reserved at row `1 (CURRENT)` in `docs/roadmap.md` marked `mode: /l1-fast`, and before the second "ok" the agent runs every check from a regular task and `TASK-NN.99` (`tdd`, `make ci`, `ponytail-review`, two-axis `code-review`, `ponytail-audit`, `ponytail-debt`, E2E, docs sync, and `retro`).
+- After the second "ok", the full registry chain (`docs/ideas.md`, `docs/backlog.md`, `docs/specs/FEAT-NNN-<slug>/`, `docs/sprints/SPRINT-NN-<slug>/`, `TASK-NN.MM`, and `TASK-NN.99` with `plan.md` and `summary.md`) is written with `| **Mode** | \`/l1-fast\` |` in every document passport.
 
 ---
 

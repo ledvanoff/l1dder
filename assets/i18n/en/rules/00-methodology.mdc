@@ -36,10 +36,11 @@ When the user invokes any command below, **immediately read the corresponding `S
 | **`/l1-onboard`** | `l1dder/skills/l1-onboard/SKILL.md` | Stage by stage, one file each: the concept in `docs/concept/` (idea, vision, architecture, data model), then the stack (`30-tech-stack.mdc`, `40-skills-router.mdc`, `Makefile`), then `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md` |
 | **`/l1-idea`** | `l1dder/skills/l1-idea/SKILL.md` | Refines an idea → assigns `IDEA-NNN` → records in `docs/ideas.md` |
 | **`/l1-feature`** | `l1dder/skills/l1-feature/SKILL.md` | Takes `IDEA-NNN` → creates `docs/specs/FEAT-NNN-<slug>/` → slices `FEAT-NNN.01 .. FEAT-NNN.99` → updates `docs/backlog.md` |
-| **`/l1-planning`** | `l1dder/skills/l1-planning/SKILL.md` | Schedules `docs/roadmap.md` → assigns `SPRINT-NN` & `TASK-NN.01 .. TASK-NN.99` → creates `docs/sprints/SPRINT-NN-<slug>/README.md` |
+| **`/l1-planning`** | `l1dder/skills/l1-planning/SKILL.md` | Schedules `docs/roadmap.md` → assigns `SPRINT-NN` & `TASK-NN.01 .. TASK-NN.99` → creates `docs/sprints/SPRINT-NN-<slug>/README.md` (or rejects the current sprint and rolls back its changes) |
 | **`/l1-task`** | `l1dder/skills/l1-task/SKILL.md` | Executes the active task `TASK-NN.MM` from `docs/roadmap.md` (and mandatory `TASK-NN.99` Doctor Checklist at sprint end) |
 | **`/l1-hotfix`** | `l1dder/skills/l1-hotfix/SKILL.md` | Fixes an urgent bug bypassing `docs/roadmap.md` (`RED → GREEN`) → logs `HOTFIX-NNN` in `docs/backlog.md` |
 | **`/l1-chore`** | `l1dder/skills/l1-chore/SKILL.md` | A change to the project itself, not the product (git rules, CI, libraries, `Makefile`, agent rules), with a single "ok" stop → logs `CHORE-NNN` in `docs/backlog.md` |
+| **`/l1-fast`** | `l1dder/skills/l1-fast/SKILL.md` | A small product feature (**strictly human-invoked**, forbidden for the agent on its own initiative) when no sprint is in progress: two "ok" stops, full verification before acceptance → records the full document chain marked `mode: /l1-fast` after the code |
 | **`/l1-evo`** | `l1dder/skills/l1-evo/SKILL.md` | Evolves `L1DDER` itself following `l1dder/evolution/METHODOLOGY-RULES.md`, logs `WORKLOG-CHANGELOG.md`, updates `HANDOFF.md` |
 
 ---

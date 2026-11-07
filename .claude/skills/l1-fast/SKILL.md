@@ -1,6 +1,6 @@
 ---
 name: l1-fast
-description: Builds a small product feature in fast mode when no sprint is active - clarifies the feature, waits for one "ok", then autonomously implements it and runs every L1DDER check (tdd, make ci, ponytail-review, two-axis code-review, ponytail-audit, ponytail-debt, E2E, docs sync, retro) before a second "ok" after manual testing, and only then fills every registry (IDEA, FEAT, SPRINT, TASK, TASK-NN.99) marked "mode: /l1-fast". Refuses while a sprint sits at 1 (CURRENT). Use when the user invokes /l1-fast or asks to quickly build a small feature.
+description: Builds a small product feature in fast mode when no sprint is active - clarifies the feature, waits for one "ok", then autonomously implements it and runs every L1DDER check (tdd, make ci, ponytail-review, two-axis code-review, ponytail-audit, ponytail-debt, E2E, docs sync, retro) before a second "ok" after manual testing, and only then fills every registry (IDEA, FEAT, SPRINT, TASK, TASK-NN.99) marked "mode: /l1-fast". Refuses while a sprint sits at 1 (CURRENT). Human-invoked only: never run or pick /l1-fast on your own initiative — use ONLY when the user explicitly types /l1-fast.
 ---
 
 # L1DDER — Быстрый режим для небольшой фичи (`/l1-fast`)
@@ -13,7 +13,7 @@ description: Builds a small product feature in fast mode when no sprint is activ
 
 Для большой фичи, бага или правки самого проекта есть свои команды: агент скажет, какая подходит.
 
-> **ПРАВИЛО ДЛЯ МОДЕЛИ:** Когда пользователь вызывает команду или спрашивает, зачем она, перескажи этот раздел своими словами, без терминов вроде «Roadmap Gate».
+> **ПРАВИЛО ДЛЯ МОДЕЛИ:** Команду `/l1-fast` вызывает **строго только человек** — для агента запускать или выбирать эту команду по своей инициативе **запрещено** (без явного вызова `/l1-fast` от пользователя всегда иди по обычному пути `/l1-idea` → `/l1-feature` → `/l1-planning` → `/l1-task`). Когда пользователь вызывает команду или спрашивает, зачем она, перескажи этот раздел своими словами, без терминов вроде «Roadmap Gate».
 
 ---
 

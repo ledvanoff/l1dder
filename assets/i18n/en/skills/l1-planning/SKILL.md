@@ -26,42 +26,82 @@ When a sprint candidate from `FEAT-NNN` (parent `IDEA-NNN`) is placed in the `De
 
 ## STEP 1: Read Input Files
 
-Read `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md` (or `l1dder/templates/roadmap/roadmap-template.md`), and `l1dder/templates/sprints/sprint-template.md`.
+Call `Read` for:
+1. `docs/ideas.md`
+2. `docs/backlog.md`
+3. `docs/roadmap.md` *(if the file does not exist yet, read `l1dder/templates/roadmap/roadmap-template.md`)*
+4. `l1dder/templates/sprints/sprint-template.md`
 
 ---
 
 ## STEP 2: Gather Candidates & Compute `SPRINT-NN` and `TASK-NN.MM`
 
-Find all features with status `📋 in-backlog` (or `🗓 scheduled` / `🚧 in-progress`) in `docs/backlog.md` and all `📋 unrealized` ideas in `docs/ideas.md`. Compute the next sequential `SPRINT-NN`.
+1. Find all features in `docs/backlog.md` with status `📋 in-backlog` (ready to schedule into a sprint) and already scheduled sprints (`🗓 scheduled` / `🚧 in-progress`).
+2. Find all ideas in `docs/ideas.md` with status `📋 unrealized` (for the `Discovery Queue`).
+3. Determine the last used `SPRINT-NN` number (including `Completed Sprints` in `docs/roadmap.md`) and assign the next sequential numbers (`SPRINT-01`, `SPRINT-02`...).
 
 ---
 
 ## STEP 3: Propose `docs/roadmap.md` Update & `⛔ STOP`
 
-Show the proposed `1. Active Pointer`, `2. Delivery Queue` (`1 CURRENT`, `2 NEXT`...), and `3. Discovery Queue` in chat.
-⛔ **STOP:** Ask: *"Approve this Roadmap queue in `docs/roadmap.md` and IDs `SPRINT-NN` / `TASK-NN.MM` (ok / reorder)?"* and wait.
+Show the recommended queue order in chat (with brief reasoning on priorities and dependencies):
+
+```markdown
+### Proposed Roadmap Update (`docs/roadmap.md`)
+
+#### 1. Active Pointer
+- **Current sprint for delivery (`/l1-task`):** `SPRINT-01` (`FEAT-001` ← `IDEA-001`)
+- **Next idea for spec grooming (`/l1-feature`):** `IDEA-002`
+
+#### 2. Delivery Queue
+| Queue | Sprint ID | Feature ID (`FEAT-NNN`) | Idea ID (`IDEA-NNN`) | Priority | Sprint Goal | Tasks (`TASK-NN.MM`) |
+|:-----:|:---------:|:-----------------------:|:--------------------:|:--------:|-------------|----------------------|
+| **1 (CURRENT)** | `SPRINT-01` | `FEAT-001` | `IDEA-001` | P0 | [Goal] | `TASK-01.01`, `TASK-01.02`, `TASK-01.99` (Doctor) |
+| **2 (NEXT)** | `SPRINT-02` | `FEAT-002` | `IDEA-002` | P1 | [Goal] | `TASK-02.01`, `TASK-02.99` (Doctor) |
+
+#### 3. Discovery Queue
+| Queue | Idea ID (`IDEA-NNN`) | Idea Title | Priority | Status |
+|:-----:|:--------------------:|------------|:--------:|--------|
+| **1** | `IDEA-002` | [Title] | P1 | `📋 unrealized` |
+| **2** | `IDEA-003` | [Title] | P2 | `📋 unrealized` |
+```
+
+⛔ **STOP:** Ask: *"Approve this Roadmap queue in `docs/roadmap.md` and IDs `SPRINT-NN` / `TASK-NN.MM` (ok / reorder)?"* and wait for the answer.
 
 ---
 
 ## STEP 4: Write Changes to 4 Locations (ONLY after `"ok"`)
 
-1. **Location 1 (`docs/roadmap.md`):** update `Active Pointer`, `Delivery Queue`, `Discovery Queue`, and `Changelog`.
-2. **Location 2 (`docs/backlog.md`):** set `FEAT-NNN` status to `🗓 scheduled`, link `SPRINT-NN`, and populate `TASK-NN.01 .. TASK-NN.99`.
-3. **Location 3 (`docs/specs/FEAT-NNN-<slug>/tasks.md` & `requirements.md`):** fill in `SPRINT-NN` and `TASK-NN.01 .. TASK-NN.99`.
-4. **Location 4 (`docs/sprints/SPRINT-NN-<slug>/README.md`):** create the sprint README from `l1dder/templates/sprints/sprint-template.md` with full ID Passport and task table ending with `TASK-NN.99`.
+### Location 1: Update `docs/roadmap.md`
+Write the agreed tables `1. Active Pointer`, `2. Delivery Queue`, `3. Discovery Queue`, and add an entry to `5. Roadmap Changelog` following `l1dder/templates/roadmap/roadmap-template.md`.
+
+### Location 2: Update `docs/backlog.md`
+For every scheduled feature `FEAT-NNN`:
+1. In **Table 1 ("Feature Backlog")**, change status from `📋 in-backlog` to `🗓 scheduled` and in the `Sprints` column set the link `[`SPRINT-01`](./sprints/SPRINT-01-<slug>/README.md)`.
+2. In **Section 2 ("Feature Decomposition")**, replace `Sprint Candidate (SPRINT-??)` with `#### Sprint: SPRINT-01 — [Title]` and fill the `Sprint Task ID` column with `TASK-01.01`, `TASK-01.02`, ..., `TASK-01.99`.
+
+### Location 3: Update `docs/specs/FEAT-NNN-<slug>/tasks.md` (and `requirements.md`)
+In `docs/specs/FEAT-NNN-<slug>/tasks.md`, fill in the assigned `SPRINT-NN` and task codes `TASK-NN.01 .. TASK-NN.99` next to the corresponding steps `FEAT-NNN.01 .. FEAT-NNN.99`. In the passport of `requirements.md`, update status to `🗓 scheduled` and sprint `SPRINT-NN`.
+
+### Location 4: Create `docs/sprints/SPRINT-NN-<slug>/README.md`
+For the sprint at position `1 (CURRENT)` (and other scheduled sprints if needed), create `docs/sprints/SPRINT-NN-<slug>/README.md` strictly from `l1dder/templates/sprints/sprint-template.md`:
+- Fill in the sprint passport (`Sprint ID: SPRINT-NN`, `Feature ID: FEAT-NNN`, `Idea ID: IDEA-NNN`).
+- Fill in the task table with both ID columns (`TASK-NN.MM` and `FEAT-NNN.MM`), ending with `TASK-NN.99` (`FEAT-NNN.99`) — **Sprint Hygiene & Doctor Checklist**.
 
 ---
 
 ## STEP 5: Self-Check Exit Gate
 
-- [ ] 1. Exactly one sprint is marked `1 (CURRENT)` in `docs/roadmap.md`?
-- [ ] 2. Every row in `Delivery Queue` lists all three IDs (`SPRINT-NN`, `FEAT-NNN`, `IDEA-NNN`)?
-- [ ] 3. `docs/backlog.md` and `docs/specs/FEAT-NNN-<slug>/tasks.md` have `SPRINT-NN` and `TASK-NN.01..99` with status `🗓 scheduled`?
-- [ ] 4. `docs/sprints/SPRINT-NN-<slug>/README.md` exists and ends with `TASK-NN.99` (`Doctor Checklist`)?
+Check all 5 items:
+- [ ] 1. Exactly one sprint is marked `1 (CURRENT)` in `Delivery Queue` of `docs/roadmap.md`?
+- [ ] 2. Every row in `Delivery Queue` lists all three IDs: `SPRINT-NN`, `FEAT-NNN`, `IDEA-NNN`?
+- [ ] 3. `docs/backlog.md` and `docs/specs/FEAT-NNN-<slug>/tasks.md` have `SPRINT-NN` and `TASK-NN.01 .. TASK-NN.99`, and feature status is `🗓 scheduled`?
+- [ ] 4. `docs/sprints/SPRINT-NN-<slug>/README.md` is created (folder starts with `SPRINT-NN-`)?
+- [ ] 5. In the `SPRINT-NN` task table, the final task is `TASK-NN.99` (`FEAT-NNN.99` — Doctor Checklist)?
 
-Reply:
-- *"Roadmap (`docs/roadmap.md`) updated. Active sprint: `SPRINT-NN` (`FEAT-NNN` ← `IDEA-NNN`)."*
-- *"Next step: run `/l1-task` to start `TASK-NN.01`."*
+After checking, reply to the user:
+- *"Roadmap (`docs/roadmap.md`) updated. Active sprint: `SPRINT-NN` (feature `FEAT-NNN` ← idea `IDEA-NNN`)."*
+- *"Next step: run `/l1-task` to start the first task `TASK-NN.01`."*
 
 ---
 

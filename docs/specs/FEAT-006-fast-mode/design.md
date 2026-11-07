@@ -78,7 +78,8 @@ flowchart LR
 - `Seam 4` (`tests/planning-reject.test.ts` — отклонение спринта на RU и EN):
   - в `/l1-planning` есть ветка отклонения текущего спринта с `⛔ СТОП` до отката;
   - откат через `git revert`, текст запрещает `reset --hard`;
-  - в `20-workflow.mdc` у `SPRINT-NN` и `TASK-NN.MM` есть статус `❌ отклонена`.
+  - в `20-workflow.mdc` у `SPRINT-NN` и `TASK-NN.MM` есть статус `❌ отклонена`;
+  - RU и EN совпадают по форме во всём скилле `/l1-planning` (шаги `## ШАГ` / `## STEP`, шаги ветки `### О` / `### R`, остановки `⛔`, блоки кода и списки).
 
 ## 3. Модель данных / Схема конфига / Контракты
 
@@ -110,15 +111,15 @@ flowchart LR
 Все три шага касаются защищённого `l1dder/rules/40-skills-router.mdc`; остальное в файле не меняется.
 
 - **RU:**
-  1. «В `l1dder/rules/40-skills-router.mdc`, в таблице раздела 0, после строки `/l1-chore` добавь строку: `| Быстро сделать небольшую фичу продукта, когда нет активного спринта: две остановки «ок», полная проверка до приёмки, все документы с пометкой `режим: /l1-fast` после кода | `/l1-fast` | `l1dder/skills/l1-fast/SKILL.md` |`»
+  1. «В `l1dder/rules/40-skills-router.mdc`, в таблице раздела 0, после строки `/l1-chore` добавь строку: `| Быстро сделать небольшую фичу продукта, когда нет активного спринта (**вызывает строго человек, агенту по своей инициативе запрещено**): две остановки «ок», полная проверка до приёмки, все документы с пометкой `режим: /l1-fast` после кода | `/l1-fast` | `l1dder/skills/l1-fast/SKILL.md` |`»
   2. «В том же файле в пункте 3 раздела «Как использовать» замени «в `/l1-task`, `/l1-hotfix` или `/l1-chore`» на «в `/l1-task`, `/l1-fast`, `/l1-hotfix` или `/l1-chore`».»
   3. «В том же файле в строке `/l1-planning` раздела 0 допиши в конец первой ячейки: «, или отклонить текущий спринт с откатом его изменений».»
 - **EN:**
-  1. "In `l1dder/rules/40-skills-router.mdc`, in the section 0 table, add this row after the `/l1-chore` row: `| Quickly build a small product feature when no sprint is active: two "ok" stops, full verification before acceptance, every document marked `mode: /l1-fast` after the code | `/l1-fast` | `l1dder/skills/l1-fast/SKILL.md` |`"
-  2. "In the same file, in point 3 of "How to use", replace "in `/l1-task`, `/l1-hotfix` or `/l1-chore`" with "in `/l1-task`, `/l1-fast`, `/l1-hotfix` or `/l1-chore`"."
-  3. "In the same file, in the `/l1-planning` row of section 0, append to the end of the first cell: ", or reject the current sprint and roll back its changes"."
+  1. "In `l1dder/rules/40-skills-router.mdc`, in the section 0 table, add this row after the `/l1-chore` row: `| Quickly build a small product feature when no sprint is active (**strictly human-invoked, forbidden for the agent on its own**): two \"ok\" stops, full verification before acceptance, every document marked `mode: /l1-fast` after the code | `/l1-fast` | `l1dder/skills/l1-fast/SKILL.md` |`"
+  2. "In the same file, if a \"How to use\" section is present, in point 3 replace \"in `/l1-task`, `/l1-hotfix` or `/l1-chore`\" with \"in `/l1-task`, `/l1-fast`, `/l1-hotfix` or `/l1-chore`\" (projects initialized on v1.0–1.2 without a \"How to use\" section can skip this step)."
+  3. "In the same file, in the `/l1-planning` row of section 0, append to the end of the first cell: \", or reject the current sprint and roll back its changes\"."
 
-Точные тексты строк сверяются с фактическими RU/EN-файлами `40-skills-router.mdc` в `FEAT-006.03`.
+Точные тексты строк сверены с фактическими RU/EN-файлами `40-skills-router.mdc` в `FEAT-006.03` (`TASK-05.03`).
 
 ## 4. Принятые решения и риски
 

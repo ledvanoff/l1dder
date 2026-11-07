@@ -36,10 +36,11 @@ alwaysApply: true
 | **`/l1-onboard`** | `l1dder/skills/l1-onboard/SKILL.md` | По этапам, по одному файлу: концепт в `docs/concept/` (идея, видение, архитектура, модель данных), затем стек (`30-tech-stack.mdc`, `40-skills-router.mdc`, `Makefile`), затем `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md` |
 | **`/l1-idea`** | `l1dder/skills/l1-idea/SKILL.md` | Развивает идею → присваивает `IDEA-NNN` → записывает в `docs/ideas.md` |
 | **`/l1-feature`** | `l1dder/skills/l1-feature/SKILL.md` | Берёт `IDEA-NNN` → создаёт `docs/specs/FEAT-NNN-<slug>/` → режет на шаги `FEAT-NNN.01 .. FEAT-NNN.99` → записывает в `docs/backlog.md` |
-| **`/l1-planning`** | `l1dder/skills/l1-planning/SKILL.md` | Строит очередь в `docs/roadmap.md` → назначает `SPRINT-NN` и `TASK-NN.01 .. TASK-NN.99` → создаёт `docs/sprints/SPRINT-NN-<slug>/README.md` |
+| **`/l1-planning`** | `l1dder/skills/l1-planning/SKILL.md` | Строит очередь в `docs/roadmap.md` → назначает `SPRINT-NN` и `TASK-NN.01 .. TASK-NN.99` → создаёт `docs/sprints/SPRINT-NN-<slug>/README.md` (а также отклоняет текущий спринт с откатом изменений) |
 | **`/l1-task`** | `l1dder/skills/l1-task/SKILL.md` | Выполняет текущую задачу `TASK-NN.MM` из `docs/roadmap.md` (а в конце спринта — обязательный `TASK-NN.99` Doctor Checklist) |
 | **`/l1-hotfix`** | `l1dder/skills/l1-hotfix/SKILL.md` | Чинит срочный баг в обход `docs/roadmap.md` → записывает `HOTFIX-NNN` в `docs/backlog.md` |
 | **`/l1-chore`** | `l1dder/skills/l1-chore/SKILL.md` | Правка самого проекта, а не продукта (правила git, CI, библиотеки, `Makefile`, правила агента) с одной остановкой «ок» → записывает `CHORE-NNN` в `docs/backlog.md` |
+| **`/l1-fast`** | `l1dder/skills/l1-fast/SKILL.md` | **Вызывает строго только человек (для агента по своей инициативе запрещено):** небольшая фича продукта без начатого спринта — две остановки «ок», полная проверка до приёмки → записывает всю цепочку документов с пометкой `режим: /l1-fast` после кода |
 | **`/l1-evo`** | `l1dder/skills/l1-evo/SKILL.md` | Дорабатывает саму методологию `L1DDER` по `l1dder/evolution/METHODOLOGY-RULES.md`, ведёт `WORKLOG-CHANGELOG.md` и обновляет `HANDOFF.md` |
 
 ---

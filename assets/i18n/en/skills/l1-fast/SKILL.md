@@ -1,6 +1,6 @@
 ---
 name: l1-fast
-description: Builds a small product feature in fast mode when no sprint is active - clarifies the feature, waits for one "ok", then autonomously implements it and runs every L1DDER check (tdd, make ci, ponytail-review, two-axis code-review, ponytail-audit, ponytail-debt, E2E, docs sync, retro) before a second "ok" after manual testing, and only then fills every registry (IDEA, FEAT, SPRINT, TASK, TASK-NN.99) marked "mode: /l1-fast". Refuses while a sprint sits at 1 (CURRENT). Use when the user invokes /l1-fast or asks to quickly build a small feature.
+description: Builds a small product feature in fast mode when no sprint is active - clarifies the feature, waits for one "ok", then autonomously implements it and runs every L1DDER check (tdd, make ci, ponytail-review, two-axis code-review, ponytail-audit, ponytail-debt, E2E, docs sync, retro) before a second "ok" after manual testing, and only then fills every registry (IDEA, FEAT, SPRINT, TASK, TASK-NN.99) marked "mode: /l1-fast". Refuses while a sprint sits at 1 (CURRENT). Human-invoked only: never run or pick /l1-fast on your own initiative — use ONLY when the user explicitly types /l1-fast.
 ---
 
 # L1DDER — Fast Mode for a Small Feature (`/l1-fast`)
@@ -13,7 +13,7 @@ Only the order and the number of stops differ from the usual path: you answer "o
 
 A large feature, a bug or a change to the project itself has its own command: the agent will tell you which one fits.
 
-> **MODEL INSTRUCTION:** When the user invokes the command or asks what it is for, retell this section in your own words, without terms like "Roadmap Gate".
+> **MODEL INSTRUCTION:** `/l1-fast` is **strictly human-invoked** — the agent is **forbidden** from running or picking `/l1-fast` on its own initiative (without an explicit `/l1-fast` invocation from the user, always follow the regular path `/l1-idea` → `/l1-feature` → `/l1-planning` → `/l1-task`). When the user invokes the command or asks what it is for, retell this section in your own words, without terms like "Roadmap Gate".
 
 ---
 

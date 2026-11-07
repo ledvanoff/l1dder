@@ -5,7 +5,7 @@ description: Performs fast, disciplined emergency bug fixes bypassing the L1DDER
 
 # L1DDER — Flow 5: Emergency Hotfix (`/l1-hotfix`)
 
-> **MODEL INSTRUCTION:** Execute strictly step by step (1 → 2 → 3 → 4 → 5). This is the `Roadmap Gate` exception for urgent product bugs. Changes to the project itself that leave the product unchanged go through `/l1-chore`.
+> **MODEL INSTRUCTION:** Execute strictly step by step (1 → 2 → 3 → 4 → 5). This is the `Roadmap Gate` exception for urgent product bugs. Changes to the project itself that leave the product unchanged go through `/l1-chore`, and a small new product feature while position `1 (CURRENT)` in `docs/roadmap.md` is empty goes through `/l1-fast` (strictly human-invoked, forbidden for the agent on its own initiative).
 > **RED REPRODUCTION GATE (`diagnosing-bugs`):** You are **forbidden** from guessing the cause or editing application code until you have reproduced the bug with a failing test/command (`RED Gate`). Never edit application code before receiving `"ok"` at Step 2.
 
 ---

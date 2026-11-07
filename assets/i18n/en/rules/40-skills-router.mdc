@@ -8,6 +8,14 @@ alwaysApply: true
 Before starting work, check the tables below and read the relevant `SKILL.md` files using the `Read` tool.
 All project skills are managed declaratively via **`l1dder/skills.json`** (like `package.json` for AI Agent Skills).
 
+## How to use
+
+1. For workflow control (onboarding, ideas, features, roadmap planning, task execution, hotfixes), use the `L1DDER` control skills (`/l1-*` — Section 0).
+2. For brainstorming, architecture design, TDD, bug diagnosis, and sprint reviews, read the engineering skills from Section 1 (`ponytail` + `mattpocock/skills` — **all bundled in `l1dder/skills/`!**).
+3. Before writing code in `/l1-task`, `/l1-fast`, `/l1-hotfix` or `/l1-chore`, read the project stack skills from Section 2 (managed via the `"stack"` section in `l1dder/skills.json` and `npx l1dder skills install`).
+
+**Important:** when a skill applies, read its `SKILL.md` via `Read` and follow it — do not just mention its name in `plan.md`.
+
 ---
 
 ## 0. Control Workflow Skills (Section `"l1dder"` in `skills.json`)
@@ -17,10 +25,11 @@ All project skills are managed declaratively via **`l1dder/skills.json`** (like 
 | Start a project (`from-scratch` or `existing-code`): work out the concept stage by stage (idea, vision, architecture, data model), then configure `30-tech-stack.mdc` & `l1dder/skills.json` and create `docs/ideas.md`, `docs/backlog.md`, `docs/roadmap.md` | `/l1-onboard` | `l1dder/skills/l1-onboard/SKILL.md` |
 | Brainstorm & refine a new idea (`grilling`) and save to the Idea Bank (`docs/ideas.md`) | `/l1-idea` | `l1dder/skills/l1-idea/SKILL.md` |
 | Write a feature spec (`docs/specs/FEAT-NNN/`) from an idea and slice steps `FEAT-NNN.01..99` into `docs/backlog.md` | `/l1-feature` | `l1dder/skills/l1-feature/SKILL.md` |
-| Schedule or reorder the Roadmap (`docs/roadmap.md`), assign `SPRINT-NN` and `TASK-NN.01..99` | `/l1-planning` | `l1dder/skills/l1-planning/SKILL.md` |
+| Schedule or reorder the Roadmap (`docs/roadmap.md`), assign `SPRINT-NN` and `TASK-NN.01..99`, or reject the current sprint and roll back its changes | `/l1-planning` | `l1dder/skills/l1-planning/SKILL.md` |
 | Execute the next task `TASK-NN.MM` from the Roadmap or the final `TASK-NN.99` (`Doctor Checklist`) | `/l1-task` | `l1dder/skills/l1-task/SKILL.md` |
 | Fix an urgent bug bypassing the Roadmap (`RED-first gate`) and log `HOTFIX-NNN` in `docs/backlog.md` | `/l1-hotfix` | `l1dder/skills/l1-hotfix/SKILL.md` |
 | Change the project itself, not the product: git rules, CI, libraries, `Makefile`, tests, agent rules — with a single "ok" stop and a `CHORE-NNN` row in `docs/backlog.md` | `/l1-chore` | `l1dder/skills/l1-chore/SKILL.md` |
+| Quickly build a small product feature when no sprint is active (**strictly human-invoked, forbidden for the agent on its own**): two "ok" stops, full verification before acceptance, every document marked `mode: /l1-fast` after the code | `/l1-fast` | `l1dder/skills/l1-fast/SKILL.md` |
 | Evolve the `L1DDER` methodology itself, log in `WORKLOG-CHANGELOG.md`, or update `HANDOFF.md` | `/l1-evo` | `l1dder/skills/l1-evo/SKILL.md` |
 
 ---

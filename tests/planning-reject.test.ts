@@ -102,15 +102,15 @@ describe.each(["ru", "en"] as const)("rejected status for sprints and tasks (%s)
   });
 });
 
-describe("/l1-planning reject branch in both languages", () => {
-  // The upper part of the skill already differs between RU and EN; this guard covers the reject branch.
-  it("has the same branch steps, stops, numbered items and code blocks in RU and EN", () => {
-    const shape = (text: string, branchStep: string) => [
+describe("/l1-planning skill in both languages", () => {
+  it("has the same steps, branch steps, stops, numbered items and code blocks in RU and EN", () => {
+    const shape = (text: string, stepHeading: string, branchStep: string) => [
+      text.split(stepHeading).length,
       text.split(branchStep).length,
       text.split("⛔").length,
       text.split("```").length,
       text.split("\n").filter((line) => /^\s*(\d+\.|-) /.test(line)).length,
     ];
-    expect(shape(branch("en"), "### R")).toEqual(shape(branch("ru"), "### О"));
+    expect(shape(skill("en"), "## STEP", "### R")).toEqual(shape(skill("ru"), "## ШАГ", "### О"));
   });
 });
