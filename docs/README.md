@@ -28,6 +28,8 @@
 - **Спецификации (`docs/specs/`):**
   - [`FEAT-002-release-hygiene-v1/`](./specs/FEAT-002-release-hygiene-v1/requirements.md) — Предрелизная гигиена, автотест на 2 моделях (`Composer` и `Grok`) в `playground/`, аудит `ponytail` и выкатка `v1.0.0`.
   - [`FEAT-003-seo-foundation/`](./specs/FEAT-003-seo-foundation/requirements.md) — SEO-база сайта и витрин проекта с обязательным гейтом сайта перед релизом.
+  - [`FEAT-004-step-by-step-onboarding/`](./specs/FEAT-004-step-by-step-onboarding/requirements.md) — Пошаговый онбординг и свежие встроенные скиллы.
 - **Спринты (`docs/sprints/`):**
   - [`SPRINT-01-release-hygiene-v1/README.md`](./sprints/SPRINT-01-release-hygiene-v1/README.md) — Завершённый предрелизный гигиенический спринт.
   - [`SPRINT-02-seo-foundation/README.md`](./sprints/SPRINT-02-seo-foundation/README.md) — Завершённый спринт: SEO-база сайта и витрин.
+  - [`SPRINT-03-step-by-step-onboarding/README.md`](./sprints/SPRINT-03-step-by-step-onboarding/README.md) — Активный спринт: пошаговый онбординг и свежие встроенные скиллы.
