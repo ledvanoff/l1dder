@@ -300,6 +300,7 @@ export function runProjectDoctor(projectDir: string, rootDir = "l1dder"): Doctor
     "skills/l1-task/SKILL.md",
     "skills/l1-hotfix/SKILL.md",
     "skills/l1-chore/SKILL.md",
+    "skills/l1-fast/SKILL.md",
     "skills/l1-evo/SKILL.md",
     "skills/ponytail/SKILL.md",
     "skills/grilling/SKILL.md",
