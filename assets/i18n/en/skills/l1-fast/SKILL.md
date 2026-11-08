@@ -86,8 +86,8 @@ The refusal covers building only, that is a second `/l1-fast` and `/l1-task`. Pr
 | **1 (CURRENT)** | `SPRINT-NN` | `FEAT-NNN` | `IDEA-NNN` | P2 | [Goal] (mode: `/l1-fast`) | 0/K (+ TASK-NN.99) | 🚧 in-progress | — *(after the build)* |
 ```
 
-   - in the "Current focus" table, `SPRINT-NN` with status `🚧 in-progress`;
-   - in the "Roadmap change history", a row: `SPRINT-NN` (`FEAT-NNN` ← `IDEA-NNN`) put at `1 (CURRENT)` in `/l1-fast` mode.
+   - in the "1. Active Pointer" table, `SPRINT-NN` with status `🚧 in-progress`;
+   - in "5. Roadmap Changelog", a row: `SPRINT-NN` (`FEAT-NNN` ← `IDEA-NNN`) put at `1 (CURRENT)` in `/l1-fast` mode.
 2. Commit the reservation on its own, only `docs/roadmap.md`: `chore(roadmap): reserve SPRINT-NN for /l1-fast`. It marks where the sprint starts: from it an interrupted session sees what is already done, and `/l1-planning` rolls back everything after it on a rejection.
 3. The other registries are filled in Step 7. The reservation lets an interrupted session and other commands see the work in progress and keeps them from taking the same numbers.
 
@@ -142,9 +142,9 @@ If the human sent remarks: fix them as in Step 5 (a bug through `diagnosing-bugs
    - `docs/ideas.md` — the `IDEA-NNN` row and card with status `✅ realized` and a link to `FEAT-NNN`;
    - `docs/backlog.md` — `FEAT-NNN` in Table 1 and in Section 2 with sprint `SPRINT-NN` and its tasks, every status `✅ realized`;
    - `docs/specs/FEAT-NNN-<slug>/` — `requirements.md`, `design.md`, `tasks.md`, short and matching what was built;
-   - `docs/sprints/SPRINT-NN-<slug>/README.md` — the passport, the task table and the "Sprint summary";
+   - `docs/sprints/SPRINT-NN-<slug>/README.md` — the passport, the task table and the "Sprint Outcome";
    - for every `TASK-NN.MM` and for `TASK-NN.99` — `plan.md` and `summary.md` in `docs/sprints/SPRINT-NN-<slug>/tasks/`. In `plan.md`, the solution from the Step 3 card and in the passport `` `/l1-fast`, written after the build <date> ``. In `summary.md`, the Step 6 results, the manual test remarks and the user's decision on size signs, if there was one;
-   - `docs/roadmap.md` — move the `SPRINT-NN` row from `Delivery Queue` to "4. Completed Sprints", free position `1 (CURRENT)`, update "Current focus" and the "Roadmap change history".
+   - `docs/roadmap.md` — move the `SPRINT-NN` row from `Delivery Queue` to "4. Completed Sprints", free position `1 (CURRENT)`, update "1. Active Pointer" and "5. Roadmap Changelog".
 3. Run `make ci` and `npx l1dder doctor`: 0 errors.
 4. Commit the registries in a final commit following the project Git rules (`l1dder/rules/10-conventions.mdc`): `docs(<scope>): record FEAT-NNN built in /l1-fast`. The code is already committed in Step 5, and so are the fixes after the checks, in separate commits under the same rules. Stage only your own files, by path (`git add <path>`): the documents with this feature's IDs. Leave other changes as they are, such as a spec from another tab, and name them to the user. Push only if the user asked or the project does so (`l1dder/rules/30-tech-stack.mdc`).
 5. Tell the user the outcome: what was done and the list of created documents with their IDs.

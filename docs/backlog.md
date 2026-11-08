@@ -16,7 +16,7 @@
 | [`FEAT-003`](#feat-003) | SEO-база сайта и витрин проекта | [`IDEA-003`](./ideas.md#idea-003) | P1 | ✅ реализована | [`FEAT-003`](./specs/FEAT-003-seo-foundation/) | [`SPRINT-02`](./sprints/SPRINT-02-seo-foundation/README.md) |
 | [`FEAT-004`](#feat-004) | Пошаговый онбординг и свежие встроенные скиллы | [`IDEA-006`](./ideas.md#idea-006) | P1 | ✅ реализована | [`FEAT-004`](./specs/FEAT-004-step-by-step-onboarding/) | [`SPRINT-03`](./sprints/SPRINT-03-step-by-step-onboarding/README.md) |
 | [`FEAT-005`](#feat-005) | Команда `/l1-chore` для служебных правок вне роадмапа | [`IDEA-004`](./ideas.md#idea-004) | P2 | ✅ реализована | [`FEAT-005`](./specs/FEAT-005-chore-command/) | [`SPRINT-04`](./sprints/SPRINT-04-chore-command/README.md) |
-| [`FEAT-006`](#feat-006) | Режим `/l1-fast` и отклонение текущего спринта | [`IDEA-005`](./ideas.md#idea-005) | P2 | 🚧 реализация | [`FEAT-006`](./specs/FEAT-006-fast-mode/) | [`SPRINT-05`](./sprints/SPRINT-05-fast-mode/README.md) |
+| [`FEAT-006`](#feat-006) | Режим `/l1-fast` и отклонение текущего спринта | [`IDEA-005`](./ideas.md#idea-005) | P2 | ✅ реализована | [`FEAT-006`](./specs/FEAT-006-fast-mode/) | [`SPRINT-05`](./sprints/SPRINT-05-fast-mode/README.md) |
 
 ---
 
@@ -156,10 +156,10 @@
 | **Родительская идея** | [`IDEA-005`](./ideas.md#idea-005) |
 | **Папка спецификации** | [`docs/specs/FEAT-006-fast-mode/`](./specs/FEAT-006-fast-mode/) |
 | **Приоритет** | `P2` |
-| **Статус фичи** | `🚧 реализация` |
+| **Статус фичи** | `✅ реализована` |
 | **Назначенные спринты** | `SPRINT-05` |
 
-#### Спринт: `SPRINT-05` — Режим `/l1-fast` и отклонение спринта (`🚧 реализация`)
+#### Спринт: `SPRINT-05` — Режим `/l1-fast` и отклонение спринта (`✅ реализована`)
 - **ID спринта:** `SPRINT-05`
 - **Родительские ID:** `FEAT-006` → `IDEA-005`
 - **Документ спринта:** [`docs/sprints/SPRINT-05-fast-mode/README.md`](./sprints/SPRINT-05-fast-mode/README.md)
@@ -171,7 +171,7 @@
 | `FEAT-006.02` | `TASK-05.02` | Отклонение текущего спринта с откатом (`git revert`) в `/l1-planning`, статус `❌ отклонена` для `SPRINT-NN` и `TASK-NN.MM` в правилах и шаблонах | `feat` | ✅ реализована | [plan](./sprints/SPRINT-05-fast-mode/tasks/TASK-05.02-sprint-rejection/plan.md) | [summary](./sprints/SPRINT-05-fast-mode/tasks/TASK-05.02-sprint-rejection/summary.md) |
 | `FEAT-006.03` | `TASK-05.03` | Исключение `/l1-fast` в правилах `00/20/40`, словаре, шаблоне роадмапа, скиллах `l1-task` и `l1-hotfix`, сводке `AGENTS.md` / `CLAUDE.md`; сверка шагов `agent` для релиза; **обязательно:** синхронизация EN `/l1-planning` с RU (шаги 3–5 и Exit Gate) и страж RU/EN на весь скилл | `feat` | ✅ реализована | [plan](./sprints/SPRINT-05-fast-mode/tasks/TASK-05.03-fast-rules-and-glossary/plan.md) | [summary](./sprints/SPRINT-05-fast-mode/tasks/TASK-05.03-fast-rules-and-glossary/summary.md) |
 | `FEAT-006.04` | `TASK-05.04` | `/l1-fast` и отклонение спринта простым языком в `README`, `METHODOLOGY.md`, `user-guide/*` и на сайте | `docs` | ✅ реализована | [plan](./sprints/SPRINT-05-fast-mode/tasks/TASK-05.04-fast-docs/plan.md) | [summary](./sprints/SPRINT-05-fast-mode/tasks/TASK-05.04-fast-docs/summary.md) |
-| `FEAT-006.99` | `TASK-05.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)** *(Обязательная)*: живой E2E-прогон `/l1-fast` субагентом в песочнице на двух быстрых моделях | `chore` | 📋 запланирована | — | — |
+| `FEAT-006.99` | `TASK-05.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)** *(Обязательная)*: живой E2E-прогон `/l1-fast` субагентом в песочнице на двух быстрых моделях | `chore` | ✅ реализована | [plan](./sprints/SPRINT-05-fast-mode/tasks/TASK-05.99-doctor/plan.md) | [summary](./sprints/SPRINT-05-fast-mode/tasks/TASK-05.99-doctor/summary.md) |
 
 ---
 

@@ -25,7 +25,7 @@
 
 ```json
 {
-  "l1dder": ["l1-onboard", "l1-idea", "l1-feature", "l1-planning", "l1-task", "l1-hotfix", "l1-chore", "l1-evo"],
+  "l1dder": ["l1-onboard", "l1-idea", "l1-feature", "l1-planning", "l1-task", "l1-hotfix", "l1-chore", "l1-fast", "l1-evo"],
   "core": [
     { "repo": "DietrichGebert/ponytail", "bundled": true, "skills": ["ponytail", "ponytail-review", "ponytail-audit", "ponytail-debt"] },
     { "repo": "mattpocock/skills", "bundled": true, "skills": ["grilling", "domain-modeling", "codebase-design", "tdd", "diagnosing-bugs", "code-review", "retro", "prototype", "writing-for-agents"] }

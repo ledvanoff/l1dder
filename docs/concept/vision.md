@@ -37,7 +37,7 @@ graph TB
 
 - **Zero Hidden State:** никакого `state.yml` — состояние проекта полностью определяется файлами в `docs/`.
 - **Core vs Stack Separation:** обновление ядра (`npx l1dder@latest update`) никогда не затирает проектный стек (`30-tech-stack.mdc` и секцию `"stack"` в `l1dder/skills.json`).
-- **Zero Runtime Bloat (`ponytail`):** бандл `dist/cli.js` использует только встроенные модули `Node.js` (`node:fs`, `node:path`, `node:readline/promises`) и весит ~65 КБ.
+- **Zero Runtime Bloat (`ponytail`):** бандл `dist/cli.js` использует только встроенные модули `Node.js` (`node:fs`, `node:path`, `node:readline/promises`) и весит ~77 КБ.
 
 | Область | Решение |
 |---------|---------|

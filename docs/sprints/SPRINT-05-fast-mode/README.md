@@ -6,8 +6,8 @@
 | **ID родительской фичи / спеки** | [`FEAT-006`](../../backlog.md#feat-006) ([`docs/specs/FEAT-006-fast-mode/`](../../specs/FEAT-006-fast-mode/)) |
 | **ID родительской идеи** | [`IDEA-005`](../../ideas.md#idea-005) |
 | **Позиция в Роадмапе** | [`docs/roadmap.md`](../../roadmap.md) |
-| **Статус спринта** | `🚧 реализация` |
-| **Дата открытия / закрытия** | 2026-11-08 / — |
+| **Статус спринта** | `✅ реализована` |
+| **Дата открытия / закрытия** | 2026-11-08 / 2026-11-08 |
 
 ---
 
@@ -45,12 +45,12 @@
 | `TASK-05.02` | `FEAT-006.02` | Отклонение текущего спринта с откатом (`git revert`) в `/l1-planning`, статус `❌ отклонена` для `SPRINT-NN` и `TASK-NN.MM` в правилах и шаблонах | `feat` | ✅ реализована | [plan](tasks/TASK-05.02-sprint-rejection/plan.md) | [summary](tasks/TASK-05.02-sprint-rejection/summary.md) |
 | `TASK-05.03` | `FEAT-006.03` | Исключение `/l1-fast` в правилах `00/20/40`, словаре, шаблоне роадмапа, скиллах `l1-task` и `l1-hotfix`, сводке `AGENTS.md` / `CLAUDE.md`; сверка шагов `agent` для релиза; **обязательно:** синхронизация EN `/l1-planning` с RU (шаги 3–5 и Exit Gate) и страж RU/EN на весь скилл | `feat` | ✅ реализована | [plan](tasks/TASK-05.03-fast-rules-and-glossary/plan.md) | [summary](tasks/TASK-05.03-fast-rules-and-glossary/summary.md) |
 | `TASK-05.04` | `FEAT-006.04` | `/l1-fast` и отклонение спринта простым языком в `README`, `METHODOLOGY.md`, `user-guide/*` и на сайте | `docs` | ✅ реализована | [plan](tasks/TASK-05.04-fast-docs/plan.md) | [summary](tasks/TASK-05.04-fast-docs/summary.md) |
-| `TASK-05.99` | `FEAT-006.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)**: живой E2E-прогон `/l1-fast` субагентом в песочнице на двух быстрых моделях | `chore` | 📋 запланирована | — | — |
+| `TASK-05.99` | `FEAT-006.99` | **Гигиена спринта и Doctor Checklist (E2E + UAT + Docs Sync)**: живой E2E-прогон `/l1-fast` субагентом в песочнице на двух быстрых моделях | `chore` | ✅ реализована | [plan](tasks/TASK-05.99-doctor/plan.md) | [summary](tasks/TASK-05.99-doctor/summary.md) |
 
 ---
 
 ## 4. Итог спринта (заполняется после закрытия `TASK-05.99`)
 
-- **Что поставлено по `FEAT-006` (`IDEA-005`):** —
-- **Обновления в долгосрочной доке (`concept` / `rules` / `specs`):** —
-- **Новые идеи / техдолг, вынесенные в `docs/ideas.md` или `docs/backlog.md`:** —
+- **Что поставлено по `FEAT-006` (`IDEA-005`):** скилл `/l1-fast` на RU и EN (22 скилла в коробке, строгий отказ при занятой `CURRENT`, жёсткое правило вызова только человеком и запрет для агента запускать команду самому, две остановки, бронь в роадмапе до кода, коммиты по задачам, полный список проверок и запись всех реестров с `Режим | /l1-fast`), ветка отклонения текущего спринта с откатом через `git revert` и статусом `❌ отклонена` в `/l1-planning`, синхронизация EN `/l1-planning` с RU и полный страж RU/EN, правила `00/20/40`, словарь, путеводитель, `METHODOLOGY.md` и сайт, 2 живых E2E-прогона по 4 сценариям (`Qwen3.8 Flash` и `Kimi K2.7 Code`).
+- **Обновления в долгосрочной доке (`concept` / `rules` / `specs`):** обновлены `docs/concept/{idea,vision,data-model}.md`, `docs/adrs/ADR-0002-sprint-rejection-rollback.md`, `l1dder/rules/{00,20,40}-*.mdc` и `l1dder/GLOSSARY.md`.
+- **Новые идеи / техдолг, вынесенные в `docs/ideas.md` или `docs/backlog.md`:** новых маркеров `shortcut:` не добавлено; шаги `agent` для `40-skills-router.mdc` готовы в `docs/specs/FEAT-006-fast-mode/design.md` для включения в следующий релиз.
