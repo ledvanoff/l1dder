@@ -1,6 +1,6 @@
 {
   "name": "l1dder",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Spec-driven development framework for AI coding agents (Cursor, Claude Code, Codex, Windsurf, Copilot, OpenCode, Cline): ideas, specs and roadmap in Markdown, driven by /l1-* slash commands.",
   "keywords": [
     "l1dder",

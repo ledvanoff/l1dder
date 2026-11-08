@@ -5,6 +5,23 @@
 
 ---
 
+## [1.3.0] — 2026-11-08
+
+**RU:** Быстрый режим /l1-fast для небольших фич продукта без начатого спринта (вызывает строго человек) и отклонение текущего спринта с откатом через git revert в /l1-planning.
+
+**EN:** Fast mode /l1-fast for small product features when no sprint is active (strictly human-invoked) and current sprint rejection with git revert rollback in /l1-planning.
+
+### Changes (Изменения)
+
+- **[RU]** FEAT-006: Добавлена команда /l1-fast для небольших фич продукта без активного спринта (вызывает строго только человек, агенту запускать по своей инициативе запрещено): две остановки «ок» в чате, бронь ID на 1 (CURRENT) до кода, коммиты по задачам, полный список проверок и запись всех реестров с пометкой «Режим: /l1-fast» после кода.
+- **[RU]** FEAT-006: В /l1-planning добавлена ветка отклонения текущего спринта с откатом его кода через git revert (без переписывания истории), сохранением документов спринта со статусом «❌ отклонена» и освобождением позиции 1 (CURRENT).
+- **[RU]** FEAT-006: Полностью синхронизирована английская версия скилла /l1-planning с русской (шаги 1–5 и Exit Gate) и добавлен страж совпадения формы RU/EN на весь скилл.
+- **[EN]** FEAT-006: Added the /l1-fast command for small product features when no sprint is active (strictly human-invoked, forbidden for the agent on its own initiative): two 'ok' stops in chat, ID reservation at 1 (CURRENT) before code, per-task commits, full verification checklist, and post-code registries marked 'Mode: /l1-fast'.
+- **[EN]** FEAT-006: Added a branch in /l1-planning to reject the current sprint: rolls back its code with git revert (without rewriting history), keeps sprint documents marked '❌ rejected', and frees position 1 (CURRENT).
+- **[EN]** FEAT-006: Synchronized the English /l1-planning skill with the Russian version across Steps 1–5 and Exit Gate, with a full-file RU/EN shape guard.
+
+---
+
 ## [1.2.0] — 2026-11-07
 
 **RU:** Новая команда /l1-chore для служебных правок самого проекта вне роадмапа и автоматические инструкции для ИИ-агента после обновления.
